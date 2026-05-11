@@ -10,6 +10,12 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from merism.api import views
+from merism.api.analysis_views import (
+    CohortSegmentViewSet,
+    CoverageSnapshotViewSet,
+    StudyGoalViewSet,
+    ThemeViewSet,
+)
 from merism.api.home import HomeStatsView
 from merism.api.ask_views import ask_stream, knowledge_search
 from merism.api.interview_message_view import post_message
@@ -60,6 +66,12 @@ router.register(r"memories", views.AgentMemoryViewSet, basename="agentmemory")
 router.register(r"llm/providers", LLMProviderViewSet, basename="llmprovider")
 router.register(r"llm/routes", LLMRouteViewSet, basename="llmroute")
 router.register(r"llm/budgets", LLMBudgetViewSet, basename="llmbudget")
+
+# ── Analysis (cross-session) ───────────────────────────────
+router.register(r"study-goals", StudyGoalViewSet, basename="studygoal")
+router.register(r"themes", ThemeViewSet, basename="theme")
+router.register(r"coverage-snapshots", CoverageSnapshotViewSet, basename="coveragesnapshot")
+router.register(r"cohort-segments", CohortSegmentViewSet, basename="cohortsegment")
 
 urlpatterns = [
     path("users/me/", UserMeView.as_view(), name="user-me"),

@@ -60,6 +60,8 @@ async def process_session_transcripts(session_id: str | UUID) -> dict[str, int]:
         "tagged": 0,
         "indexed": 0,
         "insight_created": 0,
+        "themes_created": 0,
+        "coverage_gaps": 0,
     }
 
     # ── 1. Transcript polish (Sprint 2) ──
@@ -113,6 +115,22 @@ async def process_session_transcripts(session_id: str | UUID) -> dict[str, int]:
     # ── 6. SessionInsight generation ──
     insight = await generate_insight(session, quotes)
     counters["insight_created"] = 1 if insight is not None else 0
+
+    # ── 7. Cross-session analysis (themes + coverage) ──
+    # Best-effort — don't fail the pipeline if analysis errors.
+    try:
+        from merism.analysis.pipeline import rebuild_study_analysis
+
+        analysis_counters = await rebuild_study_analysis(session.study_id)
+        counters["themes_created"] = analysis_counters.get("themes_created", 0)
+        counters["coverage_gaps"] = analysis_counters.get("coverage_gaps", 0)
+    except Exception:
+        logger.exception(
+            "post_session.analysis_failed",
+            extra={"session_id": str(session.id)},
+        )
+        counters["themes_created"] = 0
+        counters["coverage_gaps"] = 0
 
     logger.info(
         "post_session.pipeline_done",
