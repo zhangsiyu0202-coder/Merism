@@ -1102,6 +1102,327 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/llm/budgets/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["llm_budgets_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["llm_budgets_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/llm/budgets/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["llm_budgets_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["llm_budgets_partial_update"];
+        trace?: never;
+    };
+    "/api/llm/providers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["llm_providers_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["llm_providers_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/llm/providers/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["llm_providers_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["llm_providers_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["llm_providers_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["llm_providers_partial_update"];
+        trace?: never;
+    };
+    "/api/llm/providers/presets/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List available provider presets for quick setup. */
+        get: operations["llm_providers_presets_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/llm/routes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["llm_routes_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["llm_routes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/llm/routes/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["llm_routes_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["llm_routes_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["llm_routes_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["llm_routes_partial_update"];
+        trace?: never;
+    };
     "/api/memories/": {
         parameters: {
             query?: never;
@@ -2685,6 +3006,13 @@ export interface components {
          * @enum {string}
          */
         DeliveryRecordStatusEnum: DeliveryRecordStatusEnum;
+        /**
+         * @description * `alert_only` - Alert only (don't block)
+         *     * `degrade` - Downgrade to cheapest model
+         *     * `block` - Block new requests
+         * @enum {string}
+         */
+        HardLimitActionEnum: HardLimitActionEnum;
         /** @description Read-only list serializer for researcher inbox. */
         InboxItem: {
             body?: string;
@@ -2824,6 +3152,91 @@ export interface components {
          * @enum {string}
          */
         KnowledgeDocumentStatusEnum: KnowledgeDocumentStatusEnum;
+        LLMBudget: {
+            /** Format: date-time */
+            readonly created_at: string;
+            /**
+             * Format: decimal
+             * @description Periodically reconciled from Langfuse. Not real-time authoritative.
+             */
+            readonly current_spent_usd: string;
+            hard_limit_action?: components["schemas"]["HardLimitActionEnum"];
+            /** Format: uuid */
+            readonly id: string;
+            readonly is_over_hard_limit: boolean;
+            readonly is_over_soft_limit: boolean;
+            /** Format: decimal */
+            monthly_cap_usd: string;
+            /** @description YYYY-MM format, e.g. '2026-05' */
+            period: string;
+            /**
+             * Format: int64
+             * @description Percentage of cap at which a warning is sent.
+             */
+            soft_limit_pct?: number;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /** @description Provider serializer. Credentials are write-only (never returned). */
+        LLMProvider: {
+            /**
+             * Format: uri
+             * @description e.g. https://api.deepseek.com or wss://dashscope...
+             */
+            base_url: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            credentials?: {
+                [key: string]: unknown;
+            };
+            /** @description Human label, e.g. 'DeepSeek 生产账号' */
+            display_name: string;
+            /** @description Optional headers (e.g. OpenAI-Beta for realtime). */
+            extra_headers?: unknown;
+            readonly has_credentials: boolean;
+            /** Format: uuid */
+            readonly id: string;
+            is_active?: boolean;
+            /** @description Model identifier sent to the provider. */
+            model: string;
+            protocol: components["schemas"]["ProtocolEnum"];
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        LLMRoute: {
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: uuid */
+            fallback?: string | null;
+            readonly fallback_display: string;
+            /** Format: uuid */
+            readonly id: string;
+            logical_name: components["schemas"]["LogicalNameEnum"];
+            /** Format: int64 */
+            max_output_tokens?: number | null;
+            /** Format: int64 */
+            max_retries?: number;
+            /** Format: uuid */
+            primary: string;
+            readonly primary_display: string;
+            /** Format: double */
+            temperature?: number;
+            /** Format: int64 */
+            timeout_seconds?: number;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /**
+         * @description * `chat` - Chat
+         *     * `reasoner` - Reasoner
+         *     * `embedding` - Embedding
+         *     * `vision` - Vision
+         *     * `asr_realtime` - ASR Realtime
+         *     * `tts_realtime` - TTS Realtime
+         *     * `omni_realtime` - Omni Realtime
+         * @enum {string}
+         */
+        LogicalNameEnum: LogicalNameEnum;
         MessageTemplate: {
             channel_type: components["schemas"]["ChannelTypeEnum"];
             content: string;
@@ -3022,6 +3435,51 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["KnowledgeDocument"][];
+        };
+        PaginatedLLMBudgetList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["LLMBudget"][];
+        };
+        PaginatedLLMProviderList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["LLMProvider"][];
+        };
+        PaginatedLLMRouteList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["LLMRoute"][];
         };
         PaginatedMessageTemplateList: {
             /** @example 123 */
@@ -3383,6 +3841,80 @@ export interface components {
             readonly video_s3_key?: string;
             readonly vision_frames?: unknown;
         };
+        PatchedLLMBudget: {
+            /** Format: date-time */
+            readonly created_at?: string;
+            /**
+             * Format: decimal
+             * @description Periodically reconciled from Langfuse. Not real-time authoritative.
+             */
+            readonly current_spent_usd?: string;
+            hard_limit_action?: components["schemas"]["HardLimitActionEnum"];
+            /** Format: uuid */
+            readonly id?: string;
+            readonly is_over_hard_limit?: boolean;
+            readonly is_over_soft_limit?: boolean;
+            /** Format: decimal */
+            monthly_cap_usd?: string;
+            /** @description YYYY-MM format, e.g. '2026-05' */
+            period?: string;
+            /**
+             * Format: int64
+             * @description Percentage of cap at which a warning is sent.
+             */
+            soft_limit_pct?: number;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
+        /** @description Provider serializer. Credentials are write-only (never returned). */
+        PatchedLLMProvider: {
+            /**
+             * Format: uri
+             * @description e.g. https://api.deepseek.com or wss://dashscope...
+             */
+            base_url?: string;
+            /** Format: date-time */
+            readonly created_at?: string;
+            credentials?: {
+                [key: string]: unknown;
+            };
+            /** @description Human label, e.g. 'DeepSeek 生产账号' */
+            display_name?: string;
+            /** @description Optional headers (e.g. OpenAI-Beta for realtime). */
+            extra_headers?: unknown;
+            readonly has_credentials?: boolean;
+            /** Format: uuid */
+            readonly id?: string;
+            is_active?: boolean;
+            /** @description Model identifier sent to the provider. */
+            model?: string;
+            protocol?: components["schemas"]["ProtocolEnum"];
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
+        PatchedLLMRoute: {
+            /** Format: date-time */
+            readonly created_at?: string;
+            /** Format: uuid */
+            fallback?: string | null;
+            readonly fallback_display?: string;
+            /** Format: uuid */
+            readonly id?: string;
+            logical_name?: components["schemas"]["LogicalNameEnum"];
+            /** Format: int64 */
+            max_output_tokens?: number | null;
+            /** Format: int64 */
+            max_retries?: number;
+            /** Format: uuid */
+            primary?: string;
+            readonly primary_display?: string;
+            /** Format: double */
+            temperature?: number;
+            /** Format: int64 */
+            timeout_seconds?: number;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
         PatchedMessageTemplate: {
             channel_type?: components["schemas"]["ChannelTypeEnum"];
             content?: string;
@@ -3527,6 +4059,12 @@ export interface components {
             /** Format: uuid */
             study?: string;
         };
+        /**
+         * @description * `http` - HTTP (OpenAI-compatible via LiteLLM)
+         *     * `ws` - WebSocket Realtime (OpenAI Realtime protocol)
+         * @enum {string}
+         */
+        ProtocolEnum: ProtocolEnum;
         RecruitmentBroadcast: {
             approved_snapshot?: unknown;
             /** Format: uuid */
@@ -5304,6 +5842,420 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KnowledgeDocument"];
+                };
+            };
+        };
+    };
+    llm_budgets_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedLLMBudgetList"];
+                };
+            };
+        };
+    };
+    llm_budgets_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMBudget"];
+                "application/x-www-form-urlencoded": components["schemas"]["LLMBudget"];
+                "multipart/form-data": components["schemas"]["LLMBudget"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMBudget"];
+                };
+            };
+        };
+    };
+    llm_budgets_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm budget. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMBudget"];
+                };
+            };
+        };
+    };
+    llm_budgets_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm budget. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedLLMBudget"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedLLMBudget"];
+                "multipart/form-data": components["schemas"]["PatchedLLMBudget"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMBudget"];
+                };
+            };
+        };
+    };
+    llm_providers_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedLLMProviderList"];
+                };
+            };
+        };
+    };
+    llm_providers_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMProvider"];
+                "application/x-www-form-urlencoded": components["schemas"]["LLMProvider"];
+                "multipart/form-data": components["schemas"]["LLMProvider"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProvider"];
+                };
+            };
+        };
+    };
+    llm_providers_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm provider. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProvider"];
+                };
+            };
+        };
+    };
+    llm_providers_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm provider. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMProvider"];
+                "application/x-www-form-urlencoded": components["schemas"]["LLMProvider"];
+                "multipart/form-data": components["schemas"]["LLMProvider"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProvider"];
+                };
+            };
+        };
+    };
+    llm_providers_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm provider. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    llm_providers_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm provider. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedLLMProvider"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedLLMProvider"];
+                "multipart/form-data": components["schemas"]["PatchedLLMProvider"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProvider"];
+                };
+            };
+        };
+    };
+    llm_providers_presets_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProvider"];
+                };
+            };
+        };
+    };
+    llm_routes_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedLLMRouteList"];
+                };
+            };
+        };
+    };
+    llm_routes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMRoute"];
+                "application/x-www-form-urlencoded": components["schemas"]["LLMRoute"];
+                "multipart/form-data": components["schemas"]["LLMRoute"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMRoute"];
+                };
+            };
+        };
+    };
+    llm_routes_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm route. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMRoute"];
+                };
+            };
+        };
+    };
+    llm_routes_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm route. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMRoute"];
+                "application/x-www-form-urlencoded": components["schemas"]["LLMRoute"];
+                "multipart/form-data": components["schemas"]["LLMRoute"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMRoute"];
+                };
+            };
+        };
+    };
+    llm_routes_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm route. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    llm_routes_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this llm route. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedLLMRoute"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedLLMRoute"];
+                "multipart/form-data": components["schemas"]["PatchedLLMRoute"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMRoute"];
                 };
             };
         };
@@ -7239,6 +8191,11 @@ export enum DeliveryRecordStatusEnum {
     delivered = "delivered",
     failed = "failed"
 }
+export enum HardLimitActionEnum {
+    alert_only = "alert_only",
+    degrade = "degrade",
+    block = "block"
+}
 export enum InboxItemKindEnum {
     session_completed = "session_completed",
     insight_ready = "insight_ready",
@@ -7257,6 +8214,15 @@ export enum KnowledgeDocumentStatusEnum {
     indexed = "indexed",
     failed = "failed"
 }
+export enum LogicalNameEnum {
+    chat = "chat",
+    reasoner = "reasoner",
+    embedding = "embedding",
+    vision = "vision",
+    asr_realtime = "asr_realtime",
+    tts_realtime = "tts_realtime",
+    omni_realtime = "omni_realtime"
+}
 export enum ModeEnum {
     voice = "voice",
     video = "video",
@@ -7271,6 +8237,10 @@ export enum ParticipationStatusEnum {
     interviewing = "interviewing",
     completed = "completed",
     dropped = "dropped"
+}
+export enum ProtocolEnum {
+    http = "http",
+    ws = "ws"
 }
 export enum RecruitmentBroadcastStatusEnum {
     draft = "draft",

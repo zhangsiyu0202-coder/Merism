@@ -1,5 +1,6 @@
 import { useActions, useMountedLogic, useValues } from "kea"
-import { Copy, Link2, Pencil, Plus, Save, Send, Users } from "lucide-react"
+import { Copy, Link2, Pencil, Plus, QrCode, Save, Send, Users } from "lucide-react"
+import { QRCodeSVG } from "qrcode.react"
 import { useState } from "react"
 import { useEffect } from "react"
 
@@ -346,6 +347,7 @@ function StudyLinkRow({
     onCreate: () => void
 }): JSX.Element {
     const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
+    const [qrSlug, setQrSlug] = useState<string | null>(null)
     if (loading && studyLinks.length === 0) {
         return <div className="rounded-merism-lg bg-merism-surface p-6 text-merism-body-sm text-merism-text-muted shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">Loading links…</div>
     }
@@ -370,10 +372,10 @@ function StudyLinkRow({
                     window.setTimeout(() => setCopiedSlug(null), 1500)
                 }
                 return (
-                    <div
-                        key={link.id}
-                        className="flex items-center gap-3 rounded-merism-lg bg-merism-surface px-4 py-3 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]"
-                    >
+                    <div key={link.id} className="flex flex-col gap-2">
+                        <div
+                            className="flex items-center gap-3 rounded-merism-lg bg-merism-surface px-4 py-3 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]"
+                        >
                         <Link2 className="h-4 w-4 shrink-0 text-merism-text-subtle" />
                         <code className="flex-1 truncate font-mono text-merism-label text-merism-text">{url}</code>
                         {link.is_active ? (
@@ -389,9 +391,23 @@ function StudyLinkRow({
                         >
                             <Copy className="h-4 w-4" />
                         </button>
+                        <button
+                            type="button"
+                            onClick={() => setQrSlug(qrSlug === link.slug ? null : link.slug)}
+                            className="flex h-8 w-8 items-center justify-center rounded-merism-md bg-merism-bg-subtle text-merism-text-muted transition-colors hover:bg-merism-accent-soft hover:text-merism-text"
+                            title="Show QR code"
+                        >
+                            <QrCode className="h-4 w-4" />
+                        </button>
                         {copiedSlug === link.slug && (
                             <span className="font-mono text-merism-caption text-[color:var(--merism-status-success)]">copied</span>
                         )}
+                    </div>
+                    {qrSlug === link.slug && (
+                        <div className="flex justify-center rounded-merism-md border border-merism-border bg-white p-4">
+                            <QRCodeSVG value={url} size={160} level="H" />
+                        </div>
+                    )}
                     </div>
                 )
             })}

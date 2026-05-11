@@ -2869,6 +2869,751 @@
                 }
             }
         },
+        "/api/llm/budgets/": {
+            "get": {
+                "operationId": "llm_budgets_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLLMBudgetList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "llm_budgets_create",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMBudget"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMBudget"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMBudget"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMBudget"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/llm/budgets/{id}/": {
+            "get": {
+                "operationId": "llm_budgets_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm budget.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMBudget"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "llm_budgets_partial_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm budget.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMBudget"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMBudget"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMBudget"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMBudget"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/llm/providers/": {
+            "get": {
+                "operationId": "llm_providers_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLLMProviderList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "llm_providers_create",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMProvider"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMProvider"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMProvider"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMProvider"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/llm/providers/{id}/": {
+            "get": {
+                "operationId": "llm_providers_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm provider.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMProvider"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "llm_providers_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm provider.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMProvider"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMProvider"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMProvider"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMProvider"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "llm_providers_partial_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm provider.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMProvider"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMProvider"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMProvider"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMProvider"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "llm_providers_destroy",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm provider.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/llm/providers/presets/": {
+            "get": {
+                "operationId": "llm_providers_presets_retrieve",
+                "description": "List available provider presets for quick setup.",
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMProvider"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/llm/routes/": {
+            "get": {
+                "operationId": "llm_routes_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLLMRouteList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "llm_routes_create",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMRoute"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMRoute"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMRoute"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMRoute"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/llm/routes/{id}/": {
+            "get": {
+                "operationId": "llm_routes_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm route.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMRoute"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "llm_routes_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm route.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMRoute"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMRoute"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LLMRoute"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMRoute"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "llm_routes_partial_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm route.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMRoute"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMRoute"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedLLMRoute"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LLMRoute"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "llm_routes_destroy",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this llm route.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "llm"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
         "/api/memories/": {
             "get": {
                 "operationId": "memories_list",
@@ -6733,6 +7478,15 @@
                 "type": "string",
                 "description": "* `pending` - Pending\n* `sent` - Sent\n* `delivered` - Delivered\n* `failed` - Failed"
             },
+            "HardLimitActionEnum": {
+                "enum": [
+                    "alert_only",
+                    "degrade",
+                    "block"
+                ],
+                "type": "string",
+                "description": "* `alert_only` - Alert only (don't block)\n* `degrade` - Downgrade to cheapest model\n* `block` - Block new requests"
+            },
             "InboxItem": {
                 "type": "object",
                 "description": "Read-only list serializer for researcher inbox.",
@@ -7103,6 +7857,221 @@
                 ],
                 "type": "string",
                 "description": "* `pending` - Pending\n* `indexing` - Indexing\n* `indexed` - Indexed\n* `failed` - Failed"
+            },
+            "LLMBudget": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "period": {
+                        "type": "string",
+                        "description": "YYYY-MM format, e.g. '2026-05'",
+                        "maxLength": 7
+                    },
+                    "monthly_cap_usd": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$"
+                    },
+                    "soft_limit_pct": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Percentage of cap at which a warning is sent."
+                    },
+                    "hard_limit_action": {
+                        "$ref": "#/components/schemas/HardLimitActionEnum"
+                    },
+                    "current_spent_usd": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,6}(?:\\.\\d{0,4})?$",
+                        "readOnly": true,
+                        "description": "Periodically reconciled from Langfuse. Not real-time authoritative."
+                    },
+                    "is_over_soft_limit": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "is_over_hard_limit": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "current_spent_usd",
+                    "id",
+                    "is_over_hard_limit",
+                    "is_over_soft_limit",
+                    "monthly_cap_usd",
+                    "period",
+                    "updated_at"
+                ]
+            },
+            "LLMProvider": {
+                "type": "object",
+                "description": "Provider serializer. Credentials are write-only (never returned).",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "description": "Human label, e.g. 'DeepSeek 生产账号'",
+                        "maxLength": 128
+                    },
+                    "protocol": {
+                        "$ref": "#/components/schemas/ProtocolEnum"
+                    },
+                    "base_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "e.g. https://api.deepseek.com or wss://dashscope...",
+                        "maxLength": 512
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "Model identifier sent to the provider.",
+                        "maxLength": 128
+                    },
+                    "credentials": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "writeOnly": true
+                    },
+                    "has_credentials": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "extra_headers": {
+                        "description": "Optional headers (e.g. OpenAI-Beta for realtime)."
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "base_url",
+                    "created_at",
+                    "display_name",
+                    "has_credentials",
+                    "id",
+                    "model",
+                    "protocol",
+                    "updated_at"
+                ]
+            },
+            "LLMRoute": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "logical_name": {
+                        "$ref": "#/components/schemas/LogicalNameEnum"
+                    },
+                    "primary": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "primary_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "fallback": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "fallback_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "max_output_tokens": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "nullable": true
+                    },
+                    "timeout_seconds": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "max_retries": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "fallback_display",
+                    "id",
+                    "logical_name",
+                    "primary",
+                    "primary_display",
+                    "updated_at"
+                ]
+            },
+            "LogicalNameEnum": {
+                "enum": [
+                    "chat",
+                    "reasoner",
+                    "embedding",
+                    "vision",
+                    "asr_realtime",
+                    "tts_realtime",
+                    "omni_realtime"
+                ],
+                "type": "string",
+                "description": "* `chat` - Chat\n* `reasoner` - Reasoner\n* `embedding` - Embedding\n* `vision` - Vision\n* `asr_realtime` - ASR Realtime\n* `tts_realtime` - TTS Realtime\n* `omni_realtime` - Omni Realtime"
             },
             "MessageTemplate": {
                 "type": "object",
@@ -7520,6 +8489,99 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/KnowledgeDocument"
+                        }
+                    }
+                }
+            },
+            "PaginatedLLMBudgetList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LLMBudget"
+                        }
+                    }
+                }
+            },
+            "PaginatedLLMProviderList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LLMProvider"
+                        }
+                    }
+                }
+            },
+            "PaginatedLLMRouteList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LLMRoute"
                         }
                     }
                 }
@@ -8358,6 +9420,179 @@
                     }
                 }
             },
+            "PatchedLLMBudget": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "period": {
+                        "type": "string",
+                        "description": "YYYY-MM format, e.g. '2026-05'",
+                        "maxLength": 7
+                    },
+                    "monthly_cap_usd": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$"
+                    },
+                    "soft_limit_pct": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "description": "Percentage of cap at which a warning is sent."
+                    },
+                    "hard_limit_action": {
+                        "$ref": "#/components/schemas/HardLimitActionEnum"
+                    },
+                    "current_spent_usd": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,6}(?:\\.\\d{0,4})?$",
+                        "readOnly": true,
+                        "description": "Periodically reconciled from Langfuse. Not real-time authoritative."
+                    },
+                    "is_over_soft_limit": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "is_over_hard_limit": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
+            "PatchedLLMProvider": {
+                "type": "object",
+                "description": "Provider serializer. Credentials are write-only (never returned).",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "description": "Human label, e.g. 'DeepSeek 生产账号'",
+                        "maxLength": 128
+                    },
+                    "protocol": {
+                        "$ref": "#/components/schemas/ProtocolEnum"
+                    },
+                    "base_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "e.g. https://api.deepseek.com or wss://dashscope...",
+                        "maxLength": 512
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "Model identifier sent to the provider.",
+                        "maxLength": 128
+                    },
+                    "credentials": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "writeOnly": true
+                    },
+                    "has_credentials": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "extra_headers": {
+                        "description": "Optional headers (e.g. OpenAI-Beta for realtime)."
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
+            "PatchedLLMRoute": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "logical_name": {
+                        "$ref": "#/components/schemas/LogicalNameEnum"
+                    },
+                    "primary": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "primary_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "fallback": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "fallback_display": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "max_output_tokens": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "nullable": true
+                    },
+                    "timeout_seconds": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "max_retries": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
             "PatchedMessageTemplate": {
                 "type": "object",
                 "properties": {
@@ -8718,6 +9953,14 @@
                         "readOnly": true
                     }
                 }
+            },
+            "ProtocolEnum": {
+                "enum": [
+                    "http",
+                    "ws"
+                ],
+                "type": "string",
+                "description": "* `http` - HTTP (OpenAI-compatible via LiteLLM)\n* `ws` - WebSocket Realtime (OpenAI Realtime protocol)"
             },
             "RecruitmentBroadcast": {
                 "type": "object",

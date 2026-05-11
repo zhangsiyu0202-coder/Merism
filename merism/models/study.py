@@ -184,6 +184,12 @@ class StudyLink(TimestampedModel):
     study = models.ForeignKey(Study, on_delete=models.CASCADE, related_name="links")
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="study_links")
     slug = models.SlugField(max_length=16, unique=True, default=_generate_slug)
+    short_link_domain = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Custom short-link domain (e.g. 'go.acme.com'). Empty = use app domain.",
+    )
     is_active = models.BooleanField(default=True)
     require_invitation = models.BooleanField(default=False, help_text="If True, /i/<slug>/ requires ?t=<token> from an Invitation row.")
     # Optional hard expiry. NULL = never expires. The /i/<slug> resolver
@@ -198,6 +204,13 @@ class StudyLink(TimestampedModel):
 
     @property
     def url_path(self) -> str:
+        return f"/i/{self.slug}"
+
+    @property
+    def full_url(self) -> str:
+        """Full URL including domain. If short_link_domain is set, uses that."""
+        if self.short_link_domain:
+            return f"https://{self.short_link_domain}/i/{self.slug}"
         return f"/i/{self.slug}"
 
     def __str__(self) -> str:

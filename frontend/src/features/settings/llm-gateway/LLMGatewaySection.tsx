@@ -3,42 +3,13 @@ import { useEffect, useState } from "react"
 import { api } from "~/lib/api"
 import { Button, SettingsSection, Tag } from "~/lib/merism"
 
-// ── Types ────────────────────────────────────────────────
+// ── Types (from generated OpenAPI schema) ────────────────
 
-interface LLMProvider {
-    id: string
-    display_name: string
-    protocol: "http" | "ws"
-    base_url: string
-    model: string
-    has_credentials: boolean
-    is_active: boolean
-    extra_headers: Record<string, string> | null
-}
+import type { components } from "~/generated/api"
 
-interface LLMRoute {
-    id: string
-    logical_name: string
-    primary: string
-    primary_display: string
-    fallback: string | null
-    fallback_display: string | null
-    temperature: number
-    max_output_tokens: number | null
-    timeout_seconds: number
-    max_retries: number
-}
-
-interface LLMBudget {
-    id: string
-    period: string
-    monthly_cap_usd: string
-    soft_limit_pct: number
-    hard_limit_action: "alert_only" | "degrade" | "block"
-    current_spent_usd: string
-    is_over_soft_limit: boolean
-    is_over_hard_limit: boolean
-}
+type LLMProvider = components["schemas"]["LLMProvider"]
+type LLMRoute = components["schemas"]["LLMRoute"]
+type LLMBudget = components["schemas"]["LLMBudget"]
 
 interface Preset {
     label: string
