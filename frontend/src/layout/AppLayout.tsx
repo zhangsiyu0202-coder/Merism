@@ -1,16 +1,22 @@
 import type { ReactNode } from "react"
 
+import { AskSidePanel } from "./AskSidePanel"
 import { NavigationSidebar } from "./NavigationSidebar"
+import { SidePanel } from "./SidePanel"
 import { TopBar } from "./TopBar"
+import { useLayoutShortcuts } from "./useLayoutShortcuts"
 
 /**
- * AppLayout — researcher chrome: sidebar + topbar + content.
+ * AppLayout — researcher chrome: left sidebar + topbar + content + right side panel.
  *
- * Page gutter is ``--spacing-merism-gutter`` (48 px) — editorial spacing.
- * Content area has NO max-width; scenes with narrow-column intent apply
- * their own ``max-w-*`` inside.
+ * Layout interactions adopted from PostHog (kept Merism's visuals):
+ *   - Left sidebar collapses/expands with 100ms width transition
+ *   - Right side panel slides in with 100ms width transition
+ *   - Keyboard shortcuts: ⌘/ toggles sidebar, ⌘. toggles Ask panel
  */
 export function AppLayout({ children }: { children: ReactNode }): JSX.Element {
+    useLayoutShortcuts()
+
     return (
         <div className="flex h-screen w-screen overflow-hidden bg-merism-bg text-merism-text">
             <NavigationSidebar />
@@ -22,6 +28,9 @@ export function AppLayout({ children }: { children: ReactNode }): JSX.Element {
                     </div>
                 </main>
             </div>
+            <SidePanel>
+                <AskSidePanel />
+            </SidePanel>
         </div>
     )
 }

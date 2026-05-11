@@ -6,29 +6,84 @@ import type { Study } from '../types'
 import type { Scene } from '../app/routes'
 import type { SceneParams } from '../app/sceneTypes'
 
+type SidePanelTab = "ask" | null
+interface SidePanelState {
+    tab: SidePanelTab
+    isOpen: boolean
+    width: number
+}
+
 export interface sidebarLogicType extends Logic {
     actionCreators: {
         touchStudy: (studyId: string) => ({
             type: "touch study (layout.sidebarLogic)";
-            payload: {
-                studyId: string;
-            };
+            payload: { studyId: string };
+        });
+        toggleCollapsed: () => ({
+            type: "toggle collapsed (layout.sidebarLogic)";
+            payload: { value: true };
+        });
+        setCollapsed: (collapsed: boolean) => ({
+            type: "set collapsed (layout.sidebarLogic)";
+            payload: { collapsed: boolean };
+        });
+        openSidePanel: (tab: Exclude<SidePanelTab, null>) => ({
+            type: "open side panel (layout.sidebarLogic)";
+            payload: { tab: Exclude<SidePanelTab, null> };
+        });
+        closeSidePanel: () => ({
+            type: "close side panel (layout.sidebarLogic)";
+            payload: { value: true };
+        });
+        toggleSidePanel: (tab: Exclude<SidePanelTab, null>) => ({
+            type: "toggle side panel (layout.sidebarLogic)";
+            payload: { tab: Exclude<SidePanelTab, null> };
+        });
+        setSidePanelWidth: (width: number) => ({
+            type: "set side panel width (layout.sidebarLogic)";
+            payload: { width: number };
         });
     };
     actionKeys: {
         "touch study (layout.sidebarLogic)": "touchStudy";
+        "toggle collapsed (layout.sidebarLogic)": "toggleCollapsed";
+        "set collapsed (layout.sidebarLogic)": "setCollapsed";
+        "open side panel (layout.sidebarLogic)": "openSidePanel";
+        "close side panel (layout.sidebarLogic)": "closeSidePanel";
+        "toggle side panel (layout.sidebarLogic)": "toggleSidePanel";
+        "set side panel width (layout.sidebarLogic)": "setSidePanelWidth";
     };
     actionTypes: {
         touchStudy: "touch study (layout.sidebarLogic)";
+        toggleCollapsed: "toggle collapsed (layout.sidebarLogic)";
+        setCollapsed: "set collapsed (layout.sidebarLogic)";
+        openSidePanel: "open side panel (layout.sidebarLogic)";
+        closeSidePanel: "close side panel (layout.sidebarLogic)";
+        toggleSidePanel: "toggle side panel (layout.sidebarLogic)";
+        setSidePanelWidth: "set side panel width (layout.sidebarLogic)";
     };
     actions: {
         touchStudy: (studyId: string) => void;
+        toggleCollapsed: () => void;
+        setCollapsed: (collapsed: boolean) => void;
+        openSidePanel: (tab: Exclude<SidePanelTab, null>) => void;
+        closeSidePanel: () => void;
+        toggleSidePanel: (tab: Exclude<SidePanelTab, null>) => void;
+        setSidePanelWidth: (width: number) => void;
     };
     asyncActions: {
         touchStudy: (studyId: string) => Promise<any>;
+        toggleCollapsed: () => Promise<any>;
+        setCollapsed: (collapsed: boolean) => Promise<any>;
+        openSidePanel: (tab: Exclude<SidePanelTab, null>) => Promise<any>;
+        closeSidePanel: () => Promise<any>;
+        toggleSidePanel: (tab: Exclude<SidePanelTab, null>) => Promise<any>;
+        setSidePanelWidth: (width: number) => Promise<any>;
     };
     defaults: {
         recentStudyIds: string[];
+        isCollapsed: boolean;
+        sidePanel: SidePanelState;
     };
     events: {};
     key: undefined;
@@ -41,15 +96,23 @@ export interface sidebarLogicType extends Logic {
     props: Record<string, unknown>;
     reducer: (state: any, action: any, fullState: any) => {
         recentStudyIds: string[];
+        isCollapsed: boolean;
+        sidePanel: SidePanelState;
     };
     reducers: {
         recentStudyIds: (state: string[], action: any, fullState: any) => string[];
+        isCollapsed: (state: boolean, action: any, fullState: any) => boolean;
+        sidePanel: (state: SidePanelState, action: any, fullState: any) => SidePanelState;
     };
     selector: (state: any) => {
         recentStudyIds: string[];
+        isCollapsed: boolean;
+        sidePanel: SidePanelState;
     };
     selectors: {
         recentStudyIds: (state: any, props?: any) => string[];
+        isCollapsed: (state: any, props?: any) => boolean;
+        sidePanel: (state: any, props?: any) => SidePanelState;
         studies: (state: any, props?: any) => Study[];
         activeScene: (state: any, props?: any) => Scene;
         sceneParams: (state: any, props?: any) => SceneParams;
@@ -58,6 +121,8 @@ export interface sidebarLogicType extends Logic {
     sharedListeners: {};
     values: {
         recentStudyIds: string[];
+        isCollapsed: boolean;
+        sidePanel: SidePanelState;
         studies: Study[];
         activeScene: Scene;
         sceneParams: SceneParams;

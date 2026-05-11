@@ -73,8 +73,11 @@
     --radius-merism-full: 9999px;
 
     /* ── spacing helpers (8pt grid) ──────────────────── */
-    --spacing-merism-sidebar: 16rem;
-    --spacing-merism-sidebar-collapsed: 4rem;
+    --spacing-merism-sidebar: 15rem;              /* 240px (expanded) */
+    --spacing-merism-sidebar-collapsed: 3.25rem;  /* 52px (collapsed) */
+    --spacing-merism-side-panel-default: 30rem;   /* 480px default */
+    --spacing-merism-side-panel-min: 20rem;       /* 320px min */
+    --spacing-merism-side-panel-max: 56.25rem;    /* 900px max */
     --spacing-merism-topbar: 3.5rem;
     --spacing-merism-gutter: 2rem;
     --spacing-merism-section-y: 4rem;
@@ -113,6 +116,7 @@
     --merism-duration-fast: 120ms;
     --merism-duration-base: 200ms;
     --merism-duration-slow: 300ms;
+    --merism-duration-layout: 100ms;  /* sidebar/panel collapse — snappy */
 
     /* ── Tag / status palettes ───────────────────────────
      * One "core" colour per variant (deep, low-L, high-C),
