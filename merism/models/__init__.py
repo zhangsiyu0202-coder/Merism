@@ -39,6 +39,7 @@ from merism.models.report import (
 from merism.models.inbox import InboxItem
 from merism.models.invitation import Invitation
 from merism.models.analysis import CohortSegment, CoverageSnapshot, StudyGoal, Theme
+from merism.models.glossary import Glossary
 from merism.models.llm_gateway import LLMBudget, LLMProvider, LLMRoute
 from merism.models.session_event import SessionEvent
 from merism.models.session_quote import SessionQuote
@@ -112,4 +113,6 @@ __all__ = [
     "CoverageSnapshot",
     "StudyGoal",
     "Theme",
+    # cleaning
+    "Glossary",
 ]
