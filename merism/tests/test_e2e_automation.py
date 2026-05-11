@@ -43,6 +43,23 @@ from merism.models import (
 pytestmark = pytest.mark.django_db(transaction=True)
 
 
+def _fake_gateway_client(text: str, decision: dict):
+    """Return a fake LLM Gateway client: complete() for decision + stream() for reply."""
+
+    class _Fake:
+        async def complete(self, **kwargs):
+            message = SimpleNamespace(content=json.dumps(decision))
+            return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+        async def stream(self, **kwargs):
+            mid = len(text) // 2
+            for chunk_text in [text[:mid], text[mid:]]:
+                delta = SimpleNamespace(content=chunk_text, tool_calls=None)
+                yield SimpleNamespace(choices=[SimpleNamespace(delta=delta, finish_reason=None, index=0)])
+
+    return _Fake()
+
+
 def _fake_llm_factory(text: str, args: dict, **_kwargs):
     """Return a fake OpenAI client that streams one chunk of text + one tool_call."""
 
@@ -142,11 +159,16 @@ def test_full_chain_invite_to_inbox():
 
     # ─── Text turns against the moderator (mocked LLM) ───
     # Turn 1: followup (keeps session open)
-    first = _fake_llm_factory(
+    from unittest.mock import AsyncMock
+
+    first = _fake_gateway_client(
         "Thanks for telling me about it.",
-        {"next_action": "followup"},
+        {"next_action": "followup", "probe_type": "expansion", "probe_triggered_by": "short"},
     )
-    with patch("merism.conductor.moderator.get_llm", return_value=first):
+    with patch(
+        "merism.conductor.moderator.get_client",
+        AsyncMock(return_value=first),
+    ):
         r = c.post(
             f"/api/sessions/{session_id}/message/",
             data=json.dumps({"message": "I use it every morning."}),
@@ -156,13 +178,16 @@ def test_full_chain_invite_to_inbox():
         b"".join(r.streaming_content)  # consume
 
     # Turn 2: close (triggers closure + pipeline)
-    second = _fake_llm_factory(
+    second = _fake_gateway_client(
         "Got it, thanks for your time.",
         {"next_action": "close"},
     )
     # Mock the post-session pipeline to a no-op (we're testing the wiring,
     # not the codebook/RAG agents which need DeepSeek).
-    with patch("merism.conductor.moderator.get_llm", return_value=second), patch(
+    with patch(
+        "merism.conductor.moderator.get_client",
+        AsyncMock(return_value=second),
+    ), patch(
         "merism.conductor.tasks.process_completed_session.delay",
         side_effect=lambda sid: None,
     ):

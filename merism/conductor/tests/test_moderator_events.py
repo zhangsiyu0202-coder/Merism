@@ -1,9 +1,12 @@
-"""End-to-end moderator → SessionEvent logging.
+"""End-to-end moderator → SessionEvent logging, for the 2-node voice pipeline.
 
-Mocks the LLM client so we don't need network. Verifies:
+Verifies the coverage_steer → generate flow:
 - each turn appends user_turn + model_reply + decision events
 - trace_id is carried onto the events
-- max_probes hard cap holds (via existing decision_validator)
+- max_probes hard cap holds (via decision_validator overriding the LLM)
+
+Mocks the LLM Gateway client's ``complete()`` (decision phase) and
+``stream()`` (generation phase) so no network is needed.
 """
 
 from __future__ import annotations
@@ -11,6 +14,7 @@ from __future__ import annotations
 import json
 import uuid
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -29,18 +33,18 @@ from merism.models import (
 pytestmark = pytest.mark.django_db(transaction=True)
 
 
+def _fake_complete_response(decision_payload: dict) -> SimpleNamespace:
+    """Build the shape returned by LiteLLMClient.complete()."""
+    message = SimpleNamespace(content=json.dumps(decision_payload))
+    return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+
 class _FakeStream:
-    """Async iterator matching OpenAI's streaming response shape.
+    """Async iterator for LiteLLMClient.stream() — yields text chunks only."""
 
-    Emits:
-      - Two content deltas that concatenate to ``assistant_text``
-      - One tool_call delta carrying the full function arguments JSON
-    """
-
-    def __init__(self, assistant_text: str, tool_args: dict):
+    def __init__(self, text: str):
+        self._text = text
         self._emitted = 0
-        self._text = assistant_text
-        self._tool_args = json.dumps(tool_args)
 
     def __aiter__(self):
         return self
@@ -48,40 +52,33 @@ class _FakeStream:
     async def __anext__(self):
         self._emitted += 1
         if self._emitted == 1:
-            return _delta_chunk(content=self._text[: len(self._text) // 2])
+            return _delta_chunk(self._text[: len(self._text) // 2])
         if self._emitted == 2:
-            return _delta_chunk(content=self._text[len(self._text) // 2 :])
-        if self._emitted == 3:
-            return _delta_chunk(tool_call_args=self._tool_args)
+            return _delta_chunk(self._text[len(self._text) // 2 :])
         raise StopAsyncIteration
 
 
-def _delta_chunk(content: str | None = None, tool_call_args: str | None = None):
-    tool_calls = []
-    if tool_call_args is not None:
-        tool_calls = [
-            SimpleNamespace(
-                function=SimpleNamespace(name="submit_next_action", arguments=tool_call_args)
-            )
-        ]
-    delta = SimpleNamespace(content=content, tool_calls=tool_calls or None)
+def _delta_chunk(content: str):
+    delta = SimpleNamespace(content=content, tool_calls=None)
     choice = SimpleNamespace(delta=delta, finish_reason=None, index=0)
     return SimpleNamespace(choices=[choice])
 
 
-class _FakeCompletions:
-    def __init__(self, stream: _FakeStream):
-        self._stream = stream
+class _FakeGatewayClient:
+    """Stands in for LiteLLMClient. Exposes complete() + stream()."""
 
-    async def create(self, **kwargs):
-        return self._stream
+    def __init__(self, *, decision: dict, reply_text: str):
+        self._decision = decision
+        self._reply_text = reply_text
 
+    async def complete(self, **kwargs):
+        return _fake_complete_response(self._decision)
 
-class _FakeLLM:
-    def __init__(self, assistant_text: str, tool_args: dict):
-        self.chat = SimpleNamespace(
-            completions=_FakeCompletions(_FakeStream(assistant_text, tool_args))
-        )
+    async def stream(self, **kwargs):
+        # Must be an async generator directly (not a coroutine returning one)
+        stream = _FakeStream(self._reply_text)
+        async for chunk in stream:
+            yield chunk
 
 
 def _boot_session():
@@ -122,19 +119,18 @@ async def test_stream_turn_logs_events_per_turn(monkeypatch):
 
     session = await sync_to_async(_boot_session)()
 
-    def _fake_llm_factory(**kw):
-        return _FakeLLM(
-            assistant_text="Thanks for sharing.",
-            tool_args={"next_action": "move_on", "next_question_id": "q2"},
-        )
-
-    monkeypatch.setattr("merism.conductor.moderator.get_llm", _fake_llm_factory)
+    fake_client = _FakeGatewayClient(
+        decision={"next_action": "move_on", "next_question_id": "q2"},
+        reply_text="Thanks for sharing.",
+    )
+    # Patch get_client to always return our fake (for both decision + generate)
+    async_mock = AsyncMock(return_value=fake_client)
+    monkeypatch.setattr("merism.conductor.moderator.get_client", async_mock)
 
     from merism.conductor.moderator import stream_turn
 
-    # Reload session with FKs
     session = await sync_to_async(
-        lambda: type(session).objects.select_related("study", "guide").get(id=session.id)
+        lambda: type(session).objects.select_related("study__team", "guide").get(id=session.id)
     )()
 
     chunks: list[str] = []
@@ -149,11 +145,9 @@ async def test_stream_turn_logs_events_per_turn(monkeypatch):
     )()
     kinds = [e.kind for e in events]
     assert kinds == ["user_turn", "model_reply", "decision"]
-    # Payload shape
     assert events[0].payload["text"] == "I use it daily."
     assert events[1].payload["text"] == "Thanks for sharing."
     assert events[2].payload["decision"]["next_action"] == "move_on"
-    # trace_id propagated
     assert all(e.trace_id == session.trace_id for e in events)
 
 
@@ -163,7 +157,6 @@ async def test_stream_turn_max_probes_forces_move_on(monkeypatch):
     from asgiref.sync import sync_to_async
 
     session = await sync_to_async(_boot_session)()
-    # Pre-load state as having already used all 2 probes on q1
     session.moderator_state = {
         "current_section_id": "s1",
         "current_question_id": "q1",
@@ -172,18 +165,17 @@ async def test_stream_turn_max_probes_forces_move_on(monkeypatch):
     }
     await sync_to_async(session.save)(update_fields=["moderator_state"])
 
-    def _fake_llm_factory(**kw):
-        return _FakeLLM(
-            assistant_text="Go on.",
-            tool_args={"next_action": "followup"},
-        )
-
-    monkeypatch.setattr("merism.conductor.moderator.get_llm", _fake_llm_factory)
+    fake_client = _FakeGatewayClient(
+        decision={"next_action": "followup", "probe_type": "expansion", "probe_triggered_by": "vague"},
+        reply_text="Go on.",
+    )
+    async_mock = AsyncMock(return_value=fake_client)
+    monkeypatch.setattr("merism.conductor.moderator.get_client", async_mock)
 
     from merism.conductor.moderator import stream_turn
 
     session = await sync_to_async(
-        lambda: type(session).objects.select_related("study", "guide").get(id=session.id)
+        lambda: type(session).objects.select_related("study__team", "guide").get(id=session.id)
     )()
 
     async for _ in stream_turn(session, participant_message="and then"):

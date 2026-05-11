@@ -1,20 +1,35 @@
-"""Single-call interview moderator runner (PRODUCT.md §5.2 / platform Req 14).
+"""2-node voice moderator: coverage_steer (decide) → generate (stream).
 
-One LLM call per participant turn. Returns streaming text + a structured
-``next_action`` via function calling. No macro/meso/micro layers, no
-policies — the spec explicitly forbids them.
+Push-to-talk mode gives us ~1s latency budget before the first TTS
+chunk, so we can afford a short awaited decision call BEFORE streaming
+the reply. This makes decision-making a first-class, structured step
+instead of a tool_call hidden inside a streaming reply.
 
-Usage::
+Flow:
 
-    async for text_chunk in stream_turn(session, participant_message="Hi"):
-        ...  # send to TTS + captions
+    participant sends message
+        │
+        ▼
+    resolve execution state + guide cursor + coverage gaps
+        │
+        ▼
+    ┌───────────────────────────────────┐
+    │ coverage_steer (non-streaming)    │ ~400-800ms
+    │ → ModeratorDecision               │
+    └───────────────────────────────────┘
+        │
+        ▼
+    ┌───────────────────────────────────┐
+    │ generate (streaming)              │ ~300-500ms first token
+    │ → yields str chunks to TTS        │
+    └───────────────────────────────────┘
+        │
+        ▼
+    post-stream persistence (unchanged)
 
-    # After the stream closes, call moderator_decision(session) to read
-    # the structured decision that arrived alongside the text.
-
-The streaming protocol is deliberately thin: this function yields
-``str`` chunks. Callers (SSE view, WebSocket consumer) are responsible
-for wrapping them in the wire format they need.
+No fallback: if either phase errors out, ``stream_turn`` propagates the
+exception. SSE/voice consumers already handle errors via the wire format
+they use.
 """
 
 from __future__ import annotations
@@ -24,34 +39,16 @@ import logging
 from collections.abc import AsyncIterator
 from typing import Any
 
+from merism.conductor.decision_prompt import build_decision_prompt
 from merism.conductor.decision_validator import validate_decision
+from merism.conductor.generation_prompt import build_generation_prompt
 from merism.conductor.guide_cursor import find_question, followup_budget, next_question
-from merism.conductor.prompts import (
-    ModeratorDecision,
-    build_system_prompt,
-    current_question_state,
-    format_concept_context,
-)
+from merism.conductor.prompts import ModeratorDecision, format_concept_context
 from merism.conductor.state import ExecutionState
 from merism.llm_gateway.client import get_client
-from merism.memai.llm import default_model, get_llm
 from merism.models import InterviewSession
 
 logger = logging.getLogger(__name__)
-
-
-_TOOL_NAME = "submit_next_action"
-_TOOL_SCHEMA = {
-    "type": "function",
-    "function": {
-        "name": _TOOL_NAME,
-        "description": (
-            "Record the moderator's decision for the next turn. Required "
-            "after every reply. Exactly one of followup / move_on / clarify / close."
-        ),
-        "parameters": ModeratorDecision.model_json_schema(),
-    },
-}
 
 
 async def stream_turn(
@@ -60,139 +57,52 @@ async def stream_turn(
     participant_message: str,
     vision_context: str = "",
 ) -> AsyncIterator[str]:
-    """Yield text chunks from one moderator LLM call.
+    """Run one moderator turn.
 
-    The LLM is asked to (a) reply to the participant in natural spoken
-    language and (b) emit a function call recording the decision. The
-    function call lands on ``session.moderator_state['last_decision']``
-    when the stream closes.
+    Yields streamed text chunks from the generate phase. The structured
+    decision lands in ``session.decision_log`` + ``session.moderator_state``
+    after the stream closes.
+
+    Signature + semantics unchanged from the previous single-call
+    implementation; internally it's now a 2-node pipeline.
     """
-    state = ExecutionState.model_validate(session.moderator_state or {})
-    guide_sections: list[dict[str, Any]] = session.guide.sections or []
-
-    # Concept Testing 2.0: on first turn, expand any per_concept sections
-    # using the study's ConceptBlocks + this session's id as the seed.
-    if not state.expanded_sections:
-        try:
-            state.expanded_sections, state.concept_by_question_id = await _expand_if_needed(
-                session, guide_sections
-            )
-        except Exception:  # pragma: no cover — defensive, never break the turn
-            state.expanded_sections = []
-            state.concept_by_question_id = {}
-    # Downstream cursor code uses the expanded sections when available.
-    effective_sections = state.expanded_sections or guide_sections
-
-    # Resolve current-question / stimulus / remaining-followups context.
-    current_section, current_question = find_question(
-        effective_sections, state.current_question_id
-    )
-    if current_question is None:
-        first_section, first_q = next_question(effective_sections, current_question_id="")
-        if first_q is not None:
-            current_section = first_section
-            current_question = first_q
-            state.current_section_id = (first_section or {}).get("id", "")
-            state.current_question_id = first_q.get("id", "")
-            state.followups_used[first_q["id"]] = {
-                "asked": 0,
-                "budget": int(first_q.get("followup_depth", 0)),
-            }
-
+    state, current_question, current_section, effective_sections = await _resolve_state(session)
+    probes_done = state.probes_done_for(state.current_question_id)
     current_question_text = (current_question or {}).get("text", "")
     current_stimulus_text = _resolve_stimulus_description(
         session, (current_question or {}).get("linked_stimulus_ids", [])
     )
-    probes_done = state.probes_done_for(state.current_question_id)
-
-    # Concept Testing 2.0: inject concept context into the system prompt
-    # when the current question belongs to an expanded per_concept section.
     concept_info = state.concept_by_question_id.get(state.current_question_id) or {}
     concept_context_text = format_concept_context(concept_info)
 
-    # Phase 3: inject coverage context so the model can steer toward
-    # under-covered P0/P1 goals. Best-effort — empty string if no snapshot
-    # yet (first few sessions in the study).
+    # Coverage context (gap list) — best-effort
     try:
         from merism.conductor.adaptive_probing import build_coverage_context
-
         coverage_context_text = await build_coverage_context(session.study_id)
     except Exception:
         coverage_context_text = ""
 
-    prompt_kwargs = current_question_state(current_question, probes_done=probes_done)
-    system_prompt = build_system_prompt(
-        research_goal=session.study.research_goal,
+    recent_turns_text = _format_recent_turns(session, limit=8)
+
+    # ── Node 1: coverage_steer — await a structured decision ──
+    qinfo = _question_info(current_question)
+    decision = await _coverage_steer_node(
+        session=session,
+        research_goal=session.study.research_goal or "",
+        question_id=qinfo["id"],
+        question_text=qinfo["text"],
+        intent=qinfo["intent"],
+        probe_policy=qinfo["probe_policy"],
+        probes_done=probes_done,
+        max_probes=qinfo["max_probes"],
         current_stimulus=current_stimulus_text,
-        vision_context=vision_context,
         concept_context=concept_context_text,
         coverage_context=coverage_context_text,
-        **prompt_kwargs,
+        recent_turns=recent_turns_text,
+        participant_message=participant_message,
     )
 
-    messages = _build_chat_messages(session, system_prompt, participant_message)
-
-    text_buffer = ""
-    tool_args_buffer = ""
-    tool_call_seen = False
-
-    try:
-        client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
-    except Exception:
-        # Fallback to legacy get_llm() if no route configured or DB unavailable
-        client = None
-
-    if client is not None:
-        # Gateway path: LiteLLMClient.stream() yields OpenAI-compatible chunks
-        async for chunk in client.stream(
-            messages=messages,
-            tools=[_TOOL_SCHEMA],
-            tool_choice={"type": "function", "function": {"name": _TOOL_NAME}},
-        ):
-            choice = chunk.choices[0] if chunk.choices else None
-            if choice is None:
-                continue
-
-            delta = choice.delta
-            if delta.content:
-                text_buffer += delta.content
-                yield delta.content
-
-            if delta.tool_calls:
-                tool_call_seen = True
-                for tool_call in delta.tool_calls:
-                    if tool_call.function and tool_call.function.arguments:
-                        tool_args_buffer += tool_call.function.arguments
-    else:
-        # Legacy path: direct OpenAI client
-        legacy_client = get_llm(async_=True)
-        completion = await legacy_client.chat.completions.create(
-            model=default_model(),
-            messages=messages,
-            tools=[_TOOL_SCHEMA],
-            tool_choice={"type": "function", "function": {"name": _TOOL_NAME}},
-            stream=True,
-        )
-
-        async for chunk in completion:
-            choice = chunk.choices[0] if chunk.choices else None
-            if choice is None:
-                continue
-
-            delta = choice.delta
-            if delta.content:
-                text_buffer += delta.content
-                yield delta.content
-
-            if delta.tool_calls:
-                tool_call_seen = True
-                for tool_call in delta.tool_calls:
-                    if tool_call.function and tool_call.function.arguments:
-                        tool_args_buffer += tool_call.function.arguments
-
-    # Post-stream: parse the decision, mutate state, persist.
-    decision = _parse_decision(tool_args_buffer) if tool_call_seen else None
-    # Sprint 1: server-side enforcement of probe_policy / max_probes.
+    # Server-side enforcement (probe_policy caps, etc)
     validation = validate_decision(
         decision,
         question=current_question,
@@ -200,11 +110,37 @@ async def stream_turn(
         sections=effective_sections,
     )
     decision = validation.decision if validation.overridden else decision
-    _apply_decision_to_state(state, decision, effective_sections)
 
+    # Resolve text for the (possibly next) question + target goal — used
+    # by the generation prompt
+    next_q_text = ""
+    if decision and decision.next_action == "move_on" and decision.next_question_id:
+        _, next_q = find_question(effective_sections, decision.next_question_id)
+        if next_q:
+            next_q_text = next_q.get("text", "") or ""
+
+    target_goal_text = ""
+    if decision and decision.target_goal_id:
+        target_goal_text = await _resolve_goal_text(session.study_id, decision.target_goal_id)
+
+    # ── Node 2: generate — stream the spoken reply ──
+    text_buffer = ""
+    async for chunk in _generate_node(
+        session=session,
+        decision=decision,
+        current_question_text=current_question_text,
+        next_question_text=next_q_text,
+        target_goal_text=target_goal_text,
+        recent_turns=recent_turns_text,
+        participant_message=participant_message,
+    ):
+        text_buffer += chunk
+        yield chunk
+
+    # ── Post-stream: same persistence as before ──
+    _apply_decision_to_state(state, decision, effective_sections)
     session.moderator_state = state.model_dump(mode="json")
-    # Attribute turns to the question + concept they addressed — lets
-    # the report aggregator bucket answers by concept without guessing.
+
     qid_at_turn = state.current_question_id
     concept_info = state.concept_by_question_id.get(qid_at_turn) or {}
     concept_id_at_turn = concept_info.get("concept_id")
@@ -226,6 +162,7 @@ async def stream_turn(
         }
     )
     session.transcript = transcript
+
     decision_log = list(session.decision_log or [])
     if decision is not None:
         decision_log.append(
@@ -238,17 +175,15 @@ async def stream_turn(
                 "matches_rule": decision.matches_rule,
                 "think_notes": decision.think_notes,
                 "target_goal_id": decision.target_goal_id,
+                "off_topic": decision.off_topic,
+                "steering_strategy": decision.steering_strategy,
                 "validator_overridden": validation.overridden,
                 "validator_reason": validation.reason,
             }
         )
     session.decision_log = decision_log
-    # Saving in the view is ideal (async-to-sync bridge); callers that want
-    # to batch multiple turns can defer by calling save() themselves.
     await _asave_session(session)
 
-    # Event-sourced log — each turn writes user_turn / model_reply /
-    # decision rows so any worker can rebuild state from events alone.
     await _alog_turn_events(
         session,
         participant_message=participant_message,
@@ -259,37 +194,201 @@ async def stream_turn(
         qid_at_turn=qid_at_turn,
     )
 
-    # 6-signal closure check. If any signal fires, mark the session
-    # COMPLETED now so the post_save → Celery pipeline kicks off.
     await _acheck_closure(session)
 
 
-def _build_chat_messages(
+# ── Node 1: coverage_steer ─────────────────────────────────
+
+
+async def _coverage_steer_node(
+    *,
     session: InterviewSession,
-    system_prompt: str,
+    research_goal: str,
+    question_id: str,
+    question_text: str,
+    intent: str,
+    probe_policy: str,
+    probes_done: int,
+    max_probes: int,
+    current_stimulus: str,
+    concept_context: str,
+    coverage_context: str,
+    recent_turns: str,
     participant_message: str,
-) -> list[dict[str, Any]]:
-    """Construct the OpenAI chat messages. Short transcript history included
-    to give the LLM enough context without bloating every call."""
-    history_tail = session.transcript[-8:] if session.transcript else []
-    messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]
-    for turn in history_tail:
-        role = "assistant" if turn.get("role") == "agent" else "user"
-        messages.append({"role": role, "content": turn.get("text", "")})
-    messages.append({"role": "user", "content": participant_message})
-    return messages
-
-
-def _parse_decision(raw_arguments: str) -> ModeratorDecision | None:
-    raw_arguments = raw_arguments.strip()
-    if not raw_arguments:
-        return None
+) -> ModeratorDecision | None:
+    """Call the LLM gateway to produce a structured decision. Awaited."""
+    messages = build_decision_prompt(
+        research_goal=research_goal,
+        question_id=question_id,
+        question_text=question_text,
+        intent=intent,
+        probe_policy=probe_policy,
+        probes_done=probes_done,
+        max_probes=max_probes,
+        current_stimulus=current_stimulus,
+        concept_context=concept_context,
+        coverage_context=coverage_context,
+        recent_turns=recent_turns,
+        participant_latest=participant_message,
+    )
     try:
-        payload = json.loads(raw_arguments)
+        client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
+        response = await client.complete(
+            messages=messages,
+            response_format={"type": "json_object"},
+            temperature=0.2,
+        )
+        raw = response.choices[0].message.content or "{}"
+    except Exception:
+        logger.exception("moderator.coverage_steer.llm_failed")
+        return None
+
+    try:
+        payload = json.loads(raw)
         return ModeratorDecision.model_validate(payload)
     except (json.JSONDecodeError, ValueError) as exc:
-        logger.warning("moderator.decision.parse_failed", extra={"error": str(exc)})
+        logger.warning("moderator.coverage_steer.parse_failed", extra={"error": str(exc), "raw": raw[:200]})
         return None
+
+
+# ── Node 2: generate ────────────────────────────────────────
+
+
+async def _generate_node(
+    *,
+    session: InterviewSession,
+    decision: ModeratorDecision | None,
+    current_question_text: str,
+    next_question_text: str,
+    target_goal_text: str,
+    recent_turns: str,
+    participant_message: str,
+) -> AsyncIterator[str]:
+    """Stream the spoken reply, informed by the upstream decision."""
+    # If decision failed entirely, fall back to a safe acknowledgement
+    # (not an LLM fallback — a one-liner so the session isn't stuck silent)
+    if decision is None:
+        for token in "Got it. ".split():
+            yield token + " "
+        return
+
+    messages = build_generation_prompt(
+        decision_next_action=decision.next_action,
+        decision_probe_type=decision.probe_type,
+        decision_target_goal_id=decision.target_goal_id,
+        decision_off_topic=decision.off_topic or False,
+        decision_steering_strategy=decision.steering_strategy or "advance",
+        decision_think_notes=decision.think_notes or "",
+        current_question_text=current_question_text,
+        next_question_text=next_question_text,
+        target_goal_text=target_goal_text,
+        recent_turns=recent_turns,
+        participant_latest=participant_message,
+    )
+
+    try:
+        client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
+        async for chunk in client.stream(messages=messages, temperature=0.5):
+            choice = chunk.choices[0] if chunk.choices else None
+            if choice is None:
+                continue
+            delta = choice.delta
+            if delta.content:
+                yield delta.content
+    except Exception:
+        logger.exception("moderator.generate.llm_failed")
+        # Emit a safe acknowledgement so the session doesn't silently freeze
+        yield "I see. "
+
+
+# ── State resolution helpers (extracted from the old single-call) ──
+
+
+async def _resolve_state(
+    session: InterviewSession,
+) -> tuple[ExecutionState, dict[str, Any] | None, dict[str, Any] | None, list[dict[str, Any]]]:
+    """Load + expand state, resolve current question + section."""
+    state = ExecutionState.model_validate(session.moderator_state or {})
+    guide_sections: list[dict[str, Any]] = session.guide.sections or []
+
+    if not state.expanded_sections:
+        try:
+            state.expanded_sections, state.concept_by_question_id = await _expand_if_needed(
+                session, guide_sections
+            )
+        except Exception:
+            state.expanded_sections = []
+            state.concept_by_question_id = {}
+    effective_sections = state.expanded_sections or guide_sections
+
+    current_section, current_question = find_question(effective_sections, state.current_question_id)
+    if current_question is None:
+        first_section, first_q = next_question(effective_sections, current_question_id="")
+        if first_q is not None:
+            current_section = first_section
+            current_question = first_q
+            state.current_section_id = (first_section or {}).get("id", "")
+            state.current_question_id = first_q.get("id", "")
+            state.followups_used[first_q["id"]] = {
+                "asked": 0,
+                "budget": int(first_q.get("followup_depth", 0)),
+            }
+
+    return state, current_question, current_section, effective_sections
+
+
+def _question_info(q: dict[str, Any] | None) -> dict[str, Any]:
+    if q is None:
+        return {
+            "id": "",
+            "text": "",
+            "intent": "",
+            "probe_policy": "light",
+            "max_probes": 0,
+        }
+    return {
+        "id": q.get("id", ""),
+        "text": q.get("text", ""),
+        "intent": q.get("intent", ""),
+        "probe_policy": q.get("probe_policy", "light"),
+        "max_probes": int(q.get("max_probes", q.get("followup_depth", 3))),
+    }
+
+
+def _format_recent_turns(session: InterviewSession, *, limit: int = 8) -> str:
+    """Render the last N transcript turns as plain text for the decision prompt."""
+    history = (session.transcript or [])[-limit:]
+    if not history:
+        return ""
+    lines = []
+    for turn in history:
+        role = turn.get("role", "")
+        prefix = "Participant" if role == "participant" else "Moderator"
+        text = (turn.get("text_clean") or turn.get("text") or "").strip()
+        if text:
+            lines.append(f"{prefix}: {text}")
+    return "\n".join(lines)
+
+
+async def _resolve_goal_text(study_id: Any, goal_id: str) -> str:
+    """Look up StudyGoal.text by id. Returns '' on miss."""
+    from asgiref.sync import sync_to_async
+
+    from merism.models import StudyGoal
+
+    @sync_to_async
+    def _fetch() -> str:
+        try:
+            return StudyGoal.objects.get(id=goal_id, study_id=study_id).text
+        except StudyGoal.DoesNotExist:
+            return ""
+        except Exception:
+            return ""
+
+    return await _fetch()
+
+
+# ── State application, save, events (kept from single-call impl) ──
 
 
 def _apply_decision_to_state(
@@ -317,9 +416,6 @@ def _apply_decision_to_state(
                     "asked": 0,
                     "budget": followup_budget(sections, target_id),
                 }
-                # Concept Testing 2.0: enqueue a stimulus_show event when
-                # the cursor crosses a concept boundary so the voice /
-                # SSE consumer can forward it over the wire.
                 from merism.conductor.concept_plan import concept_transition_payload
 
                 payload = concept_transition_payload(
@@ -328,9 +424,7 @@ def _apply_decision_to_state(
                     target_id,
                 )
                 if payload is not None:
-                    concept_id = state.concept_by_question_id.get(target_id, {}).get(
-                        "concept_id"
-                    )
+                    concept_id = state.concept_by_question_id.get(target_id, {}).get("concept_id")
                     if concept_id and concept_id not in state.concepts_shown:
                         state.concepts_shown.append(concept_id)
                     state.pending_stimulus_events.append(payload)
@@ -341,13 +435,8 @@ def _apply_decision_to_state(
 def _resolve_stimulus_description(
     session: InterviewSession, stimulus_ids: list[str]
 ) -> str:
-    """Return a compact description string for any stimulus shown this turn.
-
-    Intentionally DB-free on the happy path (no stimulus IDs = cheap).
-    """
     if not stimulus_ids:
         return ""
-    # Lazy import to avoid circular deps.
     from asgiref.sync import sync_to_async
 
     from merism.models import Stimulus
@@ -359,14 +448,12 @@ def _resolve_stimulus_description(
             parts.append(f"{s.kind}: {s.title or ''} — {s.description or ''}")
         return "\n".join(parts).strip()
 
-    # Moderator runs in async context; this is a sync DB call wrapped.
     import asyncio
 
     return asyncio.get_event_loop().run_until_complete(_load())
 
 
 async def _asave_session(session: InterviewSession) -> None:
-    """Async-aware save — Merism runs on ASGI so we use ``asave()`` when available."""
     asave = getattr(session, "asave", None)
     if callable(asave):
         await asave(
@@ -394,13 +481,6 @@ async def _expand_if_needed(
     session: InterviewSession,
     raw_sections: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
-    """Expand any ``per_concept`` sections in the guide using the study's
-    ConceptBlocks. Returns ``([], {})`` when the guide has no per_concept
-    sections (legacy single-stimulus studies).
-
-    Concept rotation is seeded by the session id so the order is
-    reproducible (useful for replay + debugging).
-    """
     if not any(s.get("scope") == "per_concept" for s in raw_sections):
         return [], {}
 
@@ -435,14 +515,6 @@ async def _expand_if_needed(
 
     @sync_to_async
     def _advance_cursor(block_id: str) -> int:
-        """Atomic increment of ``ConceptRotationCursor.position``.
-
-        Returns the post-increment value (so the first session gets 1,
-        not 0). Cyclic Latin-square row i uses offset ``i % N``, so
-        concrete positions start from 1 — that's fine; the modulo
-        inside ``order_latin_square`` makes the first session see
-        offset 1, which is also balanced across participations.
-        """
         ConceptRotationCursor.objects.get_or_create(block_id=block_id)
         ConceptRotationCursor.objects.filter(block_id=block_id).update(
             position=F("position") + 1
@@ -450,9 +522,6 @@ async def _expand_if_needed(
         return ConceptRotationCursor.objects.get(block_id=block_id).position
 
     blocks = await _load_blocks()
-    # Per-block seed override: latin-square blocks get the persistent
-    # cursor value so ordering is balanced across the sample; fixed +
-    # random blocks keep the session seed.
     overrides: dict[str, str] = {}
     for block_id, block in blocks.items():
         if block.get("rotation") == "latin_square":
@@ -470,13 +539,6 @@ async def _alog_turn_events(
     validator_reason,
     qid_at_turn: str,
 ) -> None:
-    """Append three SessionEvent rows atomically for one moderator turn.
-
-    Per-turn events are the **authoritative** record; ``moderator_state``
-    and ``decision_log`` on the session are derived caches. This lets any
-    worker (voice consumer, text SSE view, test replay) reconstruct
-    state from events alone.
-    """
     from asgiref.sync import sync_to_async
 
     from merism.conductor.event_log import append_events
@@ -497,6 +559,8 @@ async def _alog_turn_events(
                         "matches_rule": decision.matches_rule,
                         "think_notes": decision.think_notes,
                         "target_goal_id": decision.target_goal_id,
+                        "off_topic": decision.off_topic,
+                        "steering_strategy": decision.steering_strategy,
                     },
                     "validator_overridden": validator_overridden,
                     "validator_reason": validator_reason,
@@ -505,13 +569,10 @@ async def _alog_turn_events(
         )
 
     trace_id = getattr(session, "trace_id", None)
-    await sync_to_async(append_events)(
-        session, payload_events, trace_id=trace_id
-    )
+    await sync_to_async(append_events)(session, payload_events, trace_id=trace_id)
 
 
 async def _acheck_closure(session: InterviewSession) -> None:
-    """Run the 6-signal closure check after each turn. No-op if no signal fires."""
     from asgiref.sync import sync_to_async
 
     from merism.conductor.closure import check_completion, complete_session

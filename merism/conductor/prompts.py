@@ -82,6 +82,23 @@ class ModeratorDecision(BaseModel):
         ),
     )
 
+    # ── 2-node LangGraph additions: coverage_steer outputs ────────
+    off_topic: bool = Field(
+        default=False,
+        description=(
+            "True if the participant's last message is off-topic from the "
+            "current question / research goal. The generate_node uses this "
+            "to produce a redirect rather than a substantive reply."
+        ),
+    )
+    steering_strategy: str | None = Field(
+        default=None,
+        description=(
+            "'deepen_current' | 'redirect_to_goal' | 'advance' | 'close_now'. "
+            "Tells generate_node how to phrase the reply."
+        ),
+    )
+
 
 # Probe policy → copy used in the DECISION RULES block.
 _POLICY_CLAUSE = {

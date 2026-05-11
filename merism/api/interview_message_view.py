@@ -72,7 +72,7 @@ def _stream_bytes(session_id: str, message: str) -> Iterator[bytes]:
         try:
             session = await sync_to_async(
                 lambda: InterviewSession.objects.select_related(
-                    "study", "guide", "participation"
+                    "study__team", "guide", "participation"
                 ).get(id=session_id)
             )()
             async for delta in stream_turn(session, participant_message=message):

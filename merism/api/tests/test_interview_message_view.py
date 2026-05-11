@@ -1,10 +1,16 @@
-"""HTTP text-mode endpoint wraps stream_turn as SSE."""
+"""HTTP text-mode endpoint wraps stream_turn as SSE.
+
+Patches the LLM Gateway client (``merism.conductor.moderator.get_client``)
+with a fake that serves both the decision (complete) and the generation
+(stream) phases of the 2-node voice moderator.
+"""
 
 from __future__ import annotations
 
 import json
 import uuid
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 from django.test.client import Client
@@ -43,39 +49,33 @@ def _boot():
     return p, s
 
 
-def _fake_llm_factory(text="hi there", args=None, **kw):
-    args = args or {"next_action": "followup"}
+class _FakeGatewayClient:
+    """Serves both complete() (decision) + stream() (generation)."""
 
-    class _FakeStream:
-        def __init__(self):
-            self._n = 0
-        def __aiter__(self):
-            return self
-        async def __anext__(self):
-            self._n += 1
-            if self._n == 1:
-                return _delta(content=text)
-            if self._n == 2:
-                return _delta(tool_args=json.dumps(args))
-            raise StopAsyncIteration
+    def __init__(self, decision: dict, reply_text: str):
+        self._decision = decision
+        self._reply_text = reply_text
 
-    def _delta(content=None, tool_args=None):
-        tool_calls = None
-        if tool_args:
-            tool_calls = [SimpleNamespace(function=SimpleNamespace(name="submit_next_action", arguments=tool_args))]
-        delta = SimpleNamespace(content=content, tool_calls=tool_calls)
-        return SimpleNamespace(choices=[SimpleNamespace(delta=delta, finish_reason=None, index=0)])
+    async def complete(self, **kwargs):
+        message = SimpleNamespace(content=json.dumps(self._decision))
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
-    class _Completions:
-        async def create(self, **kwargs):
-            return _FakeStream()
+    async def stream(self, **kwargs):
+        mid = len(self._reply_text) // 2
+        for chunk_text in [self._reply_text[:mid], self._reply_text[mid:]]:
+            delta = SimpleNamespace(content=chunk_text, tool_calls=None)
+            yield SimpleNamespace(choices=[SimpleNamespace(delta=delta, finish_reason=None, index=0)])
 
-    return SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
+
+def _patch_gateway(monkeypatch, decision=None, text="hi there"):
+    decision = decision or {"next_action": "followup", "probe_type": "expansion", "probe_triggered_by": "short"}
+    fake = _FakeGatewayClient(decision=decision, reply_text=text)
+    monkeypatch.setattr("merism.conductor.moderator.get_client", AsyncMock(return_value=fake))
 
 
 def test_message_endpoint_requires_cookie(monkeypatch):
     p, s = _boot()
-    monkeypatch.setattr("merism.conductor.moderator.get_llm", _fake_llm_factory)
+    _patch_gateway(monkeypatch)
     c = Client()
     r = c.post(f"/api/sessions/{s.id}/message/", data=json.dumps({"message": "hi"}), content_type="application/json")
     assert r.status_code == 403
@@ -83,8 +83,7 @@ def test_message_endpoint_requires_cookie(monkeypatch):
 
 def test_message_endpoint_streams_delta_and_done(monkeypatch):
     p, s = _boot()
-    monkeypatch.setattr("merism.conductor.moderator.get_llm", _fake_llm_factory)
-
+    _patch_gateway(monkeypatch, text="Thanks.")
     c = Client()
     c.cookies["merism_browser_token"] = str(p.browser_token)
     r = c.post(
@@ -102,7 +101,7 @@ def test_message_endpoint_streams_delta_and_done(monkeypatch):
 
 
 def test_message_endpoint_404_for_unknown_session(monkeypatch):
-    monkeypatch.setattr("merism.conductor.moderator.get_llm", _fake_llm_factory)
+    _patch_gateway(monkeypatch)
     c = Client()
     r = c.post(
         f"/api/sessions/{uuid.uuid4()}/message/",
