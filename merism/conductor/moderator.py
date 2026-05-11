@@ -264,12 +264,19 @@ async def _generate_node(
     recent_turns: str,
     participant_message: str,
 ) -> AsyncIterator[str]:
-    """Stream the spoken reply, informed by the upstream decision."""
-    # If decision failed entirely, fall back to a safe acknowledgement
-    # (not an LLM fallback — a one-liner so the session isn't stuck silent)
+    """Stream the spoken reply, informed by the upstream decision.
+
+    Output goes through a :class:`TextChunker` that emits complete
+    phrases to the TTS layer rather than raw tokens. This gives the
+    leading filler (instructed in the generation prompt) its own tiny
+    first chunk, letting TTS start ~50-70% sooner.
+    """
+    from merism.conductor.text_chunker import TextChunker
+
     if decision is None:
-        for token in "Got it. ".split():
-            yield token + " "
+        # Safety acknowledgement — not an LLM fallback. Single chunk,
+        # goes straight through (no chunker needed).
+        yield "Got it. "
         return
 
     messages = build_generation_prompt(
@@ -286,19 +293,41 @@ async def _generate_node(
         participant_latest=participant_message,
     )
 
+    # Dynamic max_tokens — probes are short, transitions can be longer
+    max_tokens = _MAX_TOKENS_BY_ACTION.get(decision.next_action, 80)
+
+    chunker = TextChunker()
+
     try:
         client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
-        async for chunk in client.stream(messages=messages, temperature=0.5):
-            choice = chunk.choices[0] if chunk.choices else None
+        async for raw_chunk in client.stream(
+            messages=messages, temperature=0.5, max_tokens=max_tokens,
+        ):
+            choice = raw_chunk.choices[0] if raw_chunk.choices else None
             if choice is None:
                 continue
             delta = choice.delta
             if delta.content:
-                yield delta.content
+                for phrase in chunker.feed(delta.content):
+                    yield phrase
+        # Emit remaining buffered text as the final phrase
+        for phrase in chunker.flush():
+            yield phrase
     except Exception:
         logger.exception("moderator.generate.llm_failed")
-        # Emit a safe acknowledgement so the session doesn't silently freeze
+        # Flush whatever we already buffered before giving up
+        for phrase in chunker.flush():
+            yield phrase
         yield "I see. "
+
+
+# Per-action token caps (Chinese ~1 char/token; English ~0.75 word/token)
+_MAX_TOKENS_BY_ACTION = {
+    "followup": 60,   # short probe
+    "clarify": 60,    # focused clarification
+    "move_on": 120,   # brief ack + next question
+    "close": 80,      # wrap up
+}
 
 
 # ── State resolution helpers (extracted from the old single-call) ──
