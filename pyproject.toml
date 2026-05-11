@@ -37,7 +37,7 @@ dependencies = [
     # ── AI / LLM stack (DeepSeek via OpenAI-compatible client) ──
     "openai>=2.0",
     "anthropic>=0.80",
-    "langchain-core>=1.0",
+    "langchain-core>=0.3",
     "httpx>=0.27",
     # ── LLM observability (per ADR 0001) ──
     "langfuse>=3.0",
@@ -64,6 +64,8 @@ dependencies = [
     "hdbscan>=0.8",
     "scikit-learn>=1.4",
     "numpy>=1.26",
+    "langgraph>=0.2",
+    "langchain-openai>=0.2",
 ]
 
 [project.optional-dependencies]

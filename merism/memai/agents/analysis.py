@@ -234,16 +234,40 @@ def answer_custom_report_question(
     scope_study_ids: list[str] | None = None,
     max_tool_rounds: int = 4,
 ) -> CustomReportAnswer:
-    """Answer one Custom Report / Knowledge Explore question.
+    """Answer one Custom Report / Knowledge Explore question via a
+    LangGraph tool-loop agent.
 
-    The LLM may call data tools up to ``max_tool_rounds`` times to gather
-    evidence before producing ``submit_answer``.
+    Nodes:
+        agent → decide(tool_calls?) → tools → agent ... → submit_answer (END)
 
-    ``study=None`` means cross-study (Knowledge Explore path).
-    ``scope_study_ids`` narrows the tool lookups when non-empty.
+    No fallback: graph errors return a generic error answer.
     """
+    from asgiref.sync import async_to_sync
+
+    return async_to_sync(_answer_question_async)(
+        study=study,
+        question=question,
+        scope_study_ids=scope_study_ids,
+        max_tool_rounds=max_tool_rounds,
+    )
+
+
+# ── LangGraph implementation ────────────────────────────────
+
+async def _answer_question_async(
+    *,
+    study: Study | None,
+    question: str,
+    scope_study_ids: list[str] | None = None,
+    max_tool_rounds: int = 4,
+) -> CustomReportAnswer:
+    from langgraph.graph import END, StateGraph
+    from typing import TypedDict
+
+    from merism.memai.graph import call_llm_with_tools
+
     scope_ids = scope_study_ids or ([str(study.id)] if study is not None else [])
-    messages: list[dict[str, Any]] = [
+    system_messages = [
         {"role": "system", "content": _CUSTOM_REPORT_PROMPT},
         {
             "role": "system",
@@ -256,80 +280,145 @@ def answer_custom_report_question(
         },
         {"role": "user", "content": question},
     ]
+    tools = [_AGGREGATE_TAG_TOOL, _FILTER_SESSIONS_TOOL, _CITE_QUOTE_TOOL, _SUBMIT_ANSWER_TOOL]
 
-    tools = [
-        _AGGREGATE_TAG_TOOL,
-        _FILTER_SESSIONS_TOOL,
-        _CITE_QUOTE_TOOL,
-        _SUBMIT_ANSWER_TOOL,
-    ]
+    class AgentState(TypedDict, total=False):
+        messages: list[dict[str, Any]]
+        rounds: int
+        final_answer: CustomReportAnswer | None
 
-    gw_client = None
-    if study:
-        try:
-            from merism.llm_gateway.client import sync_get_client
+    async def agent_node(state: AgentState) -> dict[str, Any]:
+        """Call the LLM with tool definitions."""
+        if study is None:
+            # Cross-study without a team → legacy path (no LLM Gateway routing)
+            from merism.memai.llm import default_model, get_llm
 
-            gw_client = sync_get_client("chat", team=study.team, trace_id=uuid4())
-        except Exception:
-            pass
-
-    client = gw_client or get_llm()
-    for _round in range(max_tool_rounds):
-        if gw_client:
-            completion = gw_client.sync_complete(messages=messages, tools=tools)
+            client = get_llm(async_=True)
+            completion = await client.chat.completions.create(
+                model=default_model(), messages=state["messages"], tools=tools,
+            )
         else:
-            completion = client.chat.completions.create(
-                model=default_model(), messages=messages, tools=tools
+            completion = await call_llm_with_tools(
+                team=study.team,
+                trace_id=uuid4(),
+                messages=state["messages"],
+                tools=tools,
             )
         choice = completion.choices[0]
         tool_calls = getattr(choice.message, "tool_calls", None) or []
-        if not tool_calls:
-            logger.warning("memai.custom_report.no_tool_call")
-            return CustomReportAnswer(
-                answer_markdown=choice.message.content
-                or "I couldn't produce an answer for that question.",
-            )
+        new_messages = list(state["messages"])
 
-        for tool_call in tool_calls:
-            name = tool_call.function.name
-            args_raw = tool_call.function.arguments
+        if not tool_calls:
+            # Model gave a plain text response — wrap it as an answer
+            return {
+                "messages": new_messages,
+                "final_answer": CustomReportAnswer(
+                    answer_markdown=choice.message.content or "I couldn't produce an answer.",
+                ),
+            }
+
+        # Append the assistant's tool_calls message so the tool responses
+        # can reference them by tool_call_id
+        new_messages.append(
+            {
+                "role": "assistant",
+                "tool_calls": [tc.model_dump() for tc in tool_calls],
+                "content": None,
+            }
+        )
+
+        # Check for submit_answer — terminal
+        for tc in tool_calls:
+            if tc.function.name == "submit_answer":
+                try:
+                    args = json.loads(tc.function.arguments)
+                    return {
+                        "messages": new_messages,
+                        "final_answer": CustomReportAnswer.model_validate(args),
+                    }
+                except (json.JSONDecodeError, ValueError) as exc:
+                    logger.warning("memai.custom_report.submit_parse_failed: %s", str(exc))
+                    return {
+                        "messages": new_messages,
+                        "final_answer": CustomReportAnswer(
+                            answer_markdown="I formatted my answer incorrectly; please try again.",
+                        ),
+                    }
+
+        # Otherwise → data tools; pass through to tool node
+        return {"messages": new_messages, "rounds": state.get("rounds", 0) + 1}
+
+    async def tools_node(state: AgentState) -> dict[str, Any]:
+        """Execute all pending data tool calls from the last assistant message."""
+        messages = list(state["messages"])
+        last = messages[-1]
+        tool_call_dicts = last.get("tool_calls", []) if isinstance(last, dict) else []
+
+        for tc in tool_call_dicts:
+            name = tc["function"]["name"]
+            args_raw = tc["function"]["arguments"]
             try:
-                args = json.loads(args_raw)
+                args = json.loads(args_raw) if isinstance(args_raw, str) else args_raw
             except json.JSONDecodeError:
                 args = {}
-
             if name == "submit_answer":
-                try:
-                    return CustomReportAnswer.model_validate(args)
-                except ValueError as exc:
-                    logger.warning("memai.custom_report.submit_parse_failed", extra={"error": str(exc)})
-                    return CustomReportAnswer(
-                        answer_markdown="I formatted my answer incorrectly; please try again.",
-                    )
-
-            # Data tool — execute + feed result back into messages.
-            result = _execute_data_tool(name, args, scope_ids)
-            messages.append(
-                {
-                    "role": "assistant",
-                    "tool_calls": [tool_call.model_dump()],
-                    "content": None,
-                }
-            )
+                continue  # handled in agent_node
+            result = _execute_data_tool(name, args or {}, scope_ids)
             messages.append(
                 {
                     "role": "tool",
-                    "tool_call_id": tool_call.id,
+                    "tool_call_id": tc["id"],
                     "content": json.dumps(result, ensure_ascii=False),
                 }
             )
+        return {"messages": messages}
 
-    return CustomReportAnswer(
-        answer_markdown=(
-            "I couldn't finalise an answer within the allowed tool-call budget. "
-            "Try narrowing the question or splitting it into sub-questions."
+    def should_continue(state: AgentState) -> str:
+        if state.get("final_answer") is not None:
+            return "done"
+        if state.get("rounds", 0) >= max_tool_rounds:
+            return "done"
+        return "tools"
+
+    # Build graph
+    g = StateGraph(AgentState)
+    g.add_node("agent", agent_node)
+    g.add_node("tools", tools_node)
+    g.set_entry_point("agent")
+    g.add_conditional_edges("agent", should_continue, {"tools": "tools", "done": END})
+    g.add_edge("tools", "agent")
+    compiled = g.compile()
+
+    initial: AgentState = {"messages": system_messages, "rounds": 0, "final_answer": None}
+    try:
+        final_state = await compiled.ainvoke(initial, {"recursion_limit": max_tool_rounds * 3 + 5})
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("memai.custom_report.graph_failed: %s", str(exc))
+        return CustomReportAnswer(
+            answer_markdown=f"Sorry, I couldn't answer that: {exc}",
         )
-    )
+
+    answer = final_state.get("final_answer")
+    if answer is None:
+        return CustomReportAnswer(
+            answer_markdown=(
+                "I couldn't finalise an answer within the allowed tool-call budget. "
+                "Try narrowing the question or splitting it into sub-questions."
+            ),
+        )
+    return answer
+
+
+def _OLD_answer_custom_report_question(
+    *,
+    study: Study | None,
+    question: str,
+    scope_study_ids: list[str] | None = None,
+    max_tool_rounds: int = 4,
+) -> CustomReportAnswer:
+    """Deprecated — kept commented out as reference. Superseded by the
+    LangGraph implementation above."""
+    return CustomReportAnswer(answer_markdown="")
 
 
 def _execute_data_tool(
