@@ -38,6 +38,7 @@ from merism.models.report import (
 )
 from merism.models.inbox import InboxItem
 from merism.models.invitation import Invitation
+from merism.models.llm_gateway import LLMBudget, LLMProvider, LLMRoute
 from merism.models.session_event import SessionEvent
 from merism.models.session_quote import SessionQuote
 from merism.models.stimulus import Screener, Stimulus
@@ -101,4 +102,8 @@ __all__ = [
     "AgentMemory",
     "Conversation",
     "CoreMemory",
+    # llm gateway
+    "LLMBudget",
+    "LLMProvider",
+    "LLMRoute",
 ]

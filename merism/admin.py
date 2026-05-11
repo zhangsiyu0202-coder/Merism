@@ -602,3 +602,30 @@ class InboxItemAdmin(admin.ModelAdmin):
     list_filter = ("kind",)
     search_fields = ("title", "body", "ref_id", "trace_id")
     readonly_fields = ("id", "team", "kind", "ref_kind", "ref_id", "title", "body", "payload", "read_by", "trace_id", "created_at", "updated_at")
+
+
+# ── LLM Gateway ────────────────────────────────────────────
+
+from merism.models.llm_gateway import LLMBudget, LLMProvider, LLMRoute
+
+
+@admin.register(LLMProvider)
+class LLMProviderAdmin(admin.ModelAdmin):
+    list_display = ("display_name", "protocol", "model", "is_active", "team")
+    list_filter = ("protocol", "is_active")
+    search_fields = ("display_name", "model")
+    raw_id_fields = ("team",)
+
+
+@admin.register(LLMRoute)
+class LLMRouteAdmin(admin.ModelAdmin):
+    list_display = ("team", "logical_name", "primary", "fallback")
+    list_filter = ("logical_name",)
+    raw_id_fields = ("team", "primary", "fallback")
+
+
+@admin.register(LLMBudget)
+class LLMBudgetAdmin(admin.ModelAdmin):
+    list_display = ("team", "period", "current_spent_usd", "monthly_cap_usd", "hard_limit_action")
+    list_filter = ("hard_limit_action", "period")
+    raw_id_fields = ("team",)

@@ -241,6 +241,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "merism.recruitment.tasks.dispatch_pending_broadcasts",
         "schedule": 60.0,
     },
+    "reconcile-llm-budgets": {
+        "task": "merism.llm_gateway.tasks.reconcile_budgets",
+        "schedule": 3600.0,  # every hour
+    },
 }
 
 # ── LLM / AI stack ─────────────────────────────────────────
