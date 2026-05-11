@@ -63,6 +63,25 @@ class ModeratorDecision(BaseModel):
         ),
     )
 
+    # ── Phase 3 additions: think-then-act reasoning ──────────────
+    think_notes: str | None = Field(
+        default=None,
+        max_length=500,
+        description=(
+            "Internal reasoning (not spoken). 1-2 sentences. "
+            "What did the participant's answer reveal? Which goal does it "
+            "advance? Why this next action? Used for audit + telemetry."
+        ),
+    )
+    target_goal_id: str | None = Field(
+        default=None,
+        description=(
+            "If the moderator is deliberately steering toward a specific "
+            "StudyGoal (from coverage_context), the goal's id. Used to "
+            "track which follow-ups were coverage-driven."
+        ),
+    )
+
 
 # Probe policy → copy used in the DECISION RULES block.
 _POLICY_CLAUSE = {
@@ -114,6 +133,10 @@ remaining:      {remaining}
 {vision_context}
 </vision_context>
 
+<coverage_context>
+{coverage_context}
+</coverage_context>
+
 DECISION RULES (non-negotiable — the server enforces these):
 1. {policy_clause}
 2. If probes_done >= max_probes, you MUST emit move_on. Never exceed the cap.
@@ -154,6 +177,7 @@ def build_system_prompt(
     current_stimulus: str = "",
     vision_context: str = "",
     concept_context: str = "",
+    coverage_context: str = "",
     # legacy kwargs retained for callers that haven't been updated yet —
     # these are derivable from the new ones and will be removed in R15.
     current_question: str | None = None,
@@ -185,6 +209,7 @@ def build_system_prompt(
         current_stimulus=current_stimulus.strip() or "(none)",
         concept_context=concept_context.strip() or "(none)",
         vision_context=vision_context.strip() or "(none)",
+        coverage_context=coverage_context.strip() or "(none)",
         policy_clause=policy_clause,
     )
 

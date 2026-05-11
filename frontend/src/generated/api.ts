@@ -287,6 +287,116 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cohort-segments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["cohort_segments_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["cohort_segments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cohort-segments/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["cohort_segments_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["cohort_segments_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["cohort_segments_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["cohort_segments_partial_update"];
+        trace?: never;
+    };
     "/api/concept-blocks/": {
         parameters: {
             query?: never;
@@ -646,6 +756,64 @@ export interface paths {
          *     ``team`` FK.
          */
         patch: operations["conversations_partial_update"];
+        trace?: never;
+    };
+    "/api/coverage-snapshots/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["coverage_snapshots_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/coverage-snapshots/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["coverage_snapshots_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/custom-report-queries/": {
@@ -2474,6 +2642,116 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/study-goals/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["study_goals_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["study_goals_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/study-goals/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["study_goals_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["study_goals_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["study_goals_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["study_goals_partial_update"];
+        trace?: never;
+    };
     "/api/study-links/": {
         parameters: {
             query?: never;
@@ -2838,6 +3116,77 @@ export interface paths {
         patch: operations["templates_partial_update"];
         trace?: never;
     };
+    "/api/themes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["themes_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/themes/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["themes_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["themes_partial_update"];
+        trace?: never;
+    };
     "/api/users/me/": {
         parameters: {
             query?: never;
@@ -2916,6 +3265,20 @@ export interface components {
          * @enum {string}
          */
         ChannelTypeEnum: ChannelTypeEnum;
+        CohortSegment: {
+            /** Format: date-time */
+            readonly created_at: string;
+            description?: string;
+            /** Format: uuid */
+            readonly id: string;
+            name: string;
+            readonly participation_ids: unknown;
+            selector?: unknown;
+            /** Format: uuid */
+            study: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
         Concept: {
             /** Format: uuid */
             block: string;
@@ -2968,6 +3331,20 @@ export interface components {
             title?: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        CoverageSnapshot: {
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly gaps: unknown;
+            readonly goal_coverage: unknown;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: double */
+            readonly overall_coverage: number;
+            readonly recommendations: unknown;
+            readonly session_count: number;
+            /** Format: uuid */
+            readonly study: string;
         };
         CustomReportQuery: {
             readonly answer_markdown: string;
@@ -3286,6 +3663,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["ChannelConfig"][];
         };
+        PaginatedCohortSegmentList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["CohortSegment"][];
+        };
         PaginatedConceptBlockList: {
             /** @example 123 */
             count: number;
@@ -3330,6 +3722,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["Conversation"][];
+        };
+        PaginatedCoverageSnapshotList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["CoverageSnapshot"][];
         };
         PaginatedCustomReportQueryList: {
             /** @example 123 */
@@ -3586,6 +3993,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Stimulus"][];
         };
+        PaginatedStudyGoalList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["StudyGoal"][];
+        };
         PaginatedStudyLinkList: {
             /** @example 123 */
             count: number;
@@ -3661,6 +4083,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["StudyTrigger"][];
         };
+        PaginatedThemeList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["Theme"][];
+        };
         Participant: {
             attributes?: unknown;
             /** Format: date-time */
@@ -3725,6 +4162,20 @@ export interface components {
             readonly last_healthy_at?: string | null;
             name?: string;
             readonly status?: components["schemas"]["ChannelConfigStatusEnum"];
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
+        PatchedCohortSegment: {
+            /** Format: date-time */
+            readonly created_at?: string;
+            description?: string;
+            /** Format: uuid */
+            readonly id?: string;
+            name?: string;
+            readonly participation_ids?: unknown;
+            selector?: unknown;
+            /** Format: uuid */
+            study?: string;
             /** Format: date-time */
             readonly updated_at?: string;
         };
@@ -4023,6 +4474,24 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        PatchedStudyGoal: {
+            /** Format: double */
+            readonly coverage?: number;
+            /** Format: date-time */
+            readonly created_at?: string;
+            /** Format: int64 */
+            display_order?: number;
+            /** Format: uuid */
+            readonly id?: string;
+            readonly is_answered?: boolean;
+            priority?: components["schemas"]["PriorityEnum"];
+            /** Format: uuid */
+            study?: string;
+            /** @description The research question as a natural-language prompt. */
+            text?: string;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
         PatchedStudyLink: {
             /** Format: date-time */
             readonly created_at?: string;
@@ -4059,6 +4528,31 @@ export interface components {
             /** Format: uuid */
             study?: string;
         };
+        PatchedTheme: {
+            /** Format: date-time */
+            readonly created_at?: string;
+            description?: string;
+            /** Format: uuid */
+            readonly id?: string;
+            name?: string;
+            readonly quote_count?: number;
+            readonly representative_quote_ids?: unknown;
+            readonly sentiment_mix?: unknown;
+            readonly session_count?: number;
+            readonly session_ids?: unknown;
+            status?: components["schemas"]["ThemeStatusEnum"];
+            /** Format: uuid */
+            study?: string;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
+        /**
+         * @description * `P0` - Must answer
+         *     * `P1` - Should answer
+         *     * `P2` - Nice to answer
+         * @enum {string}
+         */
+        PriorityEnum: PriorityEnum;
         /**
          * @description * `http` - HTTP (OpenAI-compatible via LiteLLM)
          *     * `ws` - WebSocket Realtime (OpenAI Realtime protocol)
@@ -4198,6 +4692,24 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        StudyGoal: {
+            /** Format: double */
+            readonly coverage: number;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: int64 */
+            display_order?: number;
+            /** Format: uuid */
+            readonly id: string;
+            readonly is_answered: boolean;
+            priority?: components["schemas"]["PriorityEnum"];
+            /** Format: uuid */
+            study: string;
+            /** @description The research question as a natural-language prompt. */
+            text: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
         StudyLink: {
             /** Format: date-time */
             readonly created_at: string;
@@ -4264,6 +4776,31 @@ export interface components {
             /** Format: uuid */
             study: string;
         };
+        Theme: {
+            /** Format: date-time */
+            readonly created_at: string;
+            description?: string;
+            /** Format: uuid */
+            readonly id: string;
+            name: string;
+            readonly quote_count: number;
+            readonly representative_quote_ids: unknown;
+            readonly sentiment_mix: unknown;
+            readonly session_count: number;
+            readonly session_ids: unknown;
+            status?: components["schemas"]["ThemeStatusEnum"];
+            /** Format: uuid */
+            study: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /**
+         * @description * `draft` - Draft (auto-generated)
+         *     * `confirmed` - Confirmed by researcher
+         *     * `archived` - Archived
+         * @enum {string}
+         */
+        ThemeStatusEnum: ThemeStatusEnum;
     };
     responses: never;
     parameters: never;
@@ -4649,6 +5186,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChannelConfig"];
+                };
+            };
+        };
+    };
+    cohort_segments_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedCohortSegmentList"];
+                };
+            };
+        };
+    };
+    cohort_segments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CohortSegment"];
+                "application/x-www-form-urlencoded": components["schemas"]["CohortSegment"];
+                "multipart/form-data": components["schemas"]["CohortSegment"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CohortSegment"];
+                };
+            };
+        };
+    };
+    cohort_segments_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this cohort segment. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CohortSegment"];
+                };
+            };
+        };
+    };
+    cohort_segments_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this cohort segment. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CohortSegment"];
+                "application/x-www-form-urlencoded": components["schemas"]["CohortSegment"];
+                "multipart/form-data": components["schemas"]["CohortSegment"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CohortSegment"];
+                };
+            };
+        };
+    };
+    cohort_segments_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this cohort segment. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    cohort_segments_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this cohort segment. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedCohortSegment"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCohortSegment"];
+                "multipart/form-data": components["schemas"]["PatchedCohortSegment"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CohortSegment"];
                 };
             };
         };
@@ -5115,6 +5800,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Conversation"];
+                };
+            };
+        };
+    };
+    coverage_snapshots_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedCoverageSnapshotList"];
+                };
+            };
+        };
+    };
+    coverage_snapshots_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this coverage snapshot. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageSnapshot"];
                 };
             };
         };
@@ -7650,6 +8381,154 @@ export interface operations {
             };
         };
     };
+    study_goals_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedStudyGoalList"];
+                };
+            };
+        };
+    };
+    study_goals_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyGoal"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudyGoal"];
+                "multipart/form-data": components["schemas"]["StudyGoal"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyGoal"];
+                };
+            };
+        };
+    };
+    study_goals_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this study goal. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyGoal"];
+                };
+            };
+        };
+    };
+    study_goals_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this study goal. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyGoal"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudyGoal"];
+                "multipart/form-data": components["schemas"]["StudyGoal"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyGoal"];
+                };
+            };
+        };
+    };
+    study_goals_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this study goal. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    study_goals_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this study goal. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedStudyGoal"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedStudyGoal"];
+                "multipart/form-data": components["schemas"]["PatchedStudyGoal"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyGoal"];
+                };
+            };
+        };
+    };
     study_links_list: {
         parameters: {
             query?: {
@@ -8140,6 +9019,80 @@ export interface operations {
             };
         };
     };
+    themes_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedThemeList"];
+                };
+            };
+        };
+    };
+    themes_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this theme. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Theme"];
+                };
+            };
+        };
+    };
+    themes_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this theme. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedTheme"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedTheme"];
+                "multipart/form-data": components["schemas"]["PatchedTheme"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Theme"];
+                };
+            };
+        };
+    };
     users_me_retrieve: {
         parameters: {
             query?: never;
@@ -8238,6 +9191,11 @@ export enum ParticipationStatusEnum {
     completed = "completed",
     dropped = "dropped"
 }
+export enum PriorityEnum {
+    P0 = "P0",
+    P1 = "P1",
+    P2 = "P2"
+}
 export enum ProtocolEnum {
     http = "http",
     ws = "ws"
@@ -8292,5 +9250,10 @@ export enum StudyStatusEnum {
     recruiting = "recruiting",
     active = "active",
     closed = "closed",
+    archived = "archived"
+}
+export enum ThemeStatusEnum {
+    draft = "draft",
+    confirmed = "confirmed",
     archived = "archived"
 }

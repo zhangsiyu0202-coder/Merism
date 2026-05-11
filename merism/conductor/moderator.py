@@ -110,12 +110,23 @@ async def stream_turn(
     concept_info = state.concept_by_question_id.get(state.current_question_id) or {}
     concept_context_text = format_concept_context(concept_info)
 
+    # Phase 3: inject coverage context so the model can steer toward
+    # under-covered P0/P1 goals. Best-effort — empty string if no snapshot
+    # yet (first few sessions in the study).
+    try:
+        from merism.conductor.adaptive_probing import build_coverage_context
+
+        coverage_context_text = await build_coverage_context(session.study_id)
+    except Exception:
+        coverage_context_text = ""
+
     prompt_kwargs = current_question_state(current_question, probes_done=probes_done)
     system_prompt = build_system_prompt(
         research_goal=session.study.research_goal,
         current_stimulus=current_stimulus_text,
         vision_context=vision_context,
         concept_context=concept_context_text,
+        coverage_context=coverage_context_text,
         **prompt_kwargs,
     )
 

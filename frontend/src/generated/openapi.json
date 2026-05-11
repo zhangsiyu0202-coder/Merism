@@ -716,6 +716,274 @@
                 }
             }
         },
+        "/api/cohort-segments/": {
+            "get": {
+                "operationId": "cohort_segments_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "cohort-segments"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedCohortSegmentList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "cohort_segments_create",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "tags": [
+                    "cohort-segments"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CohortSegment"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CohortSegment"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CohortSegment"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CohortSegment"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/cohort-segments/{id}/": {
+            "get": {
+                "operationId": "cohort_segments_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this cohort segment.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "cohort-segments"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CohortSegment"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "cohort_segments_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this cohort segment.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "cohort-segments"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CohortSegment"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CohortSegment"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CohortSegment"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CohortSegment"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "cohort_segments_partial_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this cohort segment.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "cohort-segments"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCohortSegment"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCohortSegment"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedCohortSegment"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CohortSegment"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "cohort_segments_destroy",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this cohort segment.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "cohort-segments"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
         "/api/concept-blocks/": {
             "get": {
                 "operationId": "concept_blocks_list",
@@ -1552,6 +1820,90 @@
                 "responses": {
                     "204": {
                         "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/coverage-snapshots/": {
+            "get": {
+                "operationId": "coverage_snapshots_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "coverage-snapshots"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedCoverageSnapshotList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/coverage-snapshots/{id}/": {
+            "get": {
+                "operationId": "coverage_snapshots_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this coverage snapshot.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "coverage-snapshots"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CoverageSnapshot"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -6160,6 +6512,274 @@
                 }
             }
         },
+        "/api/study-goals/": {
+            "get": {
+                "operationId": "study_goals_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "study-goals"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedStudyGoalList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "study_goals_create",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "tags": [
+                    "study-goals"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudyGoal"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudyGoal"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudyGoal"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StudyGoal"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/study-goals/{id}/": {
+            "get": {
+                "operationId": "study_goals_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this study goal.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "study-goals"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StudyGoal"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "study_goals_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this study goal.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "study-goals"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudyGoal"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudyGoal"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudyGoal"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StudyGoal"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "study_goals_partial_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this study goal.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "study-goals"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedStudyGoal"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedStudyGoal"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedStudyGoal"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StudyGoal"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "study_goals_destroy",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this study goal.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "study-goals"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
         "/api/study-links/": {
             "get": {
                 "operationId": "study_links_list",
@@ -7048,6 +7668,145 @@
                 }
             }
         },
+        "/api/themes/": {
+            "get": {
+                "operationId": "themes_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedThemeList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/themes/{id}/": {
+            "get": {
+                "operationId": "themes_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this theme.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Theme"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "themes_partial_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this theme.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTheme"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTheme"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTheme"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Theme"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/users/me/": {
             "get": {
                 "operationId": "users_me_retrieve",
@@ -7198,6 +7957,49 @@
                 ],
                 "type": "string",
                 "description": "* `feishu` - Feishu\n* `wecom` - Wecom\n* `wecom_bot` - Wecom Bot\n* `qq_group` - Qq Group\n* `qq_guild` - Qq Guild\n* `email` - Email"
+            },
+            "CohortSegment": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "selector": {},
+                    "participation_ids": {
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "name",
+                    "participation_ids",
+                    "study",
+                    "updated_at"
+                ]
             },
             "Concept": {
                 "type": "object",
@@ -7355,6 +8157,54 @@
                     "created_at",
                     "id",
                     "updated_at"
+                ]
+            },
+            "CoverageSnapshot": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "goal_coverage": {
+                        "readOnly": true
+                    },
+                    "overall_coverage": {
+                        "type": "number",
+                        "format": "double",
+                        "readOnly": true
+                    },
+                    "gaps": {
+                        "readOnly": true
+                    },
+                    "session_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "recommendations": {
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "gaps",
+                    "goal_coverage",
+                    "id",
+                    "overall_coverage",
+                    "recommendations",
+                    "session_count",
+                    "study"
                 ]
             },
             "CustomReportQuery": {
@@ -8183,6 +9033,37 @@
                     }
                 }
             },
+            "PaginatedCohortSegmentList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CohortSegment"
+                        }
+                    }
+                }
+            },
             "PaginatedConceptBlockList": {
                 "type": "object",
                 "required": [
@@ -8272,6 +9153,37 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Conversation"
+                        }
+                    }
+                }
+            },
+            "PaginatedCoverageSnapshotList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CoverageSnapshot"
                         }
                     }
                 }
@@ -8803,6 +9715,37 @@
                     }
                 }
             },
+            "PaginatedStudyGoalList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StudyGoal"
+                        }
+                    }
+                }
+            },
             "PaginatedStudyLinkList": {
                 "type": "object",
                 "required": [
@@ -8954,6 +9897,37 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/StudyTrigger"
+                        }
+                    }
+                }
+            },
+            "PaginatedThemeList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Theme"
                         }
                     }
                 }
@@ -9112,6 +10086,41 @@
                     },
                     "consecutive_failures": {
                         "type": "integer",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
+            "PatchedCohortSegment": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "selector": {},
+                    "participation_ids": {
                         "readOnly": true
                     },
                     "created_at": {
@@ -9862,6 +10871,52 @@
                     }
                 }
             },
+            "PatchedStudyGoal": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The research question as a natural-language prompt."
+                    },
+                    "priority": {
+                        "$ref": "#/components/schemas/PriorityEnum"
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "coverage": {
+                        "type": "number",
+                        "format": "double",
+                        "readOnly": true
+                    },
+                    "is_answered": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
             "PatchedStudyLink": {
                 "type": "object",
                 "properties": {
@@ -9953,6 +11008,66 @@
                         "readOnly": true
                     }
                 }
+            },
+            "PatchedTheme": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 200
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "representative_quote_ids": {
+                        "readOnly": true
+                    },
+                    "session_ids": {
+                        "readOnly": true
+                    },
+                    "session_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "quote_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "sentiment_mix": {
+                        "readOnly": true
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ThemeStatusEnum"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
+            "PriorityEnum": {
+                "enum": [
+                    "P0",
+                    "P1",
+                    "P2"
+                ],
+                "type": "string",
+                "description": "* `P0` - Must answer\n* `P1` - Should answer\n* `P2` - Nice to answer"
             },
             "ProtocolEnum": {
                 "enum": [
@@ -10254,6 +11369,61 @@
                     "updated_at"
                 ]
             },
+            "StudyGoal": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "The research question as a natural-language prompt."
+                    },
+                    "priority": {
+                        "$ref": "#/components/schemas/PriorityEnum"
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "coverage": {
+                        "type": "number",
+                        "format": "double",
+                        "readOnly": true
+                    },
+                    "is_answered": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "coverage",
+                    "created_at",
+                    "id",
+                    "is_answered",
+                    "study",
+                    "text",
+                    "updated_at"
+                ]
+            },
             "StudyLink": {
                 "type": "object",
                 "properties": {
@@ -10421,6 +11591,78 @@
                     "id",
                     "study"
                 ]
+            },
+            "Theme": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 200
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "representative_quote_ids": {
+                        "readOnly": true
+                    },
+                    "session_ids": {
+                        "readOnly": true
+                    },
+                    "session_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "quote_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "sentiment_mix": {
+                        "readOnly": true
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/ThemeStatusEnum"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "name",
+                    "quote_count",
+                    "representative_quote_ids",
+                    "sentiment_mix",
+                    "session_count",
+                    "session_ids",
+                    "study",
+                    "updated_at"
+                ]
+            },
+            "ThemeStatusEnum": {
+                "enum": [
+                    "draft",
+                    "confirmed",
+                    "archived"
+                ],
+                "type": "string",
+                "description": "* `draft` - Draft (auto-generated)\n* `confirmed` - Confirmed by researcher\n* `archived` - Archived"
             }
         },
         "securitySchemes": {
