@@ -26,7 +26,7 @@ from merism.models import (
 )
 
 
-pytestmark = pytest.mark.django_db
+pytestmark = pytest.mark.django_db(transaction=True)
 
 
 class _FakeStream:

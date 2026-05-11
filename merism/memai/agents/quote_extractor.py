@@ -117,17 +117,33 @@ async def extract_quotes(session: InterviewSession) -> list[SessionQuote]:
         return []
 
     try:
-        client = get_llm(async_=True)
-        completion = await client.chat.completions.create(
-            model=default_model(),
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.2,
-        )
-        raw = completion.choices[0].message.content or "{}"
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ]
+        # Try gateway first
+        gw_client = None
+        try:
+            from merism.llm_gateway.client import get_client
+
+            gw_client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
+        except Exception:
+            pass
+
+        if gw_client:
+            response = await gw_client.complete(
+                messages=messages, response_format={"type": "json_object"}, temperature=0.2,
+            )
+            raw = response.choices[0].message.content or "{}"
+        else:
+            client = get_llm(async_=True)
+            completion = await client.chat.completions.create(
+                model=default_model(),
+                messages=messages,
+                response_format={"type": "json_object"},
+                temperature=0.2,
+            )
+            raw = completion.choices[0].message.content or "{}"
         parsed = ExtractedQuotes.model_validate_json(raw)
     except (LLMUnavailableError, Exception) as exc:  # noqa: BLE001
         logger.warning(

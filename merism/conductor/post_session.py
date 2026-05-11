@@ -67,7 +67,9 @@ async def process_session_transcripts(session_id: str | UUID) -> dict[str, int]:
     counters["turn_count"] = len(raw_transcript)
 
     if not has_clean_transcript(raw_transcript):
-        polished = await polish_session_turns(raw_transcript)
+        polished = await polish_session_turns(
+            raw_transcript, team=session.study.team, trace_id=session.trace_id,
+        )
         session.transcript = polished
         await _asave_transcript(session)
         counters["polished"] = sum(

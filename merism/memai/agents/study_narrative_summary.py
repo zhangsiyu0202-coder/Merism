@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+from uuid import uuid4
 from typing import Any
 
 from asgiref.sync import sync_to_async
@@ -76,17 +77,32 @@ async def summarize_study(study: Study) -> dict[str, Any] | None:
     }
 
     try:
-        client = get_llm(async_=True)
-        completion = await client.chat.completions.create(
-            model=default_model(),
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.35,
-        )
-        raw = completion.choices[0].message.content or "{}"
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ]
+        gw_client = None
+        try:
+            from merism.llm_gateway.client import get_client
+
+            gw_client = await get_client("chat", team=study.team, trace_id=uuid4())
+        except Exception:
+            pass
+
+        if gw_client:
+            response = await gw_client.complete(
+                messages=messages, response_format={"type": "json_object"}, temperature=0.35,
+            )
+            raw = response.choices[0].message.content or "{}"
+        else:
+            client = get_llm(async_=True)
+            completion = await client.chat.completions.create(
+                model=default_model(),
+                messages=messages,
+                response_format={"type": "json_object"},
+                temperature=0.35,
+            )
+            raw = completion.choices[0].message.content or "{}"
         parsed = NarrativeOutput.model_validate_json(raw)
     except (LLMUnavailableError, Exception) as exc:  # noqa: BLE001
         logger.warning(

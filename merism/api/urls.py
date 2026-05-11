@@ -13,6 +13,7 @@ from merism.api import views
 from merism.api.home import HomeStatsView
 from merism.api.ask_views import ask_stream, knowledge_search
 from merism.api.interview_message_view import post_message
+from merism.api.llm_gateway_views import LLMBudgetViewSet, LLMProviderViewSet, LLMRouteViewSet
 from merism.api.users import UserMeView
 
 router = DefaultRouter()
@@ -54,6 +55,11 @@ router.register(r"custom-report-queries", views.CustomReportQueryViewSet, basena
 # ── MEM AI / memory ────────────────────────────────────────
 router.register(r"conversations", views.ConversationViewSet, basename="conversation")
 router.register(r"memories", views.AgentMemoryViewSet, basename="agentmemory")
+
+# ── LLM Gateway ───────────────────────────────────────────
+router.register(r"llm/providers", LLMProviderViewSet, basename="llmprovider")
+router.register(r"llm/routes", LLMRouteViewSet, basename="llmroute")
+router.register(r"llm/budgets", LLMBudgetViewSet, basename="llmbudget")
 
 urlpatterns = [
     path("users/me/", UserMeView.as_view(), name="user-me"),

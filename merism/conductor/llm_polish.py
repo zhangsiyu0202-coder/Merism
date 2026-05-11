@@ -27,9 +27,12 @@ Test path:
 
 from __future__ import annotations
 
+from __future__ import annotations
+
 import json
 import logging
 from typing import Any
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -103,6 +106,8 @@ async def polish_session_turns(
     turns: list[dict[str, Any]],
     *,
     polish_roles: tuple[str, ...] = ("participant",),
+    team: Any | None = None,
+    trace_id: UUID | None = None,
 ) -> list[dict[str, Any]]:
     """Polish a whole session's turns. Returns the same list shape with
     ``text_raw`` + ``text_clean`` populated on every turn.
@@ -141,7 +146,7 @@ async def polish_session_turns(
     polished_by_index: dict[int, str] = {}
     if to_polish:
         try:
-            polished_by_index = await _llm_polish_batch(to_polish)
+            polished_by_index = await _llm_polish_batch(to_polish, team=team, trace_id=trace_id)
         except (LLMUnavailableError, Exception) as exc:  # noqa: BLE001
             # Fall back to rule-clean on any failure. Log but don't raise —
             # a session never fails to process because of LLM issues.
@@ -168,6 +173,9 @@ async def polish_session_turns(
 
 async def _llm_polish_batch(
     items: list[tuple[int, str]],
+    *,
+    team: Any | None = None,
+    trace_id: UUID | None = None,
 ) -> dict[int, str]:
     """Call DeepSeek with the batched polish prompt. Returns a mapping
     ``{input_index: polished_text}``. Raises on parse / schema / LLM error.
@@ -175,17 +183,39 @@ async def _llm_polish_batch(
     payload = [{"index": idx, "text": text} for idx, text in items]
     user_message = json.dumps(payload, ensure_ascii=False)
 
-    client = get_llm(async_=True)
-    completion = await client.chat.completions.create(
-        model=default_model(),
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_message},
-        ],
-        response_format={"type": "json_object"},
-        temperature=0.1,  # low temp — we want faithful polish, not creativity
-    )
-    raw = completion.choices[0].message.content or "{}"
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_message},
+    ]
+
+    # Try gateway first, fall back to legacy get_llm()
+    completion = None
+    if team and trace_id:
+        try:
+            from merism.llm_gateway.client import get_client
+
+            gw_client = await get_client("chat", team=team, trace_id=trace_id)
+            response = await gw_client.complete(
+                messages=messages,
+                response_format={"type": "json_object"},
+                temperature=0.1,
+            )
+            raw = response.choices[0].message.content or "{}"
+            completion = raw
+        except Exception:
+            completion = None
+
+    if completion is None:
+        client = get_llm(async_=True)
+        response = await client.chat.completions.create(
+            model=default_model(),
+            messages=messages,
+            response_format={"type": "json_object"},
+            temperature=0.1,
+        )
+        completion = response.choices[0].message.content or "{}"
+
+    raw = completion
     parsed = PolishedBatch.model_validate_json(raw)
 
     # Length parity check: if the model missed a turn, fall back for

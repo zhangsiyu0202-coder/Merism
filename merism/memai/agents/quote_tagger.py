@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from typing import Any, Literal
+from uuid import uuid4
 
 from asgiref.sync import sync_to_async
 from pydantic import BaseModel, ConfigDict, Field
@@ -107,17 +108,32 @@ async def tag_quote(quote: SessionQuote, study: Study) -> dict[str, Any]:
     }
 
     try:
-        client = get_llm(async_=True)
-        completion = await client.chat.completions.create(
-            model=default_model(),
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.1,
-        )
-        raw = completion.choices[0].message.content or "{}"
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+        ]
+        gw_client = None
+        try:
+            from merism.llm_gateway.client import get_client
+
+            gw_client = await get_client("chat", team=study.team, trace_id=uuid4())
+        except Exception:
+            pass
+
+        if gw_client:
+            response = await gw_client.complete(
+                messages=messages, response_format={"type": "json_object"}, temperature=0.1,
+            )
+            raw = response.choices[0].message.content or "{}"
+        else:
+            client = get_llm(async_=True)
+            completion = await client.chat.completions.create(
+                model=default_model(),
+                messages=messages,
+                response_format={"type": "json_object"},
+                temperature=0.1,
+            )
+            raw = completion.choices[0].message.content or "{}"
         parsed = TaggedQuote.model_validate_json(raw)
     except (LLMUnavailableError, Exception) as exc:  # noqa: BLE001
         logger.warning(

@@ -33,6 +33,7 @@ from merism.conductor.prompts import (
     format_concept_context,
 )
 from merism.conductor.state import ExecutionState
+from merism.llm_gateway.client import get_client
 from merism.memai.llm import default_model, get_llm
 from merism.models import InterviewSession
 
@@ -120,34 +121,63 @@ async def stream_turn(
 
     messages = _build_chat_messages(session, system_prompt, participant_message)
 
-    client = get_llm(async_=True)
-    completion = await client.chat.completions.create(
-        model=default_model(),
-        messages=messages,
-        tools=[_TOOL_SCHEMA],
-        tool_choice={"type": "function", "function": {"name": _TOOL_NAME}},
-        stream=True,
-    )
-
     text_buffer = ""
     tool_args_buffer = ""
     tool_call_seen = False
 
-    async for chunk in completion:
-        choice = chunk.choices[0] if chunk.choices else None
-        if choice is None:
-            continue
+    try:
+        client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
+    except Exception:
+        # Fallback to legacy get_llm() if no route configured or DB unavailable
+        client = None
 
-        delta = choice.delta
-        if delta.content:
-            text_buffer += delta.content
-            yield delta.content
+    if client is not None:
+        # Gateway path: LiteLLMClient.stream() yields OpenAI-compatible chunks
+        async for chunk in client.stream(
+            messages=messages,
+            tools=[_TOOL_SCHEMA],
+            tool_choice={"type": "function", "function": {"name": _TOOL_NAME}},
+        ):
+            choice = chunk.choices[0] if chunk.choices else None
+            if choice is None:
+                continue
 
-        if delta.tool_calls:
-            tool_call_seen = True
-            for tool_call in delta.tool_calls:
-                if tool_call.function and tool_call.function.arguments:
-                    tool_args_buffer += tool_call.function.arguments
+            delta = choice.delta
+            if delta.content:
+                text_buffer += delta.content
+                yield delta.content
+
+            if delta.tool_calls:
+                tool_call_seen = True
+                for tool_call in delta.tool_calls:
+                    if tool_call.function and tool_call.function.arguments:
+                        tool_args_buffer += tool_call.function.arguments
+    else:
+        # Legacy path: direct OpenAI client
+        legacy_client = get_llm(async_=True)
+        completion = await legacy_client.chat.completions.create(
+            model=default_model(),
+            messages=messages,
+            tools=[_TOOL_SCHEMA],
+            tool_choice={"type": "function", "function": {"name": _TOOL_NAME}},
+            stream=True,
+        )
+
+        async for chunk in completion:
+            choice = chunk.choices[0] if chunk.choices else None
+            if choice is None:
+                continue
+
+            delta = choice.delta
+            if delta.content:
+                text_buffer += delta.content
+                yield delta.content
+
+            if delta.tool_calls:
+                tool_call_seen = True
+                for tool_call in delta.tool_calls:
+                    if tool_call.function and tool_call.function.arguments:
+                        tool_args_buffer += tool_call.function.arguments
 
     # Post-stream: parse the decision, mutate state, persist.
     decision = _parse_decision(tool_args_buffer) if tool_call_seen else None

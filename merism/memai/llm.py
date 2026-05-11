@@ -104,3 +104,32 @@ def default_model() -> str:
 
 def reasoner_model() -> str:
     return getattr(settings, "MERISM_LLM_REASONER_MODEL", "deepseek-reasoner")
+
+
+async def get_gateway_or_legacy(
+    logical_name: str = "chat",
+    *,
+    team: Any = None,
+    trace_id: Any = None,
+) -> Any:
+    """Try the LLM Gateway first; fall back to legacy AsyncOpenAI client.
+
+    Returns either a :class:`~merism.llm_gateway.litellm_client.LiteLLMClient`
+    (if a route is configured for the team) or an ``AsyncOpenAI`` instance.
+
+    Callers should use duck-typing: both support ``.complete(messages)`` /
+    ``.chat.completions.create(...)`` patterns, but prefer the gateway's
+    ``client.complete(messages, **kwargs)`` when available.
+
+    Returns a tuple of ``(client, is_gateway: bool)`` so callers know which
+    API surface to use.
+    """
+    if team and trace_id:
+        try:
+            from merism.llm_gateway.client import get_client
+
+            client = await get_client(logical_name, team=team, trace_id=trace_id)
+            return client, True
+        except Exception:
+            pass
+    return get_llm(async_=True), False

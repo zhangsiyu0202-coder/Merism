@@ -64,23 +64,57 @@ def reconcile_budgets() -> int:
 def _fetch_spend_from_langfuse(team_id, period: str):
     """Query Langfuse for total USD spend for a team in a given month.
 
-    Returns Decimal or None if Langfuse is not configured / unreachable.
-
-    TODO: Implement once Langfuse Cloud keys are provisioned. The API
-    endpoint is GET /api/public/metrics/daily with filter on
-    metadata.team_id and date range for the period.
+    Uses the ``GET /api/public/metrics/daily`` endpoint filtered by
+    ``metadata.team_id``. Returns Decimal or None if Langfuse is not
+    configured or the API call fails.
     """
     from decimal import Decimal
 
+    import httpx
     from django.conf import settings
 
-    if not settings.LANGFUSE_PUBLIC_KEY:
+    public_key = getattr(settings, "LANGFUSE_PUBLIC_KEY", "")
+    secret_key = getattr(settings, "LANGFUSE_SECRET_KEY", "")
+    host = getattr(settings, "LANGFUSE_HOST", "https://cloud.langfuse.com")
+
+    if not public_key or not secret_key:
         return None
 
-    # Placeholder — return None until Langfuse API integration is wired.
-    # When implemented:
-    #   1. GET https://{LANGFUSE_HOST}/api/public/metrics/daily
-    #      ?traceName=*&metadata.team_id={team_id}&fromTimestamp=...&toTimestamp=...
-    #   2. Sum totalCost across all days in the response
-    #   3. Return as Decimal
-    return None
+    # Period is "YYYY-MM" — compute first/last day
+    year, month = int(period[:4]), int(period[5:7])
+    from_date = f"{period}-01"
+    # Last day: next month's first day
+    if month == 12:
+        to_date = f"{year + 1}-01-01"
+    else:
+        to_date = f"{year}-{month + 1:02d}-01"
+
+    url = f"{host.rstrip('/')}/api/public/metrics/daily"
+    params = {
+        "traceName": None,  # all traces
+        "fromTimestamp": f"{from_date}T00:00:00Z",
+        "toTimestamp": f"{to_date}T00:00:00Z",
+        "tags": f"team_id:{team_id}",
+    }
+    # Remove None values
+    params = {k: v for k, v in params.items() if v is not None}
+
+    try:
+        resp = httpx.get(
+            url,
+            params=params,
+            auth=(public_key, secret_key),
+            timeout=30.0,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        # Response shape: {"data": [{"date": "...", "totalCost": float, ...}]}
+        total = sum(day.get("totalCost", 0.0) for day in data.get("data", []))
+        return Decimal(str(round(total, 4)))
+    except Exception:
+        logger.exception(
+            "llm_gateway.langfuse_api_failed: team=%s period=%s",
+            str(team_id), period,
+        )
+        return None

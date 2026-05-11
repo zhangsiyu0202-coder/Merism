@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import logging
+from uuid import uuid4
 
 from asgiref.sync import sync_to_async
 from pydantic import BaseModel, ConfigDict, Field
@@ -89,17 +90,32 @@ async def seed_codebook(study: Study) -> list[dict]:
     )
 
     try:
-        client = get_llm(async_=True)
-        completion = await client.chat.completions.create(
-            model=default_model(),
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_payload},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.2,
-        )
-        raw = completion.choices[0].message.content or "{}"
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_payload},
+        ]
+        gw_client = None
+        try:
+            from merism.llm_gateway.client import get_client
+
+            gw_client = await get_client("chat", team=study.team, trace_id=uuid4())
+        except Exception:
+            pass
+
+        if gw_client:
+            response = await gw_client.complete(
+                messages=messages, response_format={"type": "json_object"}, temperature=0.2,
+            )
+            raw = response.choices[0].message.content or "{}"
+        else:
+            client = get_llm(async_=True)
+            completion = await client.chat.completions.create(
+                model=default_model(),
+                messages=messages,
+                response_format={"type": "json_object"},
+                temperature=0.2,
+            )
+            raw = completion.choices[0].message.content or "{}"
         parsed = SeedCodebook.model_validate_json(raw)
     except (LLMUnavailableError, Exception) as exc:  # noqa: BLE001
         logger.warning(
