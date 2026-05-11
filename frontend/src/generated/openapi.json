@@ -2258,6 +2258,274 @@
                 }
             }
         },
+        "/api/glossaries/": {
+            "get": {
+                "operationId": "glossaries_list",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "glossaries"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedGlossaryList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "glossaries_create",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "tags": [
+                    "glossaries"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Glossary"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Glossary"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Glossary"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Glossary"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/glossaries/{id}/": {
+            "get": {
+                "operationId": "glossaries_retrieve",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this glossary.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "glossaries"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Glossary"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "glossaries_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this glossary.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "glossaries"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Glossary"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Glossary"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Glossary"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Glossary"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "glossaries_partial_update",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this glossary.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "glossaries"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGlossary"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGlossary"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGlossary"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Glossary"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "glossaries_destroy",
+                "description": "Model viewset that filters queryset by the caller's current team.\n\nUsage::\n\n    class StudyViewSet(TeamScopedModelViewSet):\n        queryset = Study.objects.all()\n        serializer_class = StudySerializer\n\nOverride ``get_queryset()`` to further filter; the default implementation\nalready restricts rows to ``team=self.get_team()`` if the model has a\n``team`` FK.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "A UUID string identifying this glossary.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "glossaries"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
         "/api/guides/": {
             "get": {
                 "operationId": "guides_list",
@@ -8328,6 +8596,48 @@
                 "type": "string",
                 "description": "* `pending` - Pending\n* `sent` - Sent\n* `delivered` - Delivered\n* `failed` - Failed"
             },
+            "Glossary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "canonical": {
+                        "type": "string",
+                        "description": "The correct spelling",
+                        "maxLength": 200
+                    },
+                    "variants": {
+                        "description": "List of known misrecognitions, e.g. [\"米瑞姆\", \"merism\"]"
+                    },
+                    "case_insensitive": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "canonical",
+                    "created_at",
+                    "id",
+                    "updated_at"
+                ]
+            },
             "HardLimitActionEnum": {
                 "enum": [
                     "alert_only",
@@ -9246,6 +9556,37 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/DeliveryRecord"
+                        }
+                    }
+                }
+            },
+            "PaginatedGlossaryList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Glossary"
                         }
                     }
                 }
@@ -10289,6 +10630,42 @@
                         "type": "boolean"
                     },
                     "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
+            "PatchedGlossary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "study": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "canonical": {
+                        "type": "string",
+                        "description": "The correct spelling",
+                        "maxLength": 200
+                    },
+                    "variants": {
+                        "description": "List of known misrecognitions, e.g. [\"米瑞姆\", \"merism\"]"
+                    },
+                    "case_insensitive": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
                         "type": "string",
                         "format": "date-time",
                         "readOnly": true

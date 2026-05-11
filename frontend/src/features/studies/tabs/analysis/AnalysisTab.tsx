@@ -23,17 +23,20 @@ import { studyLogic } from "~/features/studies/studyLogic"
 
 import { analysisLogic } from "./analysisLogic"
 import { ConceptComparison } from "./ConceptComparison"
+import { CoveragePanel } from "./CoveragePanel"
+import { CrossSessionThemesPanel } from "./CrossSessionThemesPanel"
 import { CustomReportSidebar } from "./CustomReportSidebar"
 import { customReportLogic } from "./customReportLogic"
 import { SentimentTrendChart } from "./SentimentTrendChart"
 import { TaskList } from "./TaskList"
 import { ThemeDistributionChart } from "./ThemeDistributionChart"
 
-type AnalysisSubTab = "overview" | "themes" | "sentiment" | "tasks" | "concepts"
+type AnalysisSubTab = "overview" | "themes" | "coverage" | "sentiment" | "tasks" | "concepts"
 
 const TABS = [
     { value: "overview", label: "Overview" },
     { value: "themes", label: "Themes" },
+    { value: "coverage", label: "Coverage" },
     { value: "sentiment", label: "Sentiment" },
     { value: "tasks", label: "Action items" },
     { value: "concepts", label: "Concepts" },
@@ -163,10 +166,17 @@ export default function AnalysisTab(): JSX.Element {
             )}
 
             {hasData && tab === "themes" && (
-                <section className="flex flex-col gap-4">
-                    <SectionLabel>Theme distribution</SectionLabel>
-                    <ThemeDistributionChart themes={aggregate?.top_themes ?? []} />
+                <section className="flex flex-col gap-8">
+                    <div className="flex flex-col gap-4">
+                        <SectionLabel>Theme distribution (by tag)</SectionLabel>
+                        <ThemeDistributionChart themes={aggregate?.top_themes ?? []} />
+                    </div>
+                    {study?.id && <CrossSessionThemesPanel studyId={study.id} />}
                 </section>
+            )}
+
+            {hasData && tab === "coverage" && study?.id && (
+                <CoveragePanel studyId={study.id} />
             )}
 
             {hasData && tab === "sentiment" && (

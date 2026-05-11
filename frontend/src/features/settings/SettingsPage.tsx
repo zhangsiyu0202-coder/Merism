@@ -6,6 +6,7 @@ import {
     Mail,
     Network,
     ShieldCheck,
+    SpellCheck,
     User,
 } from "lucide-react"
 import { useState } from "react"
@@ -22,6 +23,7 @@ import { userLogic } from "~/models/userLogic"
 import { useTranslation } from "react-i18next"
 import { setLocale, type MerismLocale } from "~/i18n"
 import { LLMGatewaySection } from "./llm-gateway/LLMGatewaySection"
+import { GlossarySection } from "./cleaning/GlossarySection"
 
 /**
  * SettingsPage — per-team workspace settings.
@@ -36,7 +38,7 @@ import { LLMGatewaySection } from "./llm-gateway/LLMGatewaySection"
  * Merism staff.
  */
 
-type SettingsSectionKey = "profile" | "workspace" | "llm-gateway"
+type SettingsSectionKey = "profile" | "workspace" | "llm-gateway" | "glossary"
 
 export default function SettingsPage(): JSX.Element {
     const { t } = useTranslation()
@@ -61,6 +63,7 @@ export default function SettingsPage(): JSX.Element {
                         {section === "profile" && <ProfileSection user={user} />}
                         {section === "workspace" && <WorkspaceSection user={user} />}
                         {section === "llm-gateway" && <LLMGatewaySection />}
+                        {section === "glossary" && <GlossarySection />}
                     </div>
                 }
             />
@@ -84,6 +87,7 @@ function SectionNav({
         { key: "profile", label: t("settings.nav.profile"), icon: User },
         { key: "workspace", label: t("settings.nav.workspace"), icon: Building2 },
         { key: "llm-gateway", label: "LLM Gateway", icon: Network },
+        { key: "glossary", label: "Glossary", icon: SpellCheck },
     ]
     return (
         <nav className="flex flex-col gap-1" aria-label="Settings sections">

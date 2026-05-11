@@ -236,6 +236,8 @@ async def stream_turn(
                 "probe_type": decision.probe_type,
                 "probe_triggered_by": decision.probe_triggered_by,
                 "matches_rule": decision.matches_rule,
+                "think_notes": decision.think_notes,
+                "target_goal_id": decision.target_goal_id,
                 "validator_overridden": validation.overridden,
                 "validator_reason": validation.reason,
             }
@@ -493,6 +495,8 @@ async def _alog_turn_events(
                         "next_question_id": decision.next_question_id,
                         "probe_type": decision.probe_type,
                         "matches_rule": decision.matches_rule,
+                        "think_notes": decision.think_notes,
+                        "target_goal_id": decision.target_goal_id,
                     },
                     "validator_overridden": validator_overridden,
                     "validator_reason": validator_reason,

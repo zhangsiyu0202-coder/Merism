@@ -31,6 +31,7 @@ async def clean_session_transcript(
     run_glossary: bool = True,
     run_normalize: bool = True,
     run_polish: bool = True,
+    run_merge: bool = False,  # off by default — LLM cost, opt-in
 ) -> list[dict[str, Any]]:
     """Full cleaning pipeline for a session's raw transcript.
 
@@ -74,5 +75,14 @@ async def clean_session_transcript(
             )
         except Exception:
             logger.exception("cleaning.stage45.failed", extra={"session_id": str(session.id)})
+
+    # Stage 6 — semantic merge (opt-in, LLM cost)
+    if run_merge:
+        try:
+            from merism.cleaning.stages.stage6_semantic_merge import semantic_merge
+
+            turns = await semantic_merge(turns, context)
+        except Exception:
+            logger.exception("cleaning.stage6.failed", extra={"session_id": str(session.id)})
 
     return turns

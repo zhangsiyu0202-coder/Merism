@@ -958,6 +958,116 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/glossaries/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["glossaries_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["glossaries_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/glossaries/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["glossaries_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["glossaries_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["glossaries_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["glossaries_partial_update"];
+        trace?: never;
+    };
     "/api/guides/": {
         parameters: {
             query?: never;
@@ -3383,6 +3493,21 @@ export interface components {
          * @enum {string}
          */
         DeliveryRecordStatusEnum: DeliveryRecordStatusEnum;
+        Glossary: {
+            /** @description The correct spelling */
+            canonical: string;
+            case_insensitive?: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            study?: string | null;
+            /** Format: date-time */
+            readonly updated_at: string;
+            /** @description List of known misrecognitions, e.g. ["米瑞姆", "merism"] */
+            variants?: unknown;
+        };
         /**
          * @description * `alert_only` - Alert only (don't block)
          *     * `degrade` - Downgrade to cheapest model
@@ -3767,6 +3892,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["DeliveryRecord"][];
+        };
+        PaginatedGlossaryList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["Glossary"][];
         };
         PaginatedInboxItemList: {
             /** @example 123 */
@@ -4237,6 +4377,21 @@ export interface components {
             question?: string;
             /** Format: uuid */
             study?: string | null;
+        };
+        PatchedGlossary: {
+            /** @description The correct spelling */
+            canonical?: string;
+            case_insensitive?: boolean;
+            /** Format: date-time */
+            readonly created_at?: string;
+            /** Format: uuid */
+            readonly id?: string;
+            /** Format: uuid */
+            study?: string | null;
+            /** Format: date-time */
+            readonly updated_at?: string;
+            /** @description List of known misrecognitions, e.g. ["米瑞姆", "merism"] */
+            variants?: unknown;
         };
         /** @description Read-only list serializer for researcher inbox. */
         PatchedInboxItem: {
@@ -6040,6 +6195,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DeliveryRecord"];
+                };
+            };
+        };
+    };
+    glossaries_list: {
+        parameters: {
+            query?: {
+                /** @description Number of results to return per page. */
+                limit?: number;
+                /** @description The initial index from which to return the results. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedGlossaryList"];
+                };
+            };
+        };
+    };
+    glossaries_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Glossary"];
+                "application/x-www-form-urlencoded": components["schemas"]["Glossary"];
+                "multipart/form-data": components["schemas"]["Glossary"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Glossary"];
+                };
+            };
+        };
+    };
+    glossaries_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this glossary. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Glossary"];
+                };
+            };
+        };
+    };
+    glossaries_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this glossary. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Glossary"];
+                "application/x-www-form-urlencoded": components["schemas"]["Glossary"];
+                "multipart/form-data": components["schemas"]["Glossary"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Glossary"];
+                };
+            };
+        };
+    };
+    glossaries_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this glossary. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    glossaries_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this glossary. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedGlossary"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedGlossary"];
+                "multipart/form-data": components["schemas"]["PatchedGlossary"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Glossary"];
                 };
             };
         };

@@ -16,6 +16,7 @@ from merism.api.analysis_views import (
     StudyGoalViewSet,
     ThemeViewSet,
 )
+from merism.api.cleaning_views import GlossaryViewSet
 from merism.api.home import HomeStatsView
 from merism.api.ask_views import ask_stream, knowledge_search
 from merism.api.interview_message_view import post_message
@@ -72,6 +73,9 @@ router.register(r"study-goals", StudyGoalViewSet, basename="studygoal")
 router.register(r"themes", ThemeViewSet, basename="theme")
 router.register(r"coverage-snapshots", CoverageSnapshotViewSet, basename="coveragesnapshot")
 router.register(r"cohort-segments", CohortSegmentViewSet, basename="cohortsegment")
+
+# ── Cleaning (transcript pipeline) ─────────────────────────
+router.register(r"glossaries", GlossaryViewSet, basename="glossary")
 
 urlpatterns = [
     path("users/me/", UserMeView.as_view(), name="user-me"),
