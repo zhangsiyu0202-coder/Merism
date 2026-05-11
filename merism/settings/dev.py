@@ -35,12 +35,19 @@ DATABASES = {
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
 ]
 
 # Enable CSRF trust for the Vite origin so /accounts/login/ accepts POSTs
 # forwarded through the Vite proxy or made cross-origin.
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
 ]
+
+# Skip email verification in dev — no SMTP configured locally.
+ACCOUNT_EMAIL_VERIFICATION = "none"

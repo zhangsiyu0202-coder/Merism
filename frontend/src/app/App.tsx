@@ -1,13 +1,15 @@
 import { useMountedLogic, useValues } from "kea"
 import { Suspense, lazy, useMemo, type ComponentType } from "react"
+import { router } from "kea-router"
 
 import { AppLayout } from "~/layout/AppLayout"
 import { ErrorBoundary } from "~/layout/ErrorBoundary"
 import { ParticipantLayout } from "~/layout/ParticipantLayout"
 import { PlainLayout } from "~/layout/PlainLayout"
+import { userLogic } from "~/models/userLogic"
 
 import { Providers } from "./providers"
-import { Scene } from "./routes"
+import { Scene, urls } from "./routes"
 import { sceneImports } from "./routeRegistry"
 import { sceneLogic } from "./sceneLogic"
 
@@ -22,7 +24,9 @@ import { sceneLogic } from "./sceneLogic"
  */
 export function App(): JSX.Element {
     useMountedLogic(sceneLogic)
+    useMountedLogic(userLogic)
     const { activeScene, activeSceneConfig } = useValues(sceneLogic)
+    const { user, userLoading } = useValues(userLogic)
 
     const SceneComponent = useMemo(
         () => lazyForScene(activeScene),
@@ -30,6 +34,22 @@ export function App(): JSX.Element {
     )
 
     const Layout = pickLayout(activeSceneConfig.layout)
+
+    // Auth guard
+    const needsAuth = !activeSceneConfig.allowUnauthenticated
+    if (needsAuth && userLoading && user === null) {
+        return (
+            <Providers>
+                <div className="flex h-screen items-center justify-center bg-merism-bg">
+                    <span className="text-merism-text-muted">Loading…</span>
+                </div>
+            </Providers>
+        )
+    }
+    if (needsAuth && !userLoading && user === null) {
+        router.actions.push(urls.login())
+        return <Providers><PlainLayout><Suspense fallback={<SceneFallback />}>{(() => { const L = lazyForScene(Scene.Login); return <L /> })()}</Suspense></PlainLayout></Providers>
+    }
 
     return (
         <Providers>

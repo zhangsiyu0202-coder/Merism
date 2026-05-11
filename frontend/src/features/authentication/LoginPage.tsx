@@ -71,10 +71,11 @@ export default function LoginPage(): JSX.Element {
     const pitch = PITCHES[pitchIndex] ?? PITCHES[0]!
 
     return (
-        <div className="grid min-h-screen grid-cols-1 bg-merism-bg lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)]">
+        <div className="grid min-h-screen grid-cols-1 bg-merism-bg lg:grid-cols-2">
             {/* LEFT · editorial pane */}
-            <aside className="relative hidden flex-col justify-between overflow-hidden bg-merism-surface p-12 lg:flex">
-                <div className="flex items-center gap-3">
+            <aside className="relative hidden overflow-hidden bg-merism-surface lg:flex lg:items-center lg:justify-center">
+                {/* Logo — absolute top-left */}
+                <div className="absolute left-12 top-12 flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-merism-sm bg-merism-accent text-merism-accent-ink">
                         <span className="font-display text-merism-body-sm font-[600] leading-none">
                             M
@@ -85,7 +86,8 @@ export default function LoginPage(): JSX.Element {
                     </span>
                 </div>
 
-                <div className="flex flex-col gap-10">
+                {/* Core card — centered, enlarged */}
+                <div className="flex w-[75%] max-w-[720px] flex-col gap-10">
                     <AnimatePresence mode="wait" initial={false}>
                         <motion.div
                             key={pitch.illustration}
@@ -101,10 +103,10 @@ export default function LoginPage(): JSX.Element {
                             <Illustration
                                 name={pitch.illustration}
                                 size="2xl"
-                                className="text-merism-text"
+                                className="w-full text-merism-text"
                             />
-                            <div className="flex max-w-md flex-col gap-4">
-                                <h2 className="font-display text-merism-headline font-[500] text-merism-text">
+                            <div className="flex flex-col gap-4">
+                                <h2 className="font-display text-[2rem] font-[500] leading-tight text-merism-text">
                                     {pitch.headline}
                                 </h2>
                                 <p className="text-merism-body leading-relaxed text-merism-text-muted">
@@ -114,7 +116,7 @@ export default function LoginPage(): JSX.Element {
                         </motion.div>
                     </AnimatePresence>
 
-                    {/* Tiny dot-nav so users know there's more */}
+                    {/* Dot nav */}
                     <div
                         className="flex items-center gap-1.5"
                         aria-label="Pitch indicator"
@@ -137,7 +139,8 @@ export default function LoginPage(): JSX.Element {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">
+                {/* Footer — absolute bottom-left */}
+                <div className="absolute bottom-12 left-12 flex items-center gap-2 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">
                     <Sparkles className="h-3 w-3" />
                     <span>AI-moderated · structured insights · trusted pipeline</span>
                 </div>
