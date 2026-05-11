@@ -1,0 +1,50 @@
+# Code ownership for merism-app (closed-source). Internal use only.
+#
+# Syntax: <glob>  @<github-handle-or-team>
+# Later entries override earlier ones — place most specific patterns LAST.
+# Every PR needs one approval from every matching owner.
+#
+# Replace @merism-eng with your real team handle once the GitHub org is
+# provisioned. Per-area handles below are placeholders — update them as
+# the team grows.
+
+# ── default owner for the whole repo ─────────────────────────
+*                                           @merism-eng
+
+# ── infrastructure & CI ──────────────────────────────────────
+.github/                                    @merism-eng
+/Dockerfile                                 @merism-eng
+/.dockerignore                              @merism-eng
+/docker-compose.yml                         @merism-eng
+/Makefile                                   @merism-eng
+/bin/                                       @merism-eng
+/pyproject.toml                             @merism-eng
+/uv.lock                                    @merism-eng
+
+# ── backend domains ──────────────────────────────────────────
+/merism/settings/                           @merism-eng
+/merism/models/                             @merism-eng
+/merism/api/                                @merism-eng
+/merism/conductor/                          @merism-eng
+/merism/memai/                              @merism-eng
+/merism/recruitment/                        @merism-eng
+/merism/voice/                              @merism-eng
+/merism/realtime/                           @merism-eng
+/merism/knowledge/                          @merism-eng
+/merism/reports/                            @merism-eng
+/merism/participant/                        @merism-eng
+
+# ── frontend ─────────────────────────────────────────────────
+/frontend/                                  @merism-eng
+/frontend/src/lib/                          @merism-eng
+/frontend/src/features/                     @merism-eng
+
+# ── docs (lighter touch — any eng can review) ────────────────
+/docs/                                      @merism-eng
+/*.md                                       @merism-eng
+
+# ── security-sensitive paths (require extra review) ─────────
+/merism/recruitment/crypto.py               @merism-eng
+/merism/settings/prod.py                    @merism-eng
+/SECURITY.md                                @merism-eng
+/LICENSE                                    @merism-eng

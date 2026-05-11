@@ -1,0 +1,105 @@
+/*
+ * Global stylesheet — entry point for Tailwind v4 + the Merism design
+ * system.
+ *
+ * Import order matters: Tailwind first, then our CSS variables (light
+ * + dark bridges), then fonts, then the @theme block from
+ * ``./lib/merism/tokens/theme.css`` which Tailwind v4 picks up.
+ */
+
+@import "tailwindcss";
+
+@import "./lib/merism/tokens/variables.css";
+@import "./lib/merism/fonts/fonts.css";
+
+@import "./lib/merism/tokens/theme.css";
+
+/* Reduced motion — respected by motion/react across the app. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+:root {
+    color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01", "ss03";
+    background: var(--merism-bg);
+    color: var(--merism-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/*
+ * Scrollbar — global override.
+ *
+ * Goal: remove the browser's 1990s scrollbar chrome entirely —
+ * no end-cap arrows, no coloured track, no hard edges — and let
+ * a single hair-thin thumb float above the content. Idle @ 10 %
+ * alpha, hover @ 25 %, 200 ms ease transition (Outset / Linear /
+ * Vercel / Stripe all do some version of this).
+ *
+ * Applied globally so every ``overflow-auto`` container in the app
+ * inherits the treatment without component-level CSS. Uses CSS
+ * vars so dark mode flips the colour automatically.
+ */
+
+/* End-cap arrow buttons — extinct. */
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button:single-button,
+*::-webkit-scrollbar-button:start,
+*::-webkit-scrollbar-button:end {
+    display: none;
+    height: 0;
+    width: 0;
+}
+
+/* 6 px track (vertical) · 6 px track (horizontal) — invisible. */
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    background-color: transparent;
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track-piece {
+    background: transparent;
+    border: none;
+}
+*::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Thumb — pill, translucent ink, fades in on hover. */
+*::-webkit-scrollbar-thumb {
+    background-color: var(--merism-scrollbar-thumb);
+    border-radius: 9999px;
+    border: 2px solid transparent;        /* visual inset */
+    background-clip: padding-box;
+    transition: background-color 0.2s ease;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--merism-scrollbar-thumb-hover);
+}
+
+/* Firefox equivalents. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--merism-scrollbar-thumb) transparent;
+}

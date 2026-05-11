@@ -1,0 +1,94 @@
+// Renovate config — https://docs.renovatebot.com/configuration-options/
+// Closed-source repo; Renovate runs on the private repo and opens internal PRs.
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    "group:allNonMajor",
+    "schedule:weekly",
+  ],
+  labels: ["dependencies"],
+  timezone: "Asia/Shanghai",
+  rangeStrategy: "pin",
+  // We pin exact versions in pyproject.toml / package.json / Dockerfile, so
+  // keep Renovate pinning too — consistency beats optimism.
+  prConcurrentLimit: 5,
+  prHourlyLimit: 2,
+  // Security updates: ignore schedule, open immediately.
+  vulnerabilityAlerts: {
+    labels: ["security"],
+    schedule: ["at any time"],
+  },
+  // Group Python dev-only upgrades together.
+  packageRules: [
+    {
+      matchManagers: ["pep621", "pep723"],
+      matchDepTypes: ["dev", "optional-dependencies"],
+      groupName: "python dev deps",
+      schedule: ["before 6am on monday"],
+    },
+    // Django / DRF / channels — review together, these tend to break as a stack.
+    {
+      matchManagers: ["pep621"],
+      matchPackageNames: [
+        "Django",
+        "djangorestframework",
+        "drf-spectacular",
+        "channels",
+        "channels-redis",
+        "daphne",
+      ],
+      groupName: "django stack",
+      schedule: ["before 6am on monday"],
+    },
+    // OpenAI / Anthropic / langchain — review together, rate-limit changes
+    // often ship across.
+    {
+      matchManagers: ["pep621"],
+      matchPackageNames: [
+        "openai",
+        "anthropic",
+        "langchain-core",
+        "pydantic-ai",
+      ],
+      groupName: "llm sdks",
+    },
+    // Frontend framework upgrades are high-signal, keep them un-grouped.
+    {
+      matchManagers: ["npm"],
+      matchPackageNames: [
+        "react",
+        "react-dom",
+        "typescript",
+        "vite",
+        "vitest",
+        "@vitejs/plugin-react",
+      ],
+      matchUpdateTypes: ["major"],
+      addLabels: ["needs-manual-review"],
+    },
+    // Pin GitHub Actions to commit SHAs (supply-chain hardening).
+    {
+      matchManagers: ["github-actions"],
+      pinDigests: true,
+    },
+    // uv / pnpm updates — verify CI passes before auto-merge.
+    {
+      matchPackageNames: ["astral-sh/setup-uv", "pnpm/action-setup"],
+      automerge: false,
+    },
+  ],
+  // Keep the Dockerfile base image (python:3.12.12-slim-bookworm) fresh.
+  docker: {
+    enabled: true,
+    pinDigests: true,
+  },
+  // Lock-file maintenance once a month keeps uv.lock and pnpm-lock.yaml
+  // current without flooding PRs.
+  lockFileMaintenance: {
+    enabled: true,
+    schedule: ["before 6am on the first day of the month"],
+  },
+}

@@ -1,0 +1,232 @@
+{
+    "common": {
+        "search": "搜索",
+        "loading": "加载中…",
+        "save": "保存",
+        "cancel": "取消",
+        "create": "创建",
+        "edit": "编辑",
+        "delete": "删除",
+        "remove": "移除",
+        "archive": "归档",
+        "back": "返回",
+        "next": "下一步",
+        "previous": "上一步",
+        "continue": "继续",
+        "yes": "是",
+        "no": "否",
+        "open": "打开",
+        "close": "关闭",
+        "sign_out": "退出登录",
+        "sections": "分区",
+        "draft": "草稿",
+        "coming_soon": "即将上线"
+    },
+    "nav": {
+        "home": "首页",
+        "studies": "研究",
+        "ask": "问答",
+        "inbox": "收件箱",
+        "repository": "资料库",
+        "decisions": "决策",
+        "settings": "设置",
+        "admin": "后台",
+        "pinned": "置顶",
+        "pin_study": "置顶常用研究以便快速打开。",
+        "workspace": "工作区",
+        "search_hint": "搜索"
+    },
+    "pagination": {
+        "range": "第 {{start}}–{{end}} 条，共 {{total}} 条",
+        "per_page": "每页 {{n}} 条",
+        "prev": "上一页",
+        "next": "下一页",
+        "page_of": "第 {{page}} / {{count}} 页"
+    },
+    "home": {
+        "title": "首页",
+        "lede": "所有正在进行的研究、草稿与决策都汇聚于此。",
+        "tabs": {
+            "overview": "总览",
+            "drafts": "草稿",
+            "inbox": "收件箱"
+        },
+        "kpi": {
+            "active_studies": "进行中的研究",
+            "sessions_week": "本周访谈场次",
+            "insights": "洞察",
+            "participants": "参与者",
+            "open_decisions": "待决策"
+        },
+        "first_study_hero": {
+            "title": "开启你的第一项研究。",
+            "body": "Merism 会围绕一个聚焦的研究问题，完成招募、访谈、编码与报告全流程。",
+            "cta": "创建研究"
+        },
+        "section": {
+            "active_studies": "进行中的研究",
+            "recent_decisions": "最近的决策",
+            "see_all": "查看全部"
+        },
+        "new_study_card": {
+            "title": "新建研究",
+            "body": "从空白画布开始。"
+        }
+    },
+    "studies": {
+        "title": "研究",
+        "lede": "你对用户的持续洞察都汇聚于此。",
+        "new_study": "新建研究",
+        "empty_hero_title": "开始你的第一项研究",
+        "empty_hero_body": "一项研究聚焦一个问题。Merism 负责招募、访谈、编码与报告的全流程。",
+        "empty_tab_body": "暂无{{tab}}研究。",
+        "tabs": {
+            "all": "全部",
+            "active": "进行中",
+            "drafts": "草稿",
+            "archived": "已归档"
+        },
+        "status": {
+            "draft": "草稿",
+            "ready": "就绪",
+            "recruiting": "招募中",
+            "active": "进行中",
+            "closed": "已结束",
+            "archived": "已归档"
+        }
+    },
+    "study": {
+        "tabs": {
+            "brief": "简介",
+            "outline": "大纲",
+            "screener": "筛选",
+            "stimuli": "刺激物",
+            "recruit": "招募",
+            "analysis": "分析",
+            "report": "报告",
+            "sessions": "访谈",
+            "settings": "设置"
+        },
+        "mode": {
+            "voice": "语音",
+            "video": "视频",
+            "text": "文字",
+            "offline": "离线"
+        }
+    },
+    "ask": {
+        "title": "问答 Merism",
+        "lede": "跨整个工作区的对话式研究助手。",
+        "tabs": {
+            "chat": "对话",
+            "history": "历史",
+            "saved": "收藏"
+        },
+        "empty_hero_title": "你想了解什么？",
+        "empty_hero_body": "对所有研究、访谈、引语提问。Merism 会搜索知识库并在答案中引用来源。",
+        "suggestions_label": "试着问问",
+        "suggestions": [
+            "参与者对定价有什么看法？",
+            "本季度浮现了哪些主题？",
+            "对比不同方案下的 onboarding 反馈。"
+        ],
+        "placeholder": "向 Merism 提问任何关于你的研究的问题…",
+        "history_coming_soon": "最近的提问会出现在这里。",
+        "saved_coming_soon": "把喜欢的回答置顶，随时可以再次执行。"
+    },
+    "inbox": {
+        "title": "收件箱",
+        "lede": "所有研究中的新回复、通知与信号。",
+        "empty_title": "全部处理完毕。",
+        "empty_body": "新完成的访谈、通道告警和 @ 提醒会出现在这里。"
+    },
+    "repository": {
+        "title": "资料库",
+        "lede": "每一条引语、主题与制品 —— 跨研究可搜索。",
+        "empty_title": "暂无制品。",
+        "empty_body": "研究完成后，Merism 会为每条引语和编码建立索引，支持跨研究搜索。"
+    },
+    "decisions": {
+        "title": "决策",
+        "lede": "从研究中抽取的行动项，跟踪至关闭。",
+        "empty_title": "暂无待决策。",
+        "empty_body": "已完成访谈中的行动项会出现在这里，并附上证据链接。"
+    },
+    "settings": {
+        "title": "设置",
+        "lede": "工作区、团队与你的账户偏好。",
+        "nav": {
+            "profile": "个人资料",
+            "workspace": "工作区"
+        },
+        "profile": {
+            "title": "个人资料",
+            "loading": "正在加载你的资料…",
+            "security_title": "安全",
+            "security_description": "登录与认证。",
+            "active_session": "当前会话"
+        },
+        "workspace": {
+            "title": "工作区详情",
+            "organisation": "所属组织：{{name}}",
+            "members_title": "成员",
+            "members_description": "拥有当前工作区访问权限的团队成员。",
+            "members_body": "成员管理将随首个多租户版本上线。",
+            "language_title": "界面语言",
+            "language_description": "切换后立即生效。",
+            "compliance_title": "合规",
+            "compliance_description": "数据驻留与审计日志。",
+            "compliance_body": "符合个人信息保护法。原始访谈在服务端留存；任意访谈均可导出整洁化文稿。"
+        }
+    },
+    "login": {
+        "eyebrow": "MERISM",
+        "heading": "欢迎回来。",
+        "sub": "登录你的研究工作区。",
+        "email": "工作邮箱",
+        "password": "密码",
+        "forgot": "忘记密码？",
+        "continue": "继续",
+        "submitting": "登录中…",
+        "new_workspace_prompt": "初次使用 Merism？",
+        "new_workspace_cta": "创建工作区",
+        "dev_hint": "开发账号：admin@merism.local / admin"
+    },
+    "interview": {
+        "loading": "正在准备访谈…",
+        "start_cta": "开始",
+        "session_ended": "感谢参与，访谈已结束。",
+        "session_ended_body": "你的回答已保存。可以关闭此窗口。"
+    },
+    "command_palette": {
+        "placeholder": "输入命令或搜索…",
+        "no_matches": "未找到 “{{query}}” 的相关结果。",
+        "hint_esc": "ESC",
+        "hint_navigate": "选择",
+        "hint_run": "执行",
+        "footer": "Merism · 快捷操作",
+        "sections": {
+            "go_to": "跳转到",
+            "actions": "操作",
+            "studies": "研究"
+        },
+        "commands": {
+            "go_home": "跳转到首页",
+            "go_studies": "跳转到研究",
+            "go_ask": "跳转到问答",
+            "go_inbox": "跳转到收件箱",
+            "go_repository": "跳转到资料库",
+            "go_decisions": "跳转到决策",
+            "go_settings": "跳转到设置",
+            "new_study": "新建研究",
+            "reload": "重新加载研究列表",
+            "open_admin": "打开 Django 后台",
+            "open_admin_hint": "仅限员工"
+        }
+    },
+    "errors": {
+        "not_found_title": "页面未找到",
+        "not_found_body": "你访问的页面不存在或已迁移。",
+        "not_found_cta": "返回首页"
+    }
+}

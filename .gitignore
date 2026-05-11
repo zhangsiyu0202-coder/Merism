@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.ruff_cache/
+.pyright/
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Django
+*.sqlite3
+*.sqlite3-journal
+local_settings.py
+media/
+staticfiles/
+merism/migrations/0*.py
+!merism/migrations/0001_initial.py
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/stats.html
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# MkDocs
+site/
+
+# Raw illustration packs — only the processed SVGs in
+# frontend/src/lib/merism/illustrations/svg/ are tracked.
+/Notioly-Free-Pack/

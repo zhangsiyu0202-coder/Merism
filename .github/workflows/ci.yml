@@ -1,0 +1,246 @@
+# CI entry point for merism-app. Runs on every push and pull request against
+# main. Three parallel jobs:
+#
+#   - backend   : ruff + pyright + pytest (merism/)
+#   - frontend  : oxlint + typecheck + vitest + build
+#   - docker    : `docker build` the production image (no push)
+#
+# Secrets required (configured at the repository level):
+#   - None for CI to pass — the build uses placeholder env vars baked into
+#     the Dockerfile for collectstatic. Runtime secrets (SENTRY_DSN,
+#     MERISM_LLM_API_KEY, etc.) are injected at deploy time only.
+#
+# Budget: each job has a `timeout-minutes` so a stuck runner can't burn
+# credits indefinitely.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12.12"
+  NODE_VERSION: "24"
+  UV_VERSION: "0.5.14"
+  PNPM_VERSION: "9"
+
+jobs:
+  # ╔══════════════════════════════════════════════════════════════════════╗
+  # ║ backend — lint, type-check, test                                      ║
+  # ╚══════════════════════════════════════════════════════════════════════╝
+  backend:
+    name: backend · ruff + pyright + pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: merism_test
+          POSTGRES_USER: merism
+          POSTGRES_PASSWORD: merism
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U merism -d merism_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DJANGO_SETTINGS_MODULE: merism.settings.test
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: merism_test
+      POSTGRES_USER: merism
+      POSTGRES_PASSWORD: merism
+      REDIS_URL: redis://127.0.0.1:6379/0
+      CELERY_BROKER_URL: redis://127.0.0.1:6379/1
+      CELERY_RESULT_BACKEND: redis://127.0.0.1:6379/2
+      CHANNELS_REDIS_URL: redis://127.0.0.1:6379/3
+      SECRET_KEY: ci-test-key-not-for-production
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      MERISM_CHANNEL_ENCRYPTION_KEY: K8mYxF4-0Ck3Wv0o1aVzxrNxK6pKmQ_tP6cX1E9TZnY=
+      MERISM_LLM_API_KEY: ci-placeholder
+      # Fail fast if pyright finds something in strict-ish mode
+      PYRIGHT_PYTHON_FORCE_VERSION: "1.1.406"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Pyright type check
+        run: uv run pyright merism
+
+      - name: Django system check
+        run: uv run python manage.py check
+
+      - name: Django migration consistency check
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: OpenAPI schema drift check
+        # If a serializer or viewset changed, the committed
+        # frontend/src/generated/openapi.json must also change.
+        # This asserts contributors regenerate via `make codegen`.
+        run: |
+          uv run python manage.py spectacular \
+            --format openapi-json \
+            --file /tmp/openapi.json
+          if ! diff -q frontend/src/generated/openapi.json /tmp/openapi.json > /dev/null; then
+            echo "::error::Committed frontend/src/generated/openapi.json is stale."
+            echo "::error::Run 'make codegen' locally and commit the updated files."
+            diff -u frontend/src/generated/openapi.json /tmp/openapi.json | head -50 || true
+            exit 1
+          fi
+
+      - name: Pytest
+        run: uv run pytest merism/ -q --maxfail=5
+
+  # ╔══════════════════════════════════════════════════════════════════════╗
+  # ║ frontend — lint, type-check, test, build                              ║
+  # ╚══════════════════════════════════════════════════════════════════════╝
+  frontend:
+    name: frontend · oxlint + typecheck + vitest + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Get pnpm store dir
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('frontend/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Codegen freshness marker
+        run: pnpm codegen:check
+
+      - name: Oxlint
+        run: pnpm lint
+
+      - name: TypeScript type check
+        run: pnpm typecheck
+
+      - name: Vitest
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  # ╔══════════════════════════════════════════════════════════════════════╗
+  # ║ docker — build the production image (no push)                         ║
+  # ╚══════════════════════════════════════════════════════════════════════╝
+  docker:
+    name: docker · build production image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: merism-app:ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ╔══════════════════════════════════════════════════════════════════════╗
+  # ║ ci-passed — required-status aggregator                                ║
+  # ╚══════════════════════════════════════════════════════════════════════╝
+  # Branch protection can require just this one check instead of every
+  # individual job; keeps the rule list short and adding/removing jobs
+  # doesn't force a branch-protection config change.
+  ci-passed:
+    name: ci · all green
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, docker]
+    if: always()
+    steps:
+      - name: Assert every upstream job succeeded
+        run: |
+          if [[ "${{ needs.backend.result }}" != "success" || \
+                "${{ needs.frontend.result }}" != "success" || \
+                "${{ needs.docker.result }}" != "success" ]]; then
+            echo "Upstream job failure — see backend/frontend/docker job logs."
+            exit 1
+          fi
+          echo "All CI jobs passed."

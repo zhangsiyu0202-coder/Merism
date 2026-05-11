@@ -1,0 +1,99 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+    {% with kpi=merism_kpi %}
+    <div class="rounded-lg border border-base-200 bg-white p-4 dark:border-base-800 dark:bg-base-900">
+        <div class="text-xs font-mono uppercase tracking-wider text-base-500">Organizations</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums">{{ kpi.org_count }}</div>
+        <div class="mt-1 text-xs text-base-500">{{ kpi.team_count }} teams</div>
+    </div>
+    <div class="rounded-lg border border-base-200 bg-white p-4 dark:border-base-800 dark:bg-base-900">
+        <div class="text-xs font-mono uppercase tracking-wider text-base-500">Studies</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums">{{ kpi.study_count }}</div>
+        <div class="mt-1 text-xs text-base-500">{{ kpi.active_study_count }} active</div>
+    </div>
+    <div class="rounded-lg border border-base-200 bg-white p-4 dark:border-base-800 dark:bg-base-900">
+        <div class="text-xs font-mono uppercase tracking-wider text-base-500">Sessions</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums">{{ kpi.session_count }}</div>
+        <div class="mt-1 text-xs text-base-500">{{ kpi.completed_week }} completed this week</div>
+    </div>
+    <div class="rounded-lg border border-base-200 bg-white p-4 dark:border-base-800 dark:bg-base-900">
+        <div class="text-xs font-mono uppercase tracking-wider text-base-500">Insights</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums">{{ kpi.insight_count }}</div>
+        <div class="mt-1 text-xs text-base-500">{{ kpi.quote_count }} quotes · {{ kpi.participant_count }} participants</div>
+    </div>
+    {% endwith %}
+</div>
+
+<div class="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div class="lg:col-span-2 rounded-lg border border-base-200 bg-white p-4 dark:border-base-800 dark:bg-base-900">
+        <div class="mb-3 text-xs font-mono uppercase tracking-wider text-base-500">Sessions · last 14 days</div>
+        {% if merism_spark_bars %}
+        <div class="flex h-32 items-end gap-1">
+            {% for bar in merism_spark_bars %}
+            <div class="flex flex-1 flex-col items-center justify-end gap-1" title="{{ bar.day }}: {{ bar.count }}">
+                <div class="w-full rounded-sm bg-primary-500" style="height: {{ bar.height_pct }}%;"></div>
+                <span class="text-[10px] font-mono text-base-400">{{ bar.day_short }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="flex h-32 items-center justify-center text-sm text-base-500">No session activity.</div>
+        {% endif %}
+    </div>
+
+    <div class="rounded-lg border border-base-200 bg-white p-4 dark:border-base-800 dark:bg-base-900">
+        <div class="mb-3 text-xs font-mono uppercase tracking-wider text-base-500">Channel health · last hour</div>
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-2 text-sm">
+                    <span class="h-2 w-2 rounded-full bg-green-500"></span>OK
+                </span>
+                <span class="font-mono tabular-nums">{{ merism_channel_health.ok|default:0 }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-2 text-sm">
+                    <span class="h-2 w-2 rounded-full bg-red-500"></span>Failing
+                </span>
+                <span class="font-mono tabular-nums">{{ merism_channel_health.failing|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-8 rounded-lg border border-base-200 bg-white p-4 dark:border-base-800 dark:bg-base-900">
+    <div class="mb-3 text-xs font-mono uppercase tracking-wider text-base-500">Recent sessions</div>
+    {% if merism_recent_sessions %}
+    <table class="w-full text-sm">
+        <thead class="text-left text-xs font-mono uppercase tracking-wider text-base-500">
+            <tr>
+                <th class="pb-2">Study</th>
+                <th class="pb-2">Mode</th>
+                <th class="pb-2">Status</th>
+                <th class="pb-2">Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in merism_recent_sessions %}
+            <tr class="border-t border-base-100 dark:border-base-800">
+                <td class="py-2">
+                    <a href="{% url 'admin:merism_interviewsession_change' s.id %}" class="text-primary-600 hover:underline">
+                        {{ s.study.name|default:s.study.research_goal|truncatechars:48 }}
+                    </a>
+                </td>
+                <td class="py-2">{{ s.mode }}</td>
+                <td class="py-2">{{ s.status }}</td>
+                <td class="py-2 font-mono tabular-nums text-xs text-base-500">{{ s.created_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-sm text-base-500">No sessions yet.</div>
+    {% endif %}
+</div>
+
+{{ block.super }}
+{% endblock %}

@@ -1,0 +1,122 @@
+# Minimal dev services for Merism.
+#
+# Postgres is the single OLTP + vector store (pgvector extension enabled).
+# Redis is the queue / SSE pub-sub / cache layer.
+# That's it — no ClickHouse, Kafka, Temporal, or plugin-server.
+#
+# Host ports are offset from the defaults so this stack can coexist with
+# another Postgres / Redis on the same machine. Container-internal ports
+# are unchanged (5432 / 6379) — Django reads POSTGRES_PORT / REDIS_URL
+# from .env to pick up the custom host port.
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5542:5432"
+    environment:
+      POSTGRES_DB: merism
+      POSTGRES_USER: merism
+      POSTGRES_PASSWORD: merism
+    volumes:
+      - merism_pg_data:/var/lib/postgresql/data
+      - ./bin/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U merism -d merism"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6479:6379"
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Optional: local S3-compatible object storage for stimuli / recording uploads
+  # during development. Disable in prod where real S3 is used.
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9100:9000"
+      - "9101:9001"
+    environment:
+      MINIO_ROOT_USER: merism
+      MINIO_ROOT_PASSWORD: merism-dev-password
+    volumes:
+      - merism_minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Celery worker — picks up async tasks from the Redis broker.
+  # Same image as the web app (see Dockerfile). Override the CMD to launch
+  # the Celery entry point instead of daphne.
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: merism-app:local
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      DJANGO_SETTINGS_MODULE: merism.settings.dev
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: merism
+      POSTGRES_USER: merism
+      POSTGRES_PASSWORD: merism
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      REDIS_URL: redis://redis:6379/2
+    command:
+      ["celery", "-A", "merism", "worker", "-l", "info", "--concurrency=2"]
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "celery -A merism inspect ping -d celery@$(hostname) > /dev/null 2>&1 || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Celery beat — scheduled periodic tasks (channel health checks, stuck
+  # session cleanup, broadcast dispatch).
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: merism-app:local
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      DJANGO_SETTINGS_MODULE: merism.settings.dev
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: merism
+      POSTGRES_USER: merism
+      POSTGRES_PASSWORD: merism
+      CELERY_BROKER_URL: redis://redis:6379/0
+    command:
+      [
+        "celery", "-A", "merism", "beat", "-l", "info",
+        "--scheduler", "redbeat.RedBeatScheduler",
+      ]
+
+volumes:
+  merism_pg_data:
+  merism_minio_data:

@@ -1,0 +1,17 @@
+/*
+ * Eagerly loaded fonts.
+ *
+ * Aesthetic brief: Inter (UI body) + Geist Variable (editorial
+ * headlines) + Geist Mono (the signature — chips, timestamps, IDs,
+ * research-goal labels). Loading all three at boot keeps the FOUT
+ * window short; Mono in particular is used on the nav rail, so it
+ * must not flash.
+ *
+ * IBM Plex Mono stays LAZY (see preload.ts) — only Ask Merism
+ * citations use it, as a second mono voice for long-form quotes.
+ *
+ * Spec: merism-design-system Req 4.
+ */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource-variable/geist-mono/wght.css";

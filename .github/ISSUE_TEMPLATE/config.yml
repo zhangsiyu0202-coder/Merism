@@ -1,0 +1,10 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability report
+    url: https://github.com/merism/merism-app/security/advisories/new
+    about: >
+      Do not file security issues as public issues. Follow SECURITY.md — email
+      security@merism.ai or use GitHub's private security advisory flow above.
+  - name: Internal engineering support
+    url: https://merism.slack.com/channels/eng-support
+    about: For dev-environment and day-to-day questions (internal only).

@@ -1,0 +1,138 @@
+/*
+ * Tailwind v4 theme — bridges CSS custom properties from
+ * ``variables.css`` into Tailwind utility generation.
+ *
+ * 8pt typography scale (2026-05-10, Stripe / Linear / Airbnb convention):
+ *
+ *     hero     72px  1.05  -0.02em   hero marketing H1
+ *     display  48px  1.05  -0.02em   page H1 (app)
+ *     headline 32px  1.15  -0.02em   section H2
+ *     h2       24px  1.20  -0.015em  panel heading
+ *     title    20px  1.30  -0.010em  card title
+ *     subtitle 18px  1.35  -0.005em  supporting title
+ *     body     16px  1.50   0        base paragraph
+ *     body-sm  14px  1.50   0        dense UI (Linear)
+ *     label    13px  1.40   0        form labels + tags
+ *     caption  12px  1.35   0.02em   ALL-CAPS metadata
+ *     mono     13px  1.30   0        Geist Mono timestamps / IDs
+ *
+ * Every token here has a CSS var counterpart; do not hard-code
+ * colours or radii in component files.
+ */
+
+@theme {
+    /* colours */
+    --color-merism-bg: var(--merism-bg);
+    --color-merism-surface: var(--merism-surface);
+    --color-merism-bg-subtle: var(--merism-bg-subtle);
+    --color-merism-bg-inverse: var(--merism-bg-inverse);
+    --color-merism-text: var(--merism-text);
+    --color-merism-text-muted: var(--merism-text-muted);
+    --color-merism-text-subtle: var(--merism-text-subtle);
+    --color-merism-text-inverse: var(--merism-text-inverse);
+    --color-merism-border: var(--merism-border);
+    --color-merism-border-strong: var(--merism-border-strong);
+
+    --color-merism-accent: var(--merism-accent);
+    --color-merism-accent-hover: var(--merism-accent-hover);
+    --color-merism-accent-active: var(--merism-accent-active);
+    --color-merism-accent-soft: var(--merism-accent-soft);
+    --color-merism-accent-outline: var(--merism-accent-outline);
+    --color-merism-accent-ink: var(--merism-accent-ink);
+
+    --color-merism-success: var(--merism-success);
+    --color-merism-warning: var(--merism-warning);
+    --color-merism-danger: var(--merism-danger);
+    --color-merism-info: var(--merism-info);
+
+    /* radii */
+    --radius-merism-xs: var(--radius-merism-xs);
+    --radius-merism-sm: var(--radius-merism-sm);
+    --radius-merism-md: var(--radius-merism-md);
+    --radius-merism-lg: var(--radius-merism-lg);
+    --radius-merism-xl: var(--radius-merism-xl);
+    --radius-merism-2xl: var(--radius-merism-2xl);
+    --radius-merism-full: var(--radius-merism-full);
+
+    /* spacing */
+    --spacing-merism-sidebar: var(--spacing-merism-sidebar);
+    --spacing-merism-sidebar-collapsed: var(--spacing-merism-sidebar-collapsed);
+    --spacing-merism-topbar: var(--spacing-merism-topbar);
+    --spacing-merism-gutter: var(--spacing-merism-gutter);
+    --spacing-merism-section-y: var(--spacing-merism-section-y);
+    --spacing-merism-section-xl: var(--spacing-merism-section-xl);
+    --spacing-merism-page-top: var(--spacing-merism-page-top);
+    --spacing-merism-card-pad: var(--spacing-merism-card-pad);
+    --spacing-merism-card-pad-lg: var(--spacing-merism-card-pad-lg);
+    --spacing-merism-content-max: var(--spacing-merism-content-max);
+    --spacing-merism-reading-max: var(--spacing-merism-reading-max);
+    --spacing-merism-fluid-gutter: var(--spacing-merism-fluid-gutter);
+
+    /* shadows */
+    --shadow-merism-xs: var(--merism-shadow-xs);
+    --shadow-merism-sm: var(--merism-shadow-sm);
+    --shadow-merism-md: var(--merism-shadow-md);
+    --shadow-merism-lg: var(--merism-shadow-lg);
+    --shadow-merism-card: var(--merism-shadow-card);
+    --shadow-merism-float: var(--merism-shadow-float);
+    --shadow-merism-pop: var(--merism-shadow-pop);
+
+    /* motion */
+    --ease-merism: var(--merism-ease);
+    --duration-merism-fast: var(--merism-duration-fast);
+    --duration-merism-base: var(--merism-duration-base);
+    --duration-merism-slow: var(--merism-duration-slow);
+
+    /* type families */
+    --font-sans: var(--font-sans);
+    --font-display: var(--font-display);
+    --font-mono: var(--font-mono);
+
+    /* ── type scale (strict 8pt) ──────────────────────────── */
+
+    --text-merism-hero: 4.5rem;                   /* 72px */
+    --text-merism-hero--line-height: 1.05;
+    --text-merism-hero--letter-spacing: -0.02em;
+
+    --text-merism-display: 3rem;                  /* 48px */
+    --text-merism-display--line-height: 1.05;
+    --text-merism-display--letter-spacing: -0.02em;
+
+    --text-merism-headline: 2rem;                 /* 32px */
+    --text-merism-headline--line-height: 1.15;
+    --text-merism-headline--letter-spacing: -0.02em;
+
+    --text-merism-h2: 1.5rem;                     /* 24px */
+    --text-merism-h2--line-height: 1.2;
+    --text-merism-h2--letter-spacing: -0.015em;
+
+    --text-merism-title: 1.25rem;                 /* 20px */
+    --text-merism-title--line-height: 1.3;
+    --text-merism-title--letter-spacing: -0.01em;
+
+    --text-merism-subtitle: 1.125rem;             /* 18px */
+    --text-merism-subtitle--line-height: 1.35;
+    --text-merism-subtitle--letter-spacing: -0.005em;
+
+    --text-merism-body: 1rem;                     /* 16px */
+    --text-merism-body--line-height: 1.5;
+
+    --text-merism-body-sm: 0.875rem;              /* 14px */
+    --text-merism-body-sm--line-height: 1.5;
+
+    --text-merism-label: 0.8125rem;               /* 13px */
+    --text-merism-label--line-height: 1.4;
+
+    --text-merism-caption: 0.75rem;               /* 12px */
+    --text-merism-caption--line-height: 1.35;
+    --text-merism-caption--letter-spacing: 0.02em;
+
+    --text-merism-mono: 0.8125rem;                /* 13px Geist Mono */
+    --text-merism-mono--line-height: 1.3;
+
+    /* ── tracking utilities (used by ``tracking-merism-*``) ── */
+    --tracking-merism-caps: 0.14em;         /* ALL-CAPS metadata labels */
+    --tracking-merism-caps-tight: 0.12em;   /* Segmented control labels */
+    --tracking-merism-tight: -0.005em;      /* Button / dense body */
+    --tracking-merism-display: -0.02em;     /* Matches display/headline */
+}

@@ -1,0 +1,15 @@
+{
+    "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+    "plugins": ["typescript", "react", "import"],
+    "rules": {
+        "no-unused-vars": "off",
+        "no-console": "warn",
+        "react/no-array-index-key": "off"
+    },
+    "ignorePatterns": [
+        "dist",
+        "storybook-static",
+        "**/*LogicType.ts",
+        "**/*.stories.tsx"
+    ]
+}

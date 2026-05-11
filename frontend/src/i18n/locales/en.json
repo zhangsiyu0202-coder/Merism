@@ -1,0 +1,232 @@
+{
+    "common": {
+        "search": "Search",
+        "loading": "Loading…",
+        "save": "Save",
+        "cancel": "Cancel",
+        "create": "Create",
+        "edit": "Edit",
+        "delete": "Delete",
+        "remove": "Remove",
+        "archive": "Archive",
+        "back": "Back",
+        "next": "Next",
+        "previous": "Previous",
+        "continue": "Continue",
+        "yes": "Yes",
+        "no": "No",
+        "open": "Open",
+        "close": "Close",
+        "sign_out": "Sign out",
+        "sections": "Sections",
+        "draft": "Draft",
+        "coming_soon": "Coming soon"
+    },
+    "nav": {
+        "home": "Home",
+        "studies": "Studies",
+        "ask": "Ask",
+        "inbox": "Inbox",
+        "repository": "Repository",
+        "decisions": "Decisions",
+        "settings": "Settings",
+        "admin": "Admin",
+        "pinned": "Pinned",
+        "pin_study": "Pin a study for quick access.",
+        "workspace": "Workspace",
+        "search_hint": "Search"
+    },
+    "pagination": {
+        "range": "{{start}}–{{end}} of {{total}}",
+        "per_page": "{{n}} per page",
+        "prev": "Previous",
+        "next": "Next",
+        "page_of": "{{page}} / {{count}}"
+    },
+    "home": {
+        "title": "Home",
+        "lede": "One place for every active study, draft, and decision.",
+        "tabs": {
+            "overview": "Overview",
+            "drafts": "Drafts",
+            "inbox": "Inbox"
+        },
+        "kpi": {
+            "active_studies": "Active studies",
+            "sessions_week": "Sessions this week",
+            "insights": "Insights",
+            "participants": "Participants",
+            "open_decisions": "Open decisions"
+        },
+        "first_study_hero": {
+            "title": "Design your first study.",
+            "body": "Merism recruits, interviews, codes, and reports on one focused research question end-to-end.",
+            "cta": "Create study"
+        },
+        "section": {
+            "active_studies": "Active studies",
+            "recent_decisions": "Recent decisions",
+            "see_all": "See all"
+        },
+        "new_study_card": {
+            "title": "New study",
+            "body": "Start from a blank canvas."
+        }
+    },
+    "studies": {
+        "title": "Studies",
+        "lede": "Everything you're learning about your users.",
+        "new_study": "New study",
+        "empty_hero_title": "Start your first study",
+        "empty_hero_body": "A study is one focused line of research. Merism recruits, interviews, codes, and reports on it end-to-end.",
+        "empty_tab_body": "No {{tab}} studies.",
+        "tabs": {
+            "all": "All",
+            "active": "Active",
+            "drafts": "Drafts",
+            "archived": "Archived"
+        },
+        "status": {
+            "draft": "Draft",
+            "ready": "Ready",
+            "recruiting": "Recruiting",
+            "active": "Active",
+            "closed": "Closed",
+            "archived": "Archived"
+        }
+    },
+    "study": {
+        "tabs": {
+            "brief": "Brief",
+            "outline": "Outline",
+            "screener": "Screener",
+            "stimuli": "Stimuli",
+            "recruit": "Recruit",
+            "analysis": "Analysis",
+            "report": "Report",
+            "sessions": "Sessions",
+            "settings": "Settings"
+        },
+        "mode": {
+            "voice": "Voice",
+            "video": "Video",
+            "text": "Text",
+            "offline": "Offline"
+        }
+    },
+    "ask": {
+        "title": "Ask Merism",
+        "lede": "A conversational co-researcher across your entire workspace.",
+        "tabs": {
+            "chat": "Chat",
+            "history": "History",
+            "saved": "Saved"
+        },
+        "empty_hero_title": "What do you want to know?",
+        "empty_hero_body": "Ask questions across every study, session, and quote. Merism searches the knowledge base and cites sources inline.",
+        "suggestions_label": "Try asking",
+        "suggestions": [
+            "What do participants say about pricing?",
+            "Which themes surfaced this quarter?",
+            "Compare onboarding reactions across concepts."
+        ],
+        "placeholder": "Ask Merism anything about your research…",
+        "history_coming_soon": "Recent queries will appear here.",
+        "saved_coming_soon": "Pin your favourite answers to re-run them later."
+    },
+    "inbox": {
+        "title": "Inbox",
+        "lede": "New responses, notifications, and signals across your studies.",
+        "empty_title": "You're all caught up.",
+        "empty_body": "New session completions, channel alerts, and @-mentions will land here."
+    },
+    "repository": {
+        "title": "Repository",
+        "lede": "Every quote, theme, and artefact — searchable across studies.",
+        "empty_title": "No artefacts yet.",
+        "empty_body": "As studies complete, Merism indexes every quote and code for cross-study search."
+    },
+    "decisions": {
+        "title": "Decisions",
+        "lede": "Action items extracted from research, tracked to close.",
+        "empty_title": "No open decisions.",
+        "empty_body": "Action items from completed sessions appear here with evidence links."
+    },
+    "settings": {
+        "title": "Settings",
+        "lede": "Workspace, team, and your account preferences.",
+        "nav": {
+            "profile": "Profile",
+            "workspace": "Workspace"
+        },
+        "profile": {
+            "title": "Profile",
+            "loading": "Loading your profile…",
+            "security_title": "Security",
+            "security_description": "Sign-in and authentication.",
+            "active_session": "Active session"
+        },
+        "workspace": {
+            "title": "Workspace details",
+            "organisation": "Organisation: {{name}}",
+            "members_title": "Members",
+            "members_description": "Team members with access to this workspace.",
+            "members_body": "Member management lands with the first multi-tenant rollout.",
+            "language_title": "Language",
+            "language_description": "Interface language. Takes effect immediately.",
+            "compliance_title": "Compliance",
+            "compliance_description": "Data residency and audit logs.",
+            "compliance_body": "PIPL-aligned. Raw transcripts kept server-side; clean-verbatim exports available from any session."
+        }
+    },
+    "login": {
+        "eyebrow": "MERISM",
+        "heading": "Welcome back.",
+        "sub": "Sign in to your research workspace.",
+        "email": "Work email",
+        "password": "Password",
+        "forgot": "Forgot?",
+        "continue": "Continue",
+        "submitting": "Signing in…",
+        "new_workspace_prompt": "New to Merism?",
+        "new_workspace_cta": "Create a workspace",
+        "dev_hint": "Dev: admin@merism.local / admin"
+    },
+    "interview": {
+        "loading": "Preparing your session…",
+        "start_cta": "Begin",
+        "session_ended": "Thank you. Your session is complete.",
+        "session_ended_body": "Your response has been recorded. You may close this window."
+    },
+    "command_palette": {
+        "placeholder": "Type a command or search…",
+        "no_matches": "No matches for \"{{query}}\".",
+        "hint_esc": "ESC",
+        "hint_navigate": "navigate",
+        "hint_run": "run",
+        "footer": "Merism · quick actions",
+        "sections": {
+            "go_to": "Go to",
+            "actions": "Actions",
+            "studies": "Studies"
+        },
+        "commands": {
+            "go_home": "Go to Home",
+            "go_studies": "Go to Studies",
+            "go_ask": "Go to Ask Merism",
+            "go_inbox": "Go to Inbox",
+            "go_repository": "Go to Repository",
+            "go_decisions": "Go to Decisions",
+            "go_settings": "Go to Settings",
+            "new_study": "Create a new study",
+            "reload": "Reload studies list",
+            "open_admin": "Open Django admin",
+            "open_admin_hint": "Staff only"
+        }
+    },
+    "errors": {
+        "not_found_title": "Page not found",
+        "not_found_body": "The page you're looking for doesn't exist or has moved.",
+        "not_found_cta": "Take me home"
+    }
+}

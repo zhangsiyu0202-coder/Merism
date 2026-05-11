@@ -1,0 +1,11 @@
+# Static public assets.
+#
+# @ricky0123/vad-web ships its ONNX model + worklet via CDN by default.
+# If you want to self-host (required for offline-first / behind corporate
+# firewalls), copy the following files here from the node_modules:
+#
+#   - silero_vad.onnx
+#   - vad.worklet.bundle.min.js
+#
+# Then set the `modelURL` / `workletURL` options when initialising MicVAD
+# in src/interview_room/voice/SileroVad.ts.

@@ -1,0 +1,86 @@
+# Anything in this file is NOT sent to the Docker daemon as build context.
+# Keep this tight — the builder stage copies only what it needs, but a
+# smaller context means faster `docker build` and fewer accidents
+# (leaked secrets, stale .pyc, local venvs).
+
+# ── version control ──────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ── local environments & secrets ─────────────────────────────
+.env
+.env.*
+!.env.example
+.venv
+venv
+env/
+.flox
+
+# ── Python caches & build artefacts ──────────────────────────
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.tox
+.coverage
+coverage.xml
+htmlcov
+dist
+build
+*.egg-info
+
+# ── IDE / editor ─────────────────────────────────────────────
+.vscode
+.idea
+.zed
+.run
+*.swp
+*.swo
+.DS_Store
+
+# ── frontend (built separately, copied in when needed) ───────
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/coverage
+frontend/.storybook-static
+
+# ── node_modules anywhere ────────────────────────────────────
+node_modules
+
+# ── test artefacts ───────────────────────────────────────────
+.pytest_cache
+.hypothesis
+.testmondata
+
+# ── Docker ───────────────────────────────────────────────────
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# ── docs / samples (not needed at runtime) ───────────────────
+docs
+Notioly-Free-Pack
+*.md
+!README.md
+!LICENSE
+
+# ── smoke / scratch files ────────────────────────────────────
+bin/smoke_*.wav
+bin/*.wav
+*.log
+
+# ── agent config — never needed in the image ─────────────────
+.kiro
+.claude
+.cursor
+.codex
+.opencode
+.agents
+.semgrep
+AGENTS.md
+CLAUDE.md

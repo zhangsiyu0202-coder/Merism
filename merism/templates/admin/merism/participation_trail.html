@@ -1,0 +1,27 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Trail · {{ participation.id }}{% endblock %}
+{% block content %}
+  <h1>Participation Trail</h1>
+  <p><strong>trace_id:</strong> <code>{{ participation.trace_id }}</code></p>
+  <p><strong>study:</strong> {{ participation.study.name|default:participation.study_id }} · <strong>status:</strong> {{ participation.status }}</p>
+  <table style="width:100%; border-collapse: collapse; font-size:13px;">
+    <thead>
+      <tr style="border-bottom:1px solid #ccc;">
+        <th style="text-align:left; padding:6px;">timestamp</th>
+        <th style="text-align:left; padding:6px;">kind</th>
+        <th style="text-align:left; padding:6px;">what</th>
+        <th style="text-align:left; padding:6px;">ref</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in timeline %}
+      <tr style="border-bottom:1px solid #eee;">
+        <td style="padding:6px; white-space:nowrap;"><code>{{ row.ts|date:"Y-m-d H:i:s.u" }}</code></td>
+        <td style="padding:6px;"><code>{{ row.kind }}</code></td>
+        <td style="padding:6px;">{{ row.what }}</td>
+        <td style="padding:6px; color:#666;"><code>{{ row.ref }}</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
