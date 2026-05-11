@@ -66,7 +66,7 @@ export interface sidebarLogicType extends Logic {
     _isKea: true;
     _isKeaWithKey: false;
     __keaTypeGenInternalSelectorTypes: {
-        pinnedStudies: (recentStudyIds: string[], studies: import("/home/jia/posthog-foss/merism-app/frontend/src/types").Study[]) => Study[];
+        pinnedStudies: (recentStudyIds: string[], studies: import("~//types").Study[]) => Study[];
     };
     __keaTypeGenInternalReducerActions: {
         "set scene (app.sceneLogic)": (scene: Scene, params: SceneParams) => ({

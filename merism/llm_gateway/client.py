@@ -158,4 +158,20 @@ def _build_ws_client(logical_name: str, provider: LLMProvider) -> Any:
         raise ProviderUnavailableError(f"No WS client for logical_name='{logical_name}'")
 
 
-__all__ = ["get_client"]
+def sync_get_client(
+    logical_name: str,
+    *,
+    team: Team,
+    trace_id: UUID,
+) -> Any:
+    """Synchronous wrapper around :func:`get_client`.
+
+    For use in sync contexts (Celery tasks, sync views, management commands).
+    Blocks the calling thread until the async resolution completes.
+    """
+    from asgiref.sync import async_to_sync
+
+    return async_to_sync(get_client)(logical_name, team=team, trace_id=trace_id)
+
+
+__all__ = ["get_client", "sync_get_client"]

@@ -39,8 +39,8 @@ export interface teamLogicType extends Logic {
     _isKea: true;
     _isKeaWithKey: false;
     __keaTypeGenInternalSelectorTypes: {
-        currentTeam: (user: null | import("/home/jia/posthog-foss/merism-app/frontend/src/types").User) => Team | null;
-        currentTeamId: (user: null | import("/home/jia/posthog-foss/merism-app/frontend/src/types").User) => string | null;
-        currentOrganization: (user: null | import("/home/jia/posthog-foss/merism-app/frontend/src/types").User) => Organization | null;
+        currentTeam: (user: null | import("~//types").User) => Team | null;
+        currentTeamId: (user: null | import("~//types").User) => string | null;
+        currentOrganization: (user: null | import("~//types").User) => Organization | null;
     };
 }

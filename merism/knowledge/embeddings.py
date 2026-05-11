@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 from functools import lru_cache
 from typing import Any
+from uuid import uuid4
 
 from django.conf import settings
 
@@ -18,12 +19,23 @@ logger = logging.getLogger(__name__)
 _DEFAULT_MODEL = "text-embedding-3-small"
 
 
-def embed_query(text: str, *, model: str | None = None) -> list[float] | None:
-    """Embed a single piece of text. Returns ``None`` on error (caller
-    should fall back to lexical-only retrieval)."""
+def embed_query(text: str, *, model: str | None = None, team: Any | None = None) -> list[float] | None:
+    """Embed a single piece of text. Returns ``None`` on error."""
     text = text.strip()
     if not text:
         return None
+
+    # Try gateway embedding route
+    if team:
+        try:
+            from merism.llm_gateway.client import sync_get_client
+
+            gw = sync_get_client("embedding", team=team, trace_id=uuid4())
+            resp = gw.sync_embed([text])
+            return list(resp.data[0]["embedding"])
+        except Exception:
+            pass
+
     client = _client()
     if client is None:
         return None
@@ -33,15 +45,27 @@ def embed_query(text: str, *, model: str | None = None) -> list[float] | None:
             input=text,
         )
         return list(response.data[0].embedding)
-    except Exception as exc:  # pragma: no cover - live API
+    except Exception as exc:  # pragma: no cover
         logger.warning("knowledge.embed.failed", extra={"error": str(exc)})
         return None
 
 
-def embed_batch(texts: list[str], *, model: str | None = None) -> list[list[float] | None]:
+def embed_batch(texts: list[str], *, model: str | None = None, team: Any | None = None) -> list[list[float] | None]:
     """Embed many texts in one API call."""
     if not texts:
         return []
+
+    # Try gateway embedding route
+    if team:
+        try:
+            from merism.llm_gateway.client import sync_get_client
+
+            gw = sync_get_client("embedding", team=team, trace_id=uuid4())
+            resp = gw.sync_embed(texts)
+            return [list(item["embedding"]) for item in resp.data]
+        except Exception:
+            pass
+
     client = _client()
     if client is None:
         return [None] * len(texts)

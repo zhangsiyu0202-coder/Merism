@@ -43,11 +43,15 @@ class LLMProcessor(FrameProcessor):
         max_tokens: int = 400,
         context_window: int = 12,
         name: str = "LLM",
+        team: Any | None = None,
+        trace_id: Any | None = None,
     ) -> None:
         super().__init__(name)
         self._system_prompt = system_prompt
         self._model = model or default_model()
         self._max_tokens = max_tokens
+        self._team = team
+        self._trace_id = trace_id
         self._context_window = context_window
         self._history: list[dict[str, str]] = []
         self._cancelled = False
@@ -83,13 +87,27 @@ class LLMProcessor(FrameProcessor):
         ]
 
         client = get_llm()
+        gw_client = None
+        if self._team and self._trace_id:
+            try:
+                from merism.llm_gateway.client import sync_get_client
+
+                gw_client = sync_get_client("chat", team=self._team, trace_id=self._trace_id)
+            except Exception:
+                pass
+
         try:
-            stream = client.chat.completions.create(
-                model=self._model,
-                messages=messages,
-                stream=True,
-                max_tokens=self._max_tokens,
-            )
+            if gw_client:
+                stream = gw_client.sync_stream(
+                    messages=messages, max_tokens=self._max_tokens,
+                )
+            else:
+                stream = client.chat.completions.create(
+                    model=self._model,
+                    messages=messages,
+                    stream=True,
+                    max_tokens=self._max_tokens,
+                )
         except Exception as exc:
             logger.warning("voice.llm.create_failed", extra={"error": str(exc)})
             return

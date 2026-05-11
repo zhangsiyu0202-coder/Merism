@@ -105,6 +105,32 @@ class LiteLLMClient:
             kwargs["temperature"] = self.route.temperature
         return await litellm.acompletion(**kwargs)
 
+    def sync_complete(self, messages: list[dict[str, Any]], **overrides: Any) -> Any:
+        """Synchronous non-streaming completion."""
+        kwargs = {**self._base_kwargs(), "messages": messages, "stream": False, **overrides}
+        if "temperature" not in overrides:
+            kwargs["temperature"] = self.route.temperature
+        return litellm.completion(**kwargs)
+
+    def sync_stream(self, messages: list[dict[str, Any]], **overrides: Any) -> Any:
+        """Synchronous streaming completion. Returns an iterator."""
+        kwargs = {**self._base_kwargs(), "messages": messages, "stream": True, **overrides}
+        if "temperature" not in overrides:
+            kwargs["temperature"] = self.route.temperature
+        return litellm.completion(**kwargs)
+
+    def sync_embed(self, texts: list[str], **overrides: Any) -> Any:
+        """Synchronous embedding call."""
+        kwargs = {
+            "model": self.provider.model,
+            "api_base": self.provider.base_url,
+            "api_key": self._api_key,
+            "input": texts,
+            "timeout": self.route.timeout_seconds,
+            **overrides,
+        }
+        return litellm.embedding(**kwargs)
+
     @observe(as_type="generation")
     async def stream(self, messages: list[dict[str, Any]], **overrides: Any) -> AsyncIterator[Any]:
         """Streaming completion. Yields LiteLLM chunk objects."""

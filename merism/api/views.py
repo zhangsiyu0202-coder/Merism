@@ -148,6 +148,7 @@ class StudyViewSet(TeamScopedModelViewSet):
             guide_sections=sections,
             chat_history=chat_history,
             researcher_message=message,
+            team=self.get_team(),
         )
         return Response(response.model_dump())
 

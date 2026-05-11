@@ -4,6 +4,7 @@ import {
     Languages,
     LogOut,
     Mail,
+    Network,
     ShieldCheck,
     User,
 } from "lucide-react"
@@ -20,6 +21,7 @@ import {
 import { userLogic } from "~/models/userLogic"
 import { useTranslation } from "react-i18next"
 import { setLocale, type MerismLocale } from "~/i18n"
+import { LLMGatewaySection } from "./llm-gateway/LLMGatewaySection"
 
 /**
  * SettingsPage — per-team workspace settings.
@@ -34,7 +36,7 @@ import { setLocale, type MerismLocale } from "~/i18n"
  * Merism staff.
  */
 
-type SettingsSectionKey = "profile" | "workspace"
+type SettingsSectionKey = "profile" | "workspace" | "llm-gateway"
 
 export default function SettingsPage(): JSX.Element {
     const { t } = useTranslation()
@@ -58,6 +60,7 @@ export default function SettingsPage(): JSX.Element {
                     <div className="flex flex-col gap-[var(--spacing-merism-section-y)]">
                         {section === "profile" && <ProfileSection user={user} />}
                         {section === "workspace" && <WorkspaceSection user={user} />}
+                        {section === "llm-gateway" && <LLMGatewaySection />}
                     </div>
                 }
             />
@@ -80,6 +83,7 @@ function SectionNav({
     }> = [
         { key: "profile", label: t("settings.nav.profile"), icon: User },
         { key: "workspace", label: t("settings.nav.workspace"), icon: Building2 },
+        { key: "llm-gateway", label: "LLM Gateway", icon: Network },
     ]
     return (
         <nav className="flex flex-col gap-1" aria-label="Settings sections">

@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from typing import Any, Literal
+from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -103,6 +104,7 @@ def review_outline(
     guide_sections: list[dict[str, Any]],
     chat_history: list[dict[str, str]],
     researcher_message: str,
+    team: Any | None = None,
 ) -> OutlineReviewResponse:
     """One review turn — sync call (short reply, atomic-apply changes)."""
     messages: list[dict[str, Any]] = [
@@ -114,13 +116,29 @@ def review_outline(
         messages.append(turn)
     messages.append({"role": "user", "content": researcher_message})
 
-    client = get_llm()
-    completion = client.chat.completions.create(
-        model=default_model(),
-        messages=messages,
-        tools=[SUBMIT_TOOL],
-        tool_choice={"type": "function", "function": {"name": "submit_review"}},
-    )
+    gw_client = None
+    if team:
+        try:
+            from merism.llm_gateway.client import sync_get_client
+
+            gw_client = sync_get_client("chat", team=team, trace_id=uuid4())
+        except Exception:
+            pass
+
+    if gw_client:
+        completion = gw_client.sync_complete(
+            messages=messages,
+            tools=[SUBMIT_TOOL],
+            tool_choice={"type": "function", "function": {"name": "submit_review"}},
+        )
+    else:
+        client = get_llm()
+        completion = client.chat.completions.create(
+            model=default_model(),
+            messages=messages,
+            tools=[SUBMIT_TOOL],
+            tool_choice={"type": "function", "function": {"name": "submit_review"}},
+        )
 
     choice = completion.choices[0]
     tool_calls = getattr(choice.message, "tool_calls", None) or []

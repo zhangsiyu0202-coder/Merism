@@ -233,6 +233,6 @@ export interface conceptBlocksLogicType extends Logic {
     _isKea: true;
     _isKeaWithKey: false;
     __keaTypeGenInternalSelectorTypes: {
-        studyId: (study: null | import("/home/jia/posthog-foss/merism-app/frontend/src/types").Study) => string | null;
+        studyId: (study: null | import("~//types").Study) => string | null;
     };
 }

@@ -91,8 +91,8 @@ export interface studyLogicType extends Logic {
     _isKea: true;
     _isKeaWithKey: false;
     __keaTypeGenInternalSelectorTypes: {
-        studyId: (sceneParams: import("/home/jia/posthog-foss/merism-app/frontend/src/app/sceneTypes").SceneParams) => string | null;
-        activeTab: (sceneParams: import("/home/jia/posthog-foss/merism-app/frontend/src/app/sceneTypes").SceneParams) => string;
+        studyId: (sceneParams: import("~//app/sceneTypes").SceneParams) => string | null;
+        activeTab: (sceneParams: import("~//app/sceneTypes").SceneParams) => string;
     };
     __keaTypeGenInternalReducerActions: {
         "set scene (app.sceneLogic)": (scene: Scene, params: SceneParams) => ({

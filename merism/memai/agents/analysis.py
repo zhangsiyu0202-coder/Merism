@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import logging
 from typing import Any
+from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -98,13 +99,29 @@ def generate_session_insight(session: InterviewSession) -> SessionInsight:
         {"role": "user", "content": "Generate the session insight now."},
     ]
 
-    client = get_llm()
-    completion = client.chat.completions.create(
-        model=reasoner_model(),
-        messages=messages,
-        tools=[_SUBMIT_INSIGHT_TOOL],
-        tool_choice={"type": "function", "function": {"name": "submit_session_insight"}},
-    )
+    # Try gateway first (uses reasoner route if configured)
+    gw_client = None
+    try:
+        from merism.llm_gateway.client import sync_get_client
+
+        gw_client = sync_get_client("reasoner", team=session.study.team, trace_id=session.trace_id)
+    except Exception:
+        pass
+
+    if gw_client:
+        completion = gw_client.sync_complete(
+            messages=messages,
+            tools=[_SUBMIT_INSIGHT_TOOL],
+            tool_choice={"type": "function", "function": {"name": "submit_session_insight"}},
+        )
+    else:
+        client = get_llm()
+        completion = client.chat.completions.create(
+            model=reasoner_model(),
+            messages=messages,
+            tools=[_SUBMIT_INSIGHT_TOOL],
+            tool_choice={"type": "function", "function": {"name": "submit_session_insight"}},
+        )
     payload = _parse_tool_call(completion, SessionInsightPayload)
     if payload is None:
         raise RuntimeError("SessionInsight LLM produced no tool call")
@@ -247,11 +264,23 @@ def answer_custom_report_question(
         _SUBMIT_ANSWER_TOOL,
     ]
 
-    client = get_llm()
+    gw_client = None
+    if study:
+        try:
+            from merism.llm_gateway.client import sync_get_client
+
+            gw_client = sync_get_client("chat", team=study.team, trace_id=uuid4())
+        except Exception:
+            pass
+
+    client = gw_client or get_llm()
     for _round in range(max_tool_rounds):
-        completion = client.chat.completions.create(
-            model=default_model(), messages=messages, tools=tools
-        )
+        if gw_client:
+            completion = gw_client.sync_complete(messages=messages, tools=tools)
+        else:
+            completion = client.chat.completions.create(
+                model=default_model(), messages=messages, tools=tools
+            )
         choice = completion.choices[0]
         tool_calls = getattr(choice.message, "tool_calls", None) or []
         if not tool_calls:
