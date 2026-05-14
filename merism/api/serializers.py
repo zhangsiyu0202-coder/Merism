@@ -414,6 +414,8 @@ class MessageTemplateSerializer(serializers.ModelSerializer):
 
 
 class RecruitmentBroadcastSerializer(serializers.ModelSerializer):
+    channel_name = serializers.CharField(source="channel.name", read_only=True)
+
     class Meta:
         model = RecruitmentBroadcast
         fields = [
@@ -421,6 +423,7 @@ class RecruitmentBroadcastSerializer(serializers.ModelSerializer):
             "study",
             "study_link",
             "channel",
+            "channel_name",
             "template",
             "status",
             "approved_snapshot",

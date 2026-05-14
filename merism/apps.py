@@ -13,7 +13,7 @@ from django.apps import AppConfig
 class MerismConfig(AppConfig):
     name = "merism"
     label = "merism"
-    verbose_name = "Merism"
+    verbose_name = "Merism 研究平台"
     default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self) -> None:
@@ -22,3 +22,7 @@ class MerismConfig(AppConfig):
         from merism.conductor import signals as _conductor_signals  # noqa: F401
         from merism.conductor import study_closure_signal as _study_closure  # noqa: F401
         from merism.conductor import inbox_signals as _inbox_signals  # noqa: F401
+
+        # Chinese verbose_name for Django Admin
+        from merism.verbose_names import apply_verbose_names
+        apply_verbose_names()

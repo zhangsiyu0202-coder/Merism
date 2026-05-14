@@ -114,6 +114,25 @@ def test_reconstruct_state_folds_decisions():
     assert state.answered_question_ids == ["q1"]
 
 
+def test_reconstruct_state_tracks_dynamic_probe_decision():
+    s = _boot()
+    append_event(s, "state_transition", {"current_question_id": "q1", "phase": "active"})
+    append_event(
+        s,
+        "decision",
+        {
+            "decision": {
+                "next_action": "followup",
+                "probe_kind": "dynamic",
+                "dynamic_trigger": "new_theme",
+            }
+        },
+    )
+    state = reconstruct_state(s)
+    assert state.dynamic_probes_used.get("q1", {}).get("asked", 0) == 1
+    assert state.followups_used.get("q1", {}).get("asked", 0) == 0
+
+
 def test_reconstruct_state_close_decision_flips_phase():
     s = _boot()
     append_event(s, "decision", {"decision": {"next_action": "close"}})

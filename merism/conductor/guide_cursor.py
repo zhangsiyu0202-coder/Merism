@@ -98,3 +98,20 @@ def first_question(
     sections: list[dict[str, Any]],
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     return next_question(sections, current_question_id="")
+
+
+def dynamic_probe_config(
+    guide_sections: list[dict[str, Any]], question_id: str
+) -> dict[str, Any]:
+    """Return the dynamic_probe config for a question, or disabled default."""
+    _, question = find_question(guide_sections, question_id)
+    if question is None:
+        return {"enabled": False, "max_extra_rounds": 0, "triggers": []}
+    dp = question.get("dynamic_probe")
+    if not dp or not isinstance(dp, dict):
+        return {"enabled": False, "max_extra_rounds": 0, "triggers": []}
+    return {
+        "enabled": bool(dp.get("enabled", False)),
+        "max_extra_rounds": int(dp.get("max_extra_rounds", 0)),
+        "triggers": list(dp.get("triggers", [])),
+    }

@@ -94,6 +94,25 @@ class StudyViewSet(TeamScopedModelViewSet):
         study.save(update_fields=["status", "updated_at"])
         return Response(self.get_serializer(study).data)
 
+    @action(detail=True, methods=["post"], url_path="launch-recruitment")
+    def launch_recruitment(self, request: Request, pk: str | None = None) -> Response:
+        from merism.recruitment.orchestrator import (
+            RecruitmentLaunchError,
+            launch_study_recruitment,
+        )
+
+        study = self.get_object()
+        try:
+            result = launch_study_recruitment(study=study)
+        except RecruitmentLaunchError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        payload = result.as_dict()
+        if not payload["queued_broadcast_ids"]:
+            payload["detail"] = "No recruitment broadcasts were queued."
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+        return Response(payload)
+
     @action(detail=True, methods=["get"])
     def analysis(self, request: Request, pk: str | None = None) -> Response:
         """Aggregate analytics for the AnalysisTab — pure DB rollup."""

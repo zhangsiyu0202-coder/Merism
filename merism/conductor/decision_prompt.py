@@ -1,15 +1,14 @@
 """Decision-phase prompt for the voice moderator.
 
-Used by the `coverage_steer` node in the 2-node LangGraph. Asks the LLM
-to produce ONLY a structured decision (no natural-language output) based
-on the current turn's context + coverage state + probe policy.
+Used by the `coverage_steer` step in the 2-step moderator pipeline.
+Asks the LLM to produce ONLY a structured decision (no natural-language
+output) based on the current turn's context + coverage state + probe policy.
 
 Keep this prompt SHORT — the model should spend tokens on reasoning,
 not regurgitating the system instructions.
 """
 
 from __future__ import annotations
-
 
 DECISION_SYSTEM_PROMPT = """\
 You are the decision layer of an interview moderator.
@@ -27,12 +26,14 @@ Output a single JSON object matching this schema:
   "next_action": "followup" | "move_on" | "clarify" | "close",
   "next_question_id": "<question id if move_on, else null>",
   "probe_type": "expansion" | "clarification" | "feeling" | "reasoning" | null,
+  "probe_kind": "preset" | "dynamic" | null,
+  "dynamic_trigger": "new_theme" | "contradiction" | "strong_emotion" | "surprise_finding" | null,
   "probe_triggered_by": "<short human reason if followup, else null>",
   "target_goal_id": "<study goal id you are steering toward, or null>",
   "off_topic": <true if participant's last message is off-topic, else false>,
   "steering_strategy": "deepen_current" | "redirect_to_goal" | "advance" | "close_now",
   "think_notes": "<1-2 sentences: what did the answer reveal? why this action?>",
-  "matches_rule": <1..4 — which DECISION RULE below you followed>
+  "matches_rule": <1..3 — which DECISION RULE below you followed>
 }
 
 DECISION RULES (non-negotiable — the server enforces these):
@@ -40,13 +41,22 @@ DECISION RULES (non-negotiable — the server enforces these):
    - "none":  NEVER followup. Always move_on (or close if guide ends).
    - "light": Only followup when the reply is vague/short/contradictory.
    - "deep":  Must followup at least once per question.
-2. If probes_done >= max_probes → MUST move_on. Never exceed the cap.
-3. If next_action = "followup":
-   - probe_type + probe_triggered_by are required.
-   - steering_strategy should be "deepen_current" normally, or "redirect_to_goal" if covering a gap matters more.
-4. If next_action = "move_on":
-   - next_question_id is required (pick from guide). Prefer sequential unless an under-covered goal dictates a jump.
-   - probe_type must be null.
+2. If probes_done >= max_probes AND probe_kind != "dynamic" → MUST move_on.
+3. Dynamic probes (probe_kind="dynamic") require ALL of:
+   - dynamic_probe_enabled == true
+   - dynamic_trigger matches one of dynamic_probe_triggers
+   - dynamic_probe_remaining > 0
+   If ANY condition fails, the server will downgrade or force move_on.
+
+DYNAMIC PROBE GUIDANCE:
+- Use probe_kind="preset" for normal probes following probe_directions.
+- Use probe_kind="dynamic" ONLY when the participant reveals something
+  unexpected and valuable that is NOT covered by the preset probe_directions.
+- dynamic_trigger options:
+  - "new_theme"         (participant introduced a topic not in the guide)
+  - "contradiction"     (participant contradicted an earlier statement)
+  - "strong_emotion"    (participant expressed strong feeling worth exploring)
+  - "surprise_finding"  (unexpected insight relevant to research_goal)
 
 COVERAGE STEERING:
 - When under-covered goals exist AND the participant opened a door (mentioned something relevant), BIAS toward followup/move_on that hits that goal. Set target_goal_id to the matching goal id.
@@ -68,6 +78,11 @@ probe_policy:   {probe_policy}
 probes_done:    {probes_done}
 max_probes:     {max_probes}
 remaining:      {remaining}
+probe_directions:        {probe_directions}
+dynamic_probe_enabled:   {dynamic_probe_enabled}
+dynamic_probe_remaining: {dynamic_probe_remaining}
+dynamic_probe_triggers:  {dynamic_probe_triggers}
+dynamic_probes_done:     {dynamic_probes_done}
 </current_question_state>
 
 <current_stimulus>
@@ -107,9 +122,16 @@ def build_decision_prompt(
     coverage_context: str,
     recent_turns: str,
     participant_latest: str,
+    probe_directions: list[str] | None = None,
+    dynamic_probe_enabled: bool = False,
+    dynamic_probe_remaining: int = 0,
+    dynamic_probe_triggers: list[str] | None = None,
+    dynamic_probes_done: int = 0,
 ) -> list[dict[str, str]]:
     """Return the OpenAI-compatible chat messages for the decision phase."""
     remaining = max(0, max_probes - probes_done)
+    triggers_str = ", ".join(dynamic_probe_triggers or []) or "(none)"
+    directions_str = "; ".join(probe_directions or []) or "(none — use your judgment)"
     user_msg = DECISION_USER_TEMPLATE.format(
         research_goal=research_goal.strip() or "(not set)",
         question_id=question_id or "(unset)",
@@ -119,6 +141,11 @@ def build_decision_prompt(
         probes_done=probes_done,
         max_probes=max_probes,
         remaining=remaining,
+        probe_directions=directions_str,
+        dynamic_probe_enabled=str(dynamic_probe_enabled).lower(),
+        dynamic_probe_remaining=dynamic_probe_remaining,
+        dynamic_probe_triggers=triggers_str,
+        dynamic_probes_done=dynamic_probes_done,
         current_stimulus=current_stimulus.strip() or "(none)",
         concept_context=concept_context.strip() or "(none)",
         coverage_context=coverage_context.strip() or "(none)",

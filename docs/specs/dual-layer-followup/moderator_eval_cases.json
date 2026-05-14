@@ -1,0 +1,199 @@
+[
+  {
+    "case_id": "light_dynamic_new_theme",
+    "research_goal": "Understand how young professionals choose snacks during the workday.",
+    "guide_sections": [
+      {
+        "id": "s1",
+        "title": "Warm-up",
+        "questions": [
+          {
+            "id": "q1",
+            "text": "Tell me about the last time you bought a snack during work.",
+            "probe_policy": "light",
+            "max_probes": 2,
+            "probe_directions": ["specific example", "purchase context"],
+            "dynamic_probe": {
+              "enabled": true,
+              "max_extra_rounds": 1,
+              "triggers": ["new_theme", "strong_emotion"]
+            }
+          },
+          {
+            "id": "q2",
+            "text": "What happened after you made that choice?",
+            "probe_policy": "light",
+            "max_probes": 2
+          }
+        ]
+      }
+    ],
+    "moderator_state": {
+      "current_section_id": "s1",
+      "current_question_id": "q1",
+      "phase": "active",
+      "followups_used": {
+        "q1": {
+          "asked": 0,
+          "budget": 2
+        }
+      },
+      "dynamic_probes_used": {
+        "q1": {
+          "asked": 0,
+          "budget": 1
+        }
+      }
+    },
+    "transcript": [
+      {
+        "role": "participant",
+        "text": "Usually I just buy whatever is quick."
+      }
+    ],
+    "participant_message": "Lately I started tracking snack spending in a spreadsheet because my team copies each other.",
+    "expectation": {
+      "expected_action": "followup",
+      "expected_probe_kind": "dynamic",
+      "expected_dynamic_trigger": "new_theme"
+    },
+    "notes": "Unexpected budgeting workflow should invite a dynamic probe."
+  },
+  {
+    "case_id": "deep_requires_probe",
+    "research_goal": "Understand how participants evaluate snack packaging before purchase.",
+    "guide_sections": [
+      {
+        "id": "s1",
+        "title": "Core",
+        "questions": [
+          {
+            "id": "q1",
+            "text": "What was your first reaction to the package design?",
+            "probe_policy": "deep",
+            "max_probes": 2,
+            "probe_directions": ["visual detail", "expectation"],
+            "dynamic_probe": {
+              "enabled": false,
+              "max_extra_rounds": 0,
+              "triggers": []
+            }
+          },
+          {
+            "id": "q2",
+            "text": "Did that reaction change later?",
+            "probe_policy": "light",
+            "max_probes": 2
+          }
+        ]
+      }
+    ],
+    "moderator_state": {
+      "current_section_id": "s1",
+      "current_question_id": "q1",
+      "phase": "active",
+      "followups_used": {
+        "q1": {
+          "asked": 0,
+          "budget": 2
+        }
+      }
+    },
+    "transcript": [],
+    "participant_message": "It looked clean and premium.",
+    "expectation": {
+      "expected_action": "followup",
+      "expected_probe_kind": "preset"
+    },
+    "notes": "Deep policy should force at least one follow-up."
+  },
+  {
+    "case_id": "budget_exhausted_move_on",
+    "research_goal": "Understand reasons for choosing healthier snacks.",
+    "guide_sections": [
+      {
+        "id": "s1",
+        "title": "Core",
+        "questions": [
+          {
+            "id": "q1",
+            "text": "Why did you pick the healthier option this time?",
+            "probe_policy": "light",
+            "max_probes": 1,
+            "probe_directions": ["motivation"],
+            "dynamic_probe": {
+              "enabled": false,
+              "max_extra_rounds": 0,
+              "triggers": []
+            }
+          },
+          {
+            "id": "q2",
+            "text": "Was that choice typical for you?",
+            "probe_policy": "light",
+            "max_probes": 2
+          }
+        ]
+      }
+    ],
+    "moderator_state": {
+      "current_section_id": "s1",
+      "current_question_id": "q1",
+      "phase": "active",
+      "followups_used": {
+        "q1": {
+          "asked": 1,
+          "budget": 1
+        }
+      }
+    },
+    "transcript": [
+      {
+        "role": "participant",
+        "text": "Because I felt sluggish last week."
+      }
+    ],
+    "participant_message": "Mostly because I wanted something lighter before my workout.",
+    "expectation": {
+      "expected_action": "move_on",
+      "expected_next_question_id": "q2"
+    },
+    "notes": "Preset budget is exhausted, so the moderator should advance."
+  },
+  {
+    "case_id": "none_policy_forbids_followup",
+    "research_goal": "Understand checkout friction on the snack ordering page.",
+    "guide_sections": [
+      {
+        "id": "s1",
+        "title": "Closing",
+        "questions": [
+          {
+            "id": "q1",
+            "text": "Anything else you want to add?",
+            "probe_policy": "none",
+            "max_probes": 0,
+            "probe_directions": [],
+            "dynamic_probe": {
+              "enabled": false,
+              "max_extra_rounds": 0,
+              "triggers": []
+            }
+          }
+        ]
+      }
+    ],
+    "moderator_state": {
+      "current_section_id": "s1",
+      "current_question_id": "q1",
+      "phase": "active"
+    },
+    "transcript": [],
+    "participant_message": "No, that covers it.",
+    "expectation": {
+      "expected_action": "move_on",
+      "expected_next_question_id": null
+    },
+    "notes": "None policy should never ask another follow-up."
+  }
+]

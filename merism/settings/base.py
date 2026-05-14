@@ -104,8 +104,8 @@ LOGOUT_REDIRECT_URL = "/"
 
 # ── Unfold admin skin (ADR 0001) ───────────────────────────
 UNFOLD = {
-    "SITE_TITLE": "Merism",
-    "SITE_HEADER": "Merism Admin",
+    "SITE_TITLE": "Merism 管理后台",
+    "SITE_HEADER": "Merism 管理后台",
     "SITE_URL": "/",
     "DASHBOARD_CALLBACK": "merism.admin.dashboard_callback",
     "SHOW_HISTORY": True,
@@ -141,7 +141,7 @@ TEMPLATES = [
 ]
 
 # ── i18n / tz ──────────────────────────────────────────────
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "zh-hans"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
@@ -240,10 +240,6 @@ CELERY_BEAT_SCHEDULE = {
     "dispatch-pending-broadcasts": {
         "task": "merism.recruitment.tasks.dispatch_pending_broadcasts",
         "schedule": 60.0,
-    },
-    "reconcile-llm-budgets": {
-        "task": "merism.llm_gateway.tasks.reconcile_budgets",
-        "schedule": 3600.0,  # every hour
     },
 }
 

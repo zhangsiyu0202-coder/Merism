@@ -263,6 +263,17 @@ pyright merism               # no type errors
 
 ## 🔭 Later (post-MVP)
 
+- **Codebook Governance (R16)**: Full codebook lifecycle subsystem — in progress.
+  - ✅ Design doc: `docs/specs/codebook-governance/design.md`
+  - ✅ Data models: `CodebookVersion`, `CodeChange`, `CodeMapping`
+  - ✅ `InductiveCodeSuggester` agent (batch emergent code discovery)
+  - ✅ `CodebookReviewer` agent (merge/split/rename/deprecate proposals)
+  - ✅ `CodebookVersionManager` (immutable snapshots + mappings)
+  - ✅ `RetaggingJob` (selective re-tagging of affected quotes)
+  - ✅ `ThemeSynthesizer` auto-trigger (saturation + target_reached)
+  - ✅ Pipeline integration in `post_session.py`
+  - ⬜ Frontend: codebook version history + proposal approve/reject UI
+  - ⬜ Admin: CodebookVersion / CodeChange browsing
 - **Dagster or Temporal**: The platform spec doesn't decide. Default to
   Celery + Celery Beat for now. Revisit when cross-DAG workflows become
   necessary.

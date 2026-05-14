@@ -24,6 +24,9 @@ export enum Scene {
     Studies = "Studies",
     Study = "Study",
 
+    // analysis
+    Insights = "Insights",
+    Reports = "Reports",
 
     // participant-facing
     InterviewRoom = "InterviewRoom",
@@ -31,6 +34,9 @@ export enum Scene {
 
     // auth
     Login = "Login",
+
+    // marketing / landing
+    Welcome = "Welcome",
 
     // errors
     Error404 = "Error404",
@@ -42,7 +48,6 @@ export type StudyTab =
     | "screener"
     | "stimuli"
     | "recruit"
-    | "analysis"
     | "report"
     | "sessions"
     | "settings"
@@ -61,11 +66,17 @@ export const urls = {
     studies: (): string => "/studies",
     study: (id: string, tab: StudyTab = "brief"): string => `/studies/${id}/${tab}`,
 
+    insights: (studyId?: string): string => studyId ? `/insights?study=${studyId}` : "/insights",
+    reports: (studyId?: string): string => studyId ? `/reports?study=${studyId}` : "/reports",
+    reportDetail: (reportId: string): string => `/reports/${reportId}`,
+
     interviewRoom: (sessionId: string): string => `/interview/${sessionId}`,
     participantEntry: (slug: string): string => `/i/${slug}`,
 
     login: (next?: string): string =>
         next ? `/login?next=${encodeURIComponent(next)}` : "/login",
+
+    welcome: (): string => "/welcome",
 
     error404: (): string => "/404",
 } as const
@@ -87,8 +98,12 @@ export const routes: Record<string, Scene> = {
     "/studies": Scene.Studies,
     "/studies/:id": Scene.Study,
     "/studies/:id/:tab": Scene.Study,
+    "/insights": Scene.Insights,
+    "/reports": Scene.Reports,
+    "/reports/:reportId": Scene.Reports,
     "/interview/:sessionId": Scene.InterviewRoom,
     "/i/:slug": Scene.ParticipantEntry,
     "/login": Scene.Login,
+    "/welcome": Scene.Welcome,
     "/404": Scene.Error404,
 }

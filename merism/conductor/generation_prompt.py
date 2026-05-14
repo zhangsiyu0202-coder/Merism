@@ -1,7 +1,7 @@
 """Generation-phase prompt for the voice moderator.
 
-Used by the `generate` node in the 2-node LangGraph. Takes the upstream
-decision (target action, probe type, target goal) and writes the
+Used by the `generate` step in the 2-step moderator pipeline. Takes the
+upstream decision (target action, probe type, target goal) and writes the
 natural-language reply the TTS layer speaks aloud.
 
 Prompt focuses on VOICE QUALITY — no markdown, short sentences, warm
@@ -37,6 +37,14 @@ If decision.next_action = "followup":
     - clarification  → "What did you mean by X?" / "How would you describe X differently?"
     - feeling        → "How did that feel?" / "What stood out to you emotionally?"
     - reasoning      → "Why do you think that?" / "What's behind that?"
+  If decision.probe_kind = "preset", prefer the supplied probe_directions as
+  the concrete angle of the follow-up.
+  If decision.probe_kind = "dynamic", the follow-up MUST reflect the
+  dynamic_trigger:
+    - new_theme         → explore the newly introduced topic
+    - contradiction     → ask the participant to reconcile the mismatch
+    - strong_emotion    → probe the feeling and what drove it
+    - surprise_finding  → unpack why the insight was unexpected and important
   If the decision sets target_goal_id AND the participant just opened a door to it, weave the probe toward that goal (but subtly — never mention goal ids or coverage).
 
 If decision.next_action = "move_on":
@@ -58,6 +66,9 @@ GENERATION_USER_TEMPLATE = """\
 <decision>
 next_action:        {next_action}
 probe_type:         {probe_type}
+probe_kind:         {probe_kind}
+dynamic_trigger:    {dynamic_trigger}
+probe_directions:   {probe_directions}
 target_goal_id:     {target_goal_id}
 off_topic:          {off_topic}
 steering_strategy:  {steering_strategy}
@@ -91,6 +102,8 @@ def build_generation_prompt(
     *,
     decision_next_action: str,
     decision_probe_type: str | None,
+    decision_probe_kind: str | None,
+    decision_dynamic_trigger: str | None,
     decision_target_goal_id: str | None,
     decision_off_topic: bool,
     decision_steering_strategy: str,
@@ -100,11 +113,16 @@ def build_generation_prompt(
     target_goal_text: str,
     recent_turns: str,
     participant_latest: str,
+    probe_directions: list[str] | None = None,
 ) -> list[dict[str, str]]:
     """Return the OpenAI-compatible chat messages for the generation phase."""
+    directions_str = "; ".join(probe_directions or []) or "(none)"
     user_msg = GENERATION_USER_TEMPLATE.format(
         next_action=decision_next_action,
         probe_type=decision_probe_type or "null",
+        probe_kind=decision_probe_kind or "null",
+        dynamic_trigger=decision_dynamic_trigger or "null",
+        probe_directions=directions_str,
         target_goal_id=decision_target_goal_id or "null",
         off_topic="true" if decision_off_topic else "false",
         steering_strategy=decision_steering_strategy or "advance",

@@ -22,7 +22,8 @@ semantics — events themselves are inert data.
 from __future__ import annotations
 
 import logging
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 from uuid import UUID
 
 from django.db import transaction
@@ -45,6 +46,8 @@ def append_event(
     payload: dict[str, Any] | None = None,
     *,
     trace_id: UUID | None = None,
+    question_id: str = "",
+    turn_number: int = 0,
 ) -> SessionEvent:
     """Append one event to the session log.
 
@@ -54,7 +57,6 @@ def append_event(
     """
     payload = payload or {}
     with transaction.atomic():
-        # Lock the session row so concurrent writers serialize on it.
         (
             InterviewSession.objects.select_for_update()
             .filter(id=session.id)
@@ -73,6 +75,8 @@ def append_event(
             seq=next_seq,
             kind=kind,
             payload=payload,
+            question_id=question_id,
+            turn_number=turn_number,
         )
 
 
@@ -81,6 +85,8 @@ def append_events(
     events: Iterable[tuple[str, dict[str, Any]]],
     *,
     trace_id: UUID | None = None,
+    question_id: str = "",
+    turn_number: int = 0,
 ) -> list[SessionEvent]:
     """Append a batch of events atomically, each getting a contiguous seq.
 
@@ -110,6 +116,8 @@ def append_events(
                     seq=base + idx,
                     kind=kind,
                     payload=payload or {},
+                    question_id=question_id,
+                    turn_number=turn_number,
                 )
             )
         SessionEvent.objects.bulk_create(rows)
@@ -131,11 +139,13 @@ def reconstruct_state(session: InterviewSession) -> ExecutionState:
 
     Contract:
     - ``user_turn`` / ``model_reply`` events contribute transcript shape
-    - ``decision`` events flip ``last_action`` and bump followup counters
+    - ``decision`` events flip ``last_action`` and bump preset/dynamic probe counters
     - ``state_transition`` events carry explicit ``current_question_id``
-      / ``current_section_id`` / ``phase`` / ``answered_questions`` /
-      ``expanded_sections`` / ``concept_by_question_id`` keys that are
-      applied verbatim
+      / ``current_section_id`` / ``phase`` / ``turn_count`` /
+      ``answered_question_ids`` / ``followups_used`` /
+      ``dynamic_probes_used`` / ``expanded_sections`` /
+      ``concept_by_question_id`` / ``concepts_shown`` /
+      ``pending_stimulus_events`` keys that are applied verbatim
     """
     state = ExecutionState()
     state.session_id = session.id
@@ -145,10 +155,13 @@ def reconstruct_state(session: InterviewSession) -> ExecutionState:
             state.last_action = decision.get("next_action", state.last_action)
             if decision.get("next_action") == "followup":
                 qid = state.current_question_id
-                if qid is not None:
-                    state.mark_followup_used(qid)
+                if qid:
+                    if decision.get("probe_kind") == "dynamic":
+                        state.mark_dynamic_probe_used(qid)
+                    else:
+                        state.mark_followup_used(qid)
             elif decision.get("next_action") == "move_on":
-                if state.current_question_id is not None:
+                if state.current_question_id:
                     state.mark_answered(state.current_question_id)
             elif decision.get("next_action") == "close":
                 state.phase = "closing"
@@ -157,8 +170,14 @@ def reconstruct_state(session: InterviewSession) -> ExecutionState:
                 "current_question_id",
                 "current_section_id",
                 "phase",
+                "turn_count",
+                "answered_question_ids",
+                "followups_used",
+                "dynamic_probes_used",
                 "expanded_sections",
                 "concept_by_question_id",
+                "concepts_shown",
+                "pending_stimulus_events",
             ):
                 if key in ev.payload:
                     setattr(state, key, ev.payload[key])
@@ -196,3 +215,29 @@ def current_transcript(session: InterviewSession) -> list[dict[str, Any]]:
                 }
             )
     return out
+
+
+def generate_transcript_text(session: InterviewSession) -> str:
+    """Generate a plain-text transcript from session events.
+
+    Output format (one line per turn):
+        [2026-05-14T12:30:01+08:00] Q:q1 T:3 user: 我觉得价格太高了
+        [2026-05-14T12:30:03+08:00] Q:q1 T:3 assistant: 能具体说说哪方面让你觉得贵吗?
+
+    Only includes user_turn and model_reply events.
+    """
+    lines: list[str] = []
+    for ev in load_events(session):
+        if ev.kind == SessionEvent.Kind.USER_TURN:
+            role = "user"
+            text = ev.payload.get("text", "")
+        elif ev.kind == SessionEvent.Kind.MODEL_REPLY:
+            role = "assistant"
+            text = ev.payload.get("text", "")
+        else:
+            continue
+        ts = ev.created_at.isoformat() if ev.created_at else ""
+        q = f" Q:{ev.question_id}" if ev.question_id else ""
+        t = f" T:{ev.turn_number}" if ev.turn_number else ""
+        lines.append(f"[{ts}]{q}{t} {role}: {text}\n")
+    return "".join(lines)

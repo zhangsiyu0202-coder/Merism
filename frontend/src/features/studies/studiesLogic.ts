@@ -1,4 +1,4 @@
-import { actions, kea, listeners, path, reducers, selectors } from "kea"
+import { actions, afterMount, kea, listeners, path, reducers, selectors } from "kea"
 import { loaders } from "kea-loaders"
 import { router } from "kea-router"
 
@@ -69,6 +69,10 @@ export const studiesLogic = kea<studiesLogicType>([
                 router.actions.push(urls.study(newStudy.id, "settings"))
             }
         },
+    }),
+
+    afterMount(({ actions }) => {
+        actions.loadStudies()
     }),
 
     selectors({

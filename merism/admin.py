@@ -26,10 +26,15 @@ from django.db.models.functions import TruncDate
 from django.utils import timezone
 from unfold.admin import ModelAdmin
 
+admin.site.site_header = "Merism 管理后台"
+admin.site.site_title = "Merism 管理"
+admin.site.index_title = "平台管理"
+
 from merism.models import (
     AggregateSynthesis,
     ChannelConfig,
     ChannelHealthCheck,
+    ChannelTarget,
     Concept,
     ConceptBlock,
     CustomReportQuery,
@@ -39,6 +44,8 @@ from merism.models import (
     InterviewSession,
     Invitation,
     InboxItem,
+    LinkClick,
+    LinkShareEvent,
     SessionEvent,
     KnowledgeChunk,
     KnowledgeDocument,
@@ -154,11 +161,11 @@ class StudyAdmin(ModelAdmin):
 
 @admin.register(StudyLink)
 class StudyLinkAdmin(ModelAdmin):
-    list_display = ("slug", "study", "is_active", "created_at")
+    list_display = ("slug", "study", "is_active", "clicks", "last_clicked_at", "created_at")
     list_filter = ("is_active",)
     search_fields = ("slug", "study__name")
     autocomplete_fields = ("study", "team")
-    readonly_fields = ("id", "created_at", "updated_at")
+    readonly_fields = ("id", "clicks", "last_clicked_at", "created_at", "updated_at")
 
 
 @admin.register(StudyTemplate)
@@ -348,6 +355,12 @@ class InterviewRecordingAdmin(ModelAdmin):
 # ── Recruitment ──────────────────────────────────────────
 
 
+class ChannelTargetInline(admin.TabularInline):
+    model = ChannelTarget
+    extra = 0
+    fields = ("name", "recipient_id", "recipient_kind", "is_default", "is_active", "metadata")
+
+
 @admin.register(ChannelConfig)
 class ChannelConfigAdmin(ModelAdmin):
     list_display = (
@@ -371,6 +384,7 @@ class ChannelConfigAdmin(ModelAdmin):
         "last_error",
         "consecutive_failures",
     )
+    inlines = [ChannelTargetInline]
 
 
 @admin.register(ChannelHealthCheck)
@@ -382,6 +396,15 @@ class ChannelHealthCheckAdmin(ModelAdmin):
 
     def has_add_permission(self, request: Any) -> bool:
         return False  # Log table, written by beat task.
+
+
+@admin.register(ChannelTarget)
+class ChannelTargetAdmin(ModelAdmin):
+    list_display = ("name", "channel", "recipient_kind", "is_default", "is_active", "team")
+    list_filter = ("recipient_kind", "is_default", "is_active", "channel__channel_type")
+    search_fields = ("name", "recipient_id", "channel__name", "team__name")
+    autocomplete_fields = ("team", "channel")
+    readonly_fields = ("id", "created_at", "updated_at")
 
 
 @admin.register(MessageTemplate)
@@ -587,6 +610,46 @@ class SessionEventAdmin(admin.ModelAdmin):
     ordering = ("-created_at",)
 
 
+# ── Link tracking ────────────────────────────────────────
+
+
+@admin.register(LinkClick)
+class LinkClickAdmin(ModelAdmin):
+    list_display = ("study_link", "trigger", "device_type", "browser", "referer", "utm_source", "trace_id_short", "created_at")
+    list_filter = ("trigger", "device_type", "browser", "os")
+    search_fields = ("identity_hash", "referer", "utm_source", "utm_campaign", "trace_id")
+    autocomplete_fields = ("team", "study_link", "participation", "referrer_participation")
+    readonly_fields = ("id", "identity_hash", "ip_hash", "trace_id", "created_at", "updated_at")
+    ordering = ("-created_at",)
+
+    @admin.display(description="trace")
+    def trace_id_short(self, obj: LinkClick) -> str:
+        return str(obj.trace_id)[:8]
+
+    def has_add_permission(self, request: Any) -> bool:
+        return False  # Log table, written by resolve_link view.
+
+
+@admin.register(LinkShareEvent)
+class LinkShareEventAdmin(ModelAdmin):
+    list_display = ("study_link", "action", "sharer_participation", "trace_id_short", "created_at")
+    list_filter = ("action",)
+    search_fields = ("trace_id",)
+    autocomplete_fields = ("team", "study_link", "sharer_participation")
+    readonly_fields = ("id", "trace_id", "created_at", "updated_at")
+    ordering = ("-created_at",)
+
+    @admin.display(description="trace")
+    def trace_id_short(self, obj: LinkShareEvent) -> str:
+        return str(obj.trace_id)[:8]
+
+    def has_add_permission(self, request: Any) -> bool:
+        return False
+
+
+# ── Invitations / Inbox ──────────────────────────────────
+
+
 @admin.register(Invitation)
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ("study_link", "recipient_display", "status", "delivered_at", "accepted_at", "created_at")
@@ -604,28 +667,10 @@ class InboxItemAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "team", "kind", "ref_kind", "ref_id", "title", "body", "payload", "read_by", "trace_id", "created_at", "updated_at")
 
 
-# ── LLM Gateway ────────────────────────────────────────────
-
-from merism.models.llm_gateway import LLMBudget, LLMProvider, LLMRoute
-
-
-@admin.register(LLMProvider)
-class LLMProviderAdmin(admin.ModelAdmin):
-    list_display = ("display_name", "protocol", "model", "is_active", "team")
-    list_filter = ("protocol", "is_active")
-    search_fields = ("display_name", "model")
-    raw_id_fields = ("team",)
+# ── LLM Gateway (DEPRECATED — use ServiceSettings via admin_service_settings.py) ──
+# Old LLMProvider/LLMRoute/LLMBudget admin registrations removed.
+# Models kept temporarily for legacy fallback in llm_gateway/client.py.
 
 
-@admin.register(LLMRoute)
-class LLMRouteAdmin(admin.ModelAdmin):
-    list_display = ("team", "logical_name", "primary", "fallback")
-    list_filter = ("logical_name",)
-    raw_id_fields = ("team", "primary", "fallback")
-
-
-@admin.register(LLMBudget)
-class LLMBudgetAdmin(admin.ModelAdmin):
-    list_display = ("team", "period", "current_spent_usd", "monthly_cap_usd", "hard_limit_action")
-    list_filter = ("hard_limit_action", "period")
-    raw_id_fields = ("team",)
+# ── Service Settings (Dograh-style provider config) ──────
+import merism.admin_service_settings  # noqa: F401, E402

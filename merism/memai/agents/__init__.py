@@ -18,6 +18,10 @@ from merism.memai.agents.outline_review import (
     apply_proposed_changes,
     review_outline,
 )
+from merism.memai.agents.recruitment_message import (
+    RecruitmentMessage,
+    generate_recruitment_message,
+)
 
 __all__ = [
     "OutlineReviewResponse",
@@ -25,4 +29,6 @@ __all__ = [
     "review_outline",
     "generate_session_insight",
     "answer_custom_report_question",
+    "RecruitmentMessage",
+    "generate_recruitment_message",
 ]

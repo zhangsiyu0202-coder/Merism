@@ -33,7 +33,7 @@ export function TopBar({ className }: { className?: string }): JSX.Element {
                     type="button"
                     onClick={() => toggleSidePanel("ask")}
                     aria-pressed={isAskOpen}
-                    title="Ask Merism (⌘.)"
+                    title="Ask Merism"
                     className={cn(
                         "inline-flex items-center gap-2 rounded-merism-md border px-2.5 py-1 text-merism-label",
                         "transition-colors duration-[var(--merism-duration-fast)] ease-[var(--merism-ease)]",
@@ -50,9 +50,6 @@ export function TopBar({ className }: { className?: string }): JSX.Element {
                         strokeWidth={1.8}
                     />
                     <span>Ask</span>
-                    <kbd className="ml-1 rounded-merism-sm bg-merism-bg-subtle px-1 py-0.5 font-mono text-[10px] text-merism-text-subtle">
-                        ⌘.
-                    </kbd>
                 </button>
             </div>
         </header>

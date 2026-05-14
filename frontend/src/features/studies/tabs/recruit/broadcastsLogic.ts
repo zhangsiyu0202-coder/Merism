@@ -19,6 +19,7 @@ export interface BroadcastRow {
     id: string
     status: string
     channel: string | null
+    channel_name?: string | null
     counters: Record<string, number>
     retry_count: number
     created_at: string | null

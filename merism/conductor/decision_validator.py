@@ -4,11 +4,13 @@ The moderator LLM receives these rules in its prompt, but the spec
 requires that researcher intent is honoured *regardless* of what the
 model returns. This module is the belt-and-braces validator.
 
-Hard rules (matches the numbered list in ``prompts.SYSTEM_PROMPT_TEMPLATE``):
+Hard rules:
 
     Rule 1a  probe_policy == "none"   → action=probe  →  forced move_on
     Rule 1b  probe_policy == "deep"   → action=move_on AND probes_done == 0  →  forced probe
-    Rule 2   probes_done >= max_probes → action=probe  →  forced move_on
+    Rule 2   probes_done >= max_probes AND NOT valid dynamic probe → forced move_on
+    Rule 3   probe_kind=="dynamic" but invalid (not enabled / trigger not allowed / budget exhausted)
+             → downgrade to preset if budget remains, else forced move_on
 
 Every override is returned along with a reason so the moderator can log
 it (enabling post-hoc debugging of "why did the AI jump questions?").
@@ -45,8 +47,9 @@ def validate_decision(
     question: dict[str, Any] | None,
     probes_done: int,
     sections: list[dict[str, Any]],
+    dynamic_probes_done: int = 0,
 ) -> ValidationResult:
-    """Enforce the three hard probe rules.
+    """Enforce the hard probe rules (preset + dynamic).
 
     Pure function — doesn't touch the DB or ``ExecutionState``. Callers
     apply the returned decision via their usual ``_apply_decision_to_state``
@@ -70,6 +73,8 @@ def validate_decision(
             decision,
             next_action="move_on",
             next_question_id=next_qid,
+            probe_kind=None,
+            dynamic_trigger=None,
             reason=f"probe_policy=none forbids followup on q={q_id}",
             matches_rule=1,
         )
@@ -85,21 +90,71 @@ def validate_decision(
             next_action="followup",
             next_question_id=None,
             probe_type="expansion",
+            probe_kind="preset",
+            dynamic_trigger=None,
             probe_triggered_by="probe_policy=deep requires >=1 probe",
             reason=f"probe_policy=deep enforced on q={q_id}",
             matches_rule=1,
         )
 
-    # Rule 2 — probes_done cap: once exhausted, force move_on.
-    if decision.next_action == "followup" and probes_done >= max_probes:
+    # Rule 2 — preset budget exhausted → move_on (unless valid dynamic probe).
+    if (
+        decision.next_action == "followup"
+        and getattr(decision, "probe_kind", None) != "dynamic"
+        and probes_done >= max_probes
+    ):
         next_qid = _next_qid_after(sections, q_id)
         return _override(
             decision,
             next_action="move_on",
             next_question_id=next_qid,
+            probe_kind=None,
+            dynamic_trigger=None,
             reason=f"max_probes={max_probes} reached on q={q_id}",
             matches_rule=2,
         )
+
+    # Rule 3 — dynamic probe validity check (enabled + trigger allowed + budget).
+    if decision.next_action == "followup" and getattr(decision, "probe_kind", None) == "dynamic":
+        dp = question.get("dynamic_probe") or {}
+        dp_enabled = dp.get("enabled", False)
+        dp_max = int(dp.get("max_extra_rounds", 0))
+        dp_triggers = dp.get("triggers", [])
+        trigger = getattr(decision, "dynamic_trigger", None)
+
+        invalid_reason = None
+        if not dp_enabled:
+            invalid_reason = "dynamic_probe not enabled"
+        elif not trigger:
+            invalid_reason = "dynamic_trigger is required"
+        elif trigger not in dp_triggers:
+            invalid_reason = f"trigger={trigger} not in {dp_triggers}"
+        elif dynamic_probes_done >= dp_max:
+            invalid_reason = f"dynamic budget={dp_max} exhausted"
+
+        if invalid_reason:
+            if probes_done < max_probes:
+                return _override(
+                    decision,
+                    next_action="followup",
+                    next_question_id=None,
+                    probe_type=decision.probe_type or "expansion",
+                    probe_kind="preset",
+                    dynamic_trigger=None,
+                    probe_triggered_by=decision.probe_triggered_by or "downgraded from dynamic",
+                    reason=f"{invalid_reason} on q={q_id}, downgraded to preset",
+                    matches_rule=3,
+                )
+            next_qid = _next_qid_after(sections, q_id)
+            return _override(
+                decision,
+                next_action="move_on",
+                next_question_id=next_qid,
+                probe_kind=None,
+                dynamic_trigger=None,
+                reason=f"{invalid_reason} on q={q_id} and preset exhausted",
+                matches_rule=3,
+            )
 
     # Model's decision stands.
     return ValidationResult(decision=decision, overridden=False)
@@ -121,6 +176,8 @@ def _override(
     next_action: str,
     next_question_id: str | None,
     probe_type: str | None = None,
+    probe_kind: str | None = None,
+    dynamic_trigger: str | None = None,
     probe_triggered_by: str | None = None,
     reason: str,
     matches_rule: int,
@@ -130,6 +187,8 @@ def _override(
         next_action=next_action,  # type: ignore[arg-type]
         next_question_id=next_question_id,
         probe_type=probe_type,  # type: ignore[arg-type]
+        probe_kind=probe_kind,  # type: ignore[arg-type]
+        dynamic_trigger=dynamic_trigger,  # type: ignore[arg-type]
         probe_triggered_by=probe_triggered_by,
         matches_rule=matches_rule,
     )

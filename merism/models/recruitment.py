@@ -73,6 +73,44 @@ class ChannelConfig(TimestampedModel):
         return f"ChannelConfig({self.channel_type}, {self.name})"
 
 
+class ChannelTarget(TimestampedModel):
+    """A saved outbound destination bound to one channel configuration.
+
+    First version supports only group targets. We keep the model generic so
+    later we can support direct user outreach without reshaping broadcasts.
+    """
+
+    class RecipientKind(models.TextChoices):
+        GROUP = "group"
+        USER = "user"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="channel_targets")
+    channel = models.ForeignKey(
+        ChannelConfig, on_delete=models.CASCADE, related_name="targets"
+    )
+    name = models.CharField(max_length=200)
+    recipient_id = models.CharField(max_length=200)
+    recipient_kind = models.CharField(
+        max_length=16,
+        choices=RecipientKind.choices,
+        default=RecipientKind.GROUP,
+    )
+    is_default = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        db_table = "merism_channel_target"
+        indexes = [
+            models.Index(fields=["team", "is_active"], name="merism_ct_team_active_idx"),
+            models.Index(fields=["channel", "is_default"], name="merism_ct_channel_default_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"ChannelTarget({self.name}, {self.channel_id})"
+
+
 class MessageTemplate(TimestampedModel):
     """Invite message template with {{placeholder}} rendering.
 

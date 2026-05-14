@@ -17,9 +17,12 @@ export const sceneImports: SceneImportMap = {
     [Scene.Settings]: () => import("~/features/settings/SettingsPage"),
     [Scene.Studies]: () => import("~/features/studies/StudiesPage"),
     [Scene.Study]: () => import("~/features/studies/StudyPage"),
+    [Scene.Insights]: () => import("~/features/analysis/InsightsPage"),
+    [Scene.Reports]: () => import("~/features/analysis/ReportsPage"),
     [Scene.InterviewRoom]: () => import("~/features/interview/InterviewRoomPage"),
     [Scene.ParticipantEntry]: () => import("~/features/participant/ParticipantEntryPage"),
     [Scene.Login]: () => import("~/features/authentication/LoginPage"),
+    [Scene.Welcome]: () => import("~/features/welcome/WelcomePage"),
     [Scene.Error404]: () => import("~/layout/Error404"),
 }
 
@@ -32,6 +35,8 @@ export const sceneConfigs: SceneConfigMap = {
     [Scene.Settings]: { name: "Settings" },
     [Scene.Studies]: { name: "Studies" },
     [Scene.Study]: { name: "Study", hideFromNav: true },
+    [Scene.Insights]: { name: "Insights" },
+    [Scene.Reports]: { name: "Reports" },
     [Scene.InterviewRoom]: {
         name: "Interview",
         layout: "participant",
@@ -46,6 +51,12 @@ export const sceneConfigs: SceneConfigMap = {
     },
     [Scene.Login]: {
         name: "Log in",
+        layout: "plain",
+        allowUnauthenticated: true,
+        hideFromNav: true,
+    },
+    [Scene.Welcome]: {
+        name: "Welcome",
         layout: "plain",
         allowUnauthenticated: true,
         hideFromNav: true,

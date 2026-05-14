@@ -58,6 +58,10 @@ async def process_session_transcripts(session_id: str | UUID) -> dict[str, int]:
         "polished": 0,
         "quotes": 0,
         "tagged": 0,
+        "codebook_suggestions": 0,
+        "codebook_applied": 0,
+        "codebook_retagged": 0,
+        "theme_triggered": False,
         "indexed": 0,
         "insight_created": 0,
         "themes_created": 0,
@@ -108,16 +112,31 @@ async def process_session_transcripts(session_id: str | UUID) -> dict[str, int]:
     # have built up, merge them into the study codebook.
     await promote_inductive_suggestions(session.study, min_occurrences=2)
 
-    # ── 5. RAG indexing ──
+    # ── 5. Codebook governance (inductive suggest → review → apply → retag) ──
+    try:
+        from merism.codebook.pipeline import run_codebook_governance
+
+        gov_counters = await run_codebook_governance(session.study_id, session.id)
+        counters["codebook_suggestions"] = gov_counters.get("suggestions", 0)
+        counters["codebook_applied"] = gov_counters.get("applied", 0)
+        counters["codebook_retagged"] = gov_counters.get("retagged", 0)
+        counters["theme_triggered"] = gov_counters.get("theme_triggered", False)
+    except Exception:
+        logger.exception(
+            "post_session.codebook_governance_failed",
+            extra={"session_id": str(session.id)},
+        )
+
+    # ── 6. RAG indexing ──
     # Refresh the quotes to pick up freshly-written tags.
     quotes = await _arefresh_quotes(quotes)
     counters["indexed"] = await index_session_quotes(session, quotes)
 
-    # ── 6. SessionInsight generation ──
+    # ── 7. SessionInsight generation ──
     insight = await generate_insight(session, quotes)
     counters["insight_created"] = 1 if insight is not None else 0
 
-    # ── 7. Cross-session analysis (themes + coverage) ──
+    # ── 8. Cross-session analysis (themes + coverage) ──
     # Best-effort — don't fail the pipeline if analysis errors.
     try:
         from merism.analysis.pipeline import rebuild_study_analysis

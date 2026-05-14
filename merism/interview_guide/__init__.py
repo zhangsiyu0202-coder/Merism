@@ -89,7 +89,8 @@ def validate_sections(sections: Any) -> list[dict[str, Any]]:
         for q_idx, raw_q in enumerate(raw_questions):
             questions.append(_normalize_question(raw_q, section_idx=idx, q_idx=q_idx))
 
-        out.append(
+        normalised_section = dict(section)
+        normalised_section.update(
             {
                 "id": section_id,
                 "title": title,
@@ -98,6 +99,7 @@ def validate_sections(sections: Any) -> list[dict[str, Any]]:
                 "questions": questions,
             }
         )
+        out.append(normalised_section)
 
     return out
 
@@ -171,15 +173,18 @@ def _normalize_question(
     required = bool(raw.get("required", False))
 
     # Preserve ``original_question_id`` when concept_plan expanded us.
-    normalised: dict[str, Any] = {
-        "id": q_id,
-        "text": text,
-        "intent": intent or "",
-        "probe_policy": probe_policy,
-        "max_probes": max_probes,
-        "linked_stimulus_ids": linked_stimulus_ids,
-        "required": required,
-    }
+    normalised: dict[str, Any] = dict(raw)
+    normalised.update(
+        {
+            "id": q_id,
+            "text": text,
+            "intent": intent or "",
+            "probe_policy": probe_policy,
+            "max_probes": max_probes,
+            "linked_stimulus_ids": linked_stimulus_ids,
+            "required": required,
+        }
+    )
     if "original_question_id" in raw:
         normalised["original_question_id"] = raw["original_question_id"]
     # Keep the legacy field on the wire so old clients don't crash; new

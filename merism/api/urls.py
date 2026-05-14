@@ -16,11 +16,20 @@ from merism.api.analysis_views import (
     StudyGoalViewSet,
     ThemeViewSet,
 )
+from merism.api.insights_views import (
+    CustomReportViewSet,
+    InsightFindingViewSet,
+    InsightHighlightViewSet,
+    ReportQuestionViewSet,
+    ReportSegmentViewSet,
+    StudyInsightsViewSet,
+    shared_report_view,
+)
 from merism.api.cleaning_views import GlossaryViewSet
 from merism.api.home import HomeStatsView
 from merism.api.ask_views import ask_stream, knowledge_search
 from merism.api.interview_message_view import post_message
-from merism.api.llm_gateway_views import LLMBudgetViewSet, LLMProviderViewSet, LLMRouteViewSet
+from merism.api.link_tracking_views import LinkClickViewSet, LinkShareEventViewSet
 from merism.api.users import UserMeView
 
 router = DefaultRouter()
@@ -63,10 +72,7 @@ router.register(r"custom-report-queries", views.CustomReportQueryViewSet, basena
 router.register(r"conversations", views.ConversationViewSet, basename="conversation")
 router.register(r"memories", views.AgentMemoryViewSet, basename="agentmemory")
 
-# ── LLM Gateway ───────────────────────────────────────────
-router.register(r"llm/providers", LLMProviderViewSet, basename="llmprovider")
-router.register(r"llm/routes", LLMRouteViewSet, basename="llmroute")
-router.register(r"llm/budgets", LLMBudgetViewSet, basename="llmbudget")
+# ── LLM Gateway (DEPRECATED — removed, use ServiceSettings admin) ──
 
 # ── Analysis (cross-session) ───────────────────────────────
 router.register(r"study-goals", StudyGoalViewSet, basename="studygoal")
@@ -77,11 +83,24 @@ router.register(r"cohort-segments", CohortSegmentViewSet, basename="cohortsegmen
 # ── Cleaning (transcript pipeline) ─────────────────────────
 router.register(r"glossaries", GlossaryViewSet, basename="glossary")
 
+# ── Insights & Custom Reports ──────────────────────────────
+router.register(r"study-insights", StudyInsightsViewSet, basename="studyinsights")
+router.register(r"insight-highlights", InsightHighlightViewSet, basename="insighthighlight")
+router.register(r"insight-findings", InsightFindingViewSet, basename="insightfinding")
+router.register(r"custom-reports", CustomReportViewSet, basename="customreport2")
+router.register(r"report-segments", ReportSegmentViewSet, basename="reportsegment")
+router.register(r"report-questions", ReportQuestionViewSet, basename="reportquestion")
+
+# ── Link tracking ──────────────────────────────────────────
+router.register(r"link-clicks", LinkClickViewSet, basename="linkclick")
+router.register(r"link-share-events", LinkShareEventViewSet, basename="linkshareevent")
+
 urlpatterns = [
     path("users/me/", UserMeView.as_view(), name="user-me"),
     path("home/stats/", HomeStatsView.as_view(), name="home-stats"),
     path("ask/stream/", ask_stream, name="ask-stream"),
     path("sessions/<uuid:session_id>/message/", post_message, name="session-message"),
     path("knowledge/search/", knowledge_search, name="knowledge-search"),
+    path("shared/report/<str:token>/", shared_report_view, name="shared-report"),
     path("", include(router.urls)),
 ]

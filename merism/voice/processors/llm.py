@@ -86,31 +86,39 @@ class LLMProcessor(FrameProcessor):
             *self._history[-self._context_window :],
         ]
 
-        client = get_llm()
-        gw_client = None
+        # Priority: ServiceSettings > sync_get_client > get_llm()
+        stream = None
         if self._team and self._trace_id:
             try:
                 from merism.llm_gateway.client import sync_get_client
 
-                gw_client = sync_get_client("chat", team=self._team, trace_id=self._trace_id)
-            except Exception:
-                pass
+                client = sync_get_client("chat", team=self._team, trace_id=self._trace_id)
+                # Duck-type: if it has sync_stream, use it; else use OpenAI API
+                if hasattr(client, "sync_stream"):
+                    stream = client.sync_stream(messages=messages, max_tokens=self._max_tokens)
+                else:
+                    stream = client.chat.completions.create(
+                        model=self._model,
+                        messages=messages,
+                        stream=True,
+                        max_tokens=self._max_tokens,
+                    )
+            except Exception as exc:
+                logger.warning("voice.llm.gateway_failed, falling back", extra={"error": str(exc)})
+                stream = None
 
-        try:
-            if gw_client:
-                stream = gw_client.sync_stream(
-                    messages=messages, max_tokens=self._max_tokens,
-                )
-            else:
+        if stream is None:
+            try:
+                client = get_llm()
                 stream = client.chat.completions.create(
                     model=self._model,
                     messages=messages,
                     stream=True,
                     max_tokens=self._max_tokens,
                 )
-        except Exception as exc:
-            logger.warning("voice.llm.create_failed", extra={"error": str(exc)})
-            return
+            except Exception as exc:
+                logger.warning("voice.llm.create_failed", extra={"error": str(exc)})
+                return
 
         response_id = f"resp_{uuid.uuid4().hex[:12]}"
         self._current_response_id = response_id

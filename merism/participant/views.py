@@ -286,6 +286,24 @@ def resolve_link(request: HttpRequest, slug: str) -> JsonResponse:
     except _StudyFullError:
         return _err("study_full", http_status=409)
 
+    # Record click event (deduped, bot-filtered)
+    if not is_preview:
+        from merism.participant.link_tracking import record_click
+
+        # Resolve upstream referrer: if ?ref=<participation_id> is present,
+        # it means someone shared this link from their session.
+        referrer_participation = None
+        ref_id = request.GET.get("ref")
+        if ref_id:
+            referrer_participation = Participation.objects.filter(id=ref_id).first()
+
+        record_click(
+            request,
+            link,
+            participation=participation,
+            referrer_participation=referrer_participation,
+        )
+
     return _ok(participation, link, _compute_next_step(participation, link))
 
 
@@ -373,6 +391,35 @@ def screener(request: HttpRequest, slug: str) -> JsonResponse:
         passed=passed,
         score=score,
     )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def share_link(request: HttpRequest, slug: str) -> JsonResponse:
+    """``POST /i/<slug>/share/`` — record a link copy/share event.
+
+    Body: {"action": "copy" | "share_api" | "forward"}
+    """
+    link, err = _resolve_link(slug)
+    if err:
+        if err == "not_found":
+            return _err(err, http_status=404)
+        return _err(err, http_status=410)
+    assert link is not None
+
+    participation = _participation_from_cookie(request, link)
+
+    import json
+    try:
+        body = json.loads(request.body or b"{}")
+    except Exception:
+        body = {}
+    action = body.get("action", "copy")
+
+    from merism.participant.link_tracking import record_share
+
+    record_share(request, link, action=action, participation=participation)
+    return JsonResponse({"ok": True})
 
 
 @csrf_exempt

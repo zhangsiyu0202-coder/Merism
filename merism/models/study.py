@@ -196,6 +196,10 @@ class StudyLink(TimestampedModel):
     # treats past expiries the same as ``is_active=False``.
     expires_at = models.DateTimeField(null=True, blank=True)
 
+    # Click counter cache (updated atomically via F() on each recorded click).
+    clicks = models.PositiveIntegerField(default=0)
+    last_clicked_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         db_table = "merism_study_link"
         indexes = [

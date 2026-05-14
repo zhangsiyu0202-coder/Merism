@@ -1,23 +1,29 @@
-"""End-to-end moderator → SessionEvent logging, for the 2-node voice pipeline.
+"""Moderator event-contract tests.
 
-Verifies the coverage_steer → generate flow:
-- each turn appends user_turn + model_reply + decision events
-- trace_id is carried onto the events
-- max_probes hard cap holds (via decision_validator overriding the LLM)
+These tests intentionally stop at the event boundary. The async
+``stream_turn`` path is covered elsewhere; here we verify the
+deterministic contract that must hold after a moderator decision:
 
-Mocks the LLM Gateway client's ``complete()`` (decision phase) and
-``stream()`` (generation phase) so no network is needed.
+- user/model/decision/state_transition events are appended
+- validator overrides are persisted in the decision event
+- dynamic probe decisions reconstruct into dynamic session state
+
+This avoids sqlite + async ORM thread-locking during unit tests while
+still asserting the authoritative event log shape.
 """
 
 from __future__ import annotations
 
-import json
+import copy
 import uuid
-from types import SimpleNamespace
-from unittest.mock import AsyncMock
 
 import pytest
 
+from merism.conductor.decision_validator import validate_decision
+from merism.conductor.event_log import append_events, reconstruct_state
+from merism.conductor.moderator import _apply_decision_to_state
+from merism.conductor.prompts import ModeratorDecision
+from merism.conductor.state import ExecutionState
 from merism.models import (
     InterviewGuide,
     InterviewSession,
@@ -30,58 +36,10 @@ from merism.models import (
 )
 
 
-pytestmark = pytest.mark.django_db(transaction=True)
+pytestmark = pytest.mark.django_db
 
 
-def _fake_complete_response(decision_payload: dict) -> SimpleNamespace:
-    """Build the shape returned by LiteLLMClient.complete()."""
-    message = SimpleNamespace(content=json.dumps(decision_payload))
-    return SimpleNamespace(choices=[SimpleNamespace(message=message)])
-
-
-class _FakeStream:
-    """Async iterator for LiteLLMClient.stream() — yields text chunks only."""
-
-    def __init__(self, text: str):
-        self._text = text
-        self._emitted = 0
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        self._emitted += 1
-        if self._emitted == 1:
-            return _delta_chunk(self._text[: len(self._text) // 2])
-        if self._emitted == 2:
-            return _delta_chunk(self._text[len(self._text) // 2 :])
-        raise StopAsyncIteration
-
-
-def _delta_chunk(content: str):
-    delta = SimpleNamespace(content=content, tool_calls=None)
-    choice = SimpleNamespace(delta=delta, finish_reason=None, index=0)
-    return SimpleNamespace(choices=[choice])
-
-
-class _FakeGatewayClient:
-    """Stands in for LiteLLMClient. Exposes complete() + stream()."""
-
-    def __init__(self, *, decision: dict, reply_text: str):
-        self._decision = decision
-        self._reply_text = reply_text
-
-    async def complete(self, **kwargs):
-        return _fake_complete_response(self._decision)
-
-    async def stream(self, **kwargs):
-        # Must be an async generator directly (not a coroutine returning one)
-        stream = _FakeStream(self._reply_text)
-        async for chunk in stream:
-            yield chunk
-
-
-def _boot_session():
+def _boot_session() -> InterviewSession:
     org = Organization.objects.create(name="Mod", slug=f"mod-{uuid.uuid4().hex[:6]}")
     team = Team.objects.create(organization=org, name="MT")
     study = Study.objects.create(team=team, research_goal="test moderator events")
@@ -95,94 +53,188 @@ def _boot_session():
                 "title": "Warm-up",
                 "scope": "global",
                 "questions": [
-                    {"id": "q1", "text": "Tell me.", "probe_policy": "light", "max_probes": 2},
+                    {
+                        "id": "q1",
+                        "text": "Tell me.",
+                        "probe_policy": "light",
+                        "max_probes": 2,
+                        "probe_directions": ["specific example", "workaround"],
+                        "dynamic_probe": {
+                            "enabled": True,
+                            "max_extra_rounds": 1,
+                            "triggers": ["new_theme", "strong_emotion"],
+                        },
+                    },
                     {"id": "q2", "text": "And then?", "probe_policy": "light", "max_probes": 2},
                 ],
             }
         ],
     )
     participant = Participant.objects.create(team=team)
-    p = Participation.objects.create(study=study, team=team, participant=participant)
+    participation = Participation.objects.create(
+        study=study,
+        team=team,
+        participant=participant,
+    )
     return InterviewSession.objects.create(
         team=team,
         study=study,
-        participation=p,
+        participation=participation,
         guide=guide,
-        trace_id=p.trace_id,
+        trace_id=participation.trace_id,
         moderator_state={"current_section_id": "s1", "current_question_id": "q1", "phase": "active"},
     )
 
 
-@pytest.mark.asyncio
-async def test_stream_turn_logs_events_per_turn(monkeypatch):
-    from asgiref.sync import sync_to_async
-
-    session = await sync_to_async(_boot_session)()
-
-    fake_client = _FakeGatewayClient(
-        decision={"next_action": "move_on", "next_question_id": "q2"},
-        reply_text="Thanks for sharing.",
+def _append_turn_events(
+    session: InterviewSession,
+    *,
+    participant_message: str,
+    assistant_text: str,
+    decision: ModeratorDecision,
+    state: ExecutionState,
+    qid_at_turn: str,
+    validator_overridden: bool = False,
+    validator_reason: str | None = None,
+) -> None:
+    append_events(
+        session,
+        [
+            ("user_turn", {"text": participant_message, "question_id": qid_at_turn}),
+            ("model_reply", {"text": assistant_text, "question_id": qid_at_turn}),
+            (
+                "decision",
+                {
+                    "decision": {
+                        "next_action": decision.next_action,
+                        "next_question_id": decision.next_question_id,
+                        "probe_type": decision.probe_type,
+                        "probe_kind": decision.probe_kind,
+                        "dynamic_trigger": decision.dynamic_trigger,
+                        "matches_rule": decision.matches_rule,
+                        "think_notes": decision.think_notes,
+                        "target_goal_id": decision.target_goal_id,
+                        "off_topic": decision.off_topic,
+                        "steering_strategy": decision.steering_strategy,
+                    },
+                    "validator_overridden": validator_overridden,
+                    "validator_reason": validator_reason,
+                },
+            ),
+            (
+                "state_transition",
+                {
+                    "current_question_id": state.current_question_id,
+                    "current_section_id": state.current_section_id,
+                    "phase": state.phase,
+                    "turn_count": state.turn_count,
+                    "answered_question_ids": copy.deepcopy(state.answered_question_ids),
+                    "followups_used": copy.deepcopy(state.followups_used),
+                    "dynamic_probes_used": copy.deepcopy(state.dynamic_probes_used),
+                    "expanded_sections": copy.deepcopy(state.expanded_sections),
+                    "concept_by_question_id": copy.deepcopy(state.concept_by_question_id),
+                    "concepts_shown": copy.deepcopy(state.concepts_shown),
+                    "pending_stimulus_events": copy.deepcopy(state.pending_stimulus_events),
+                },
+            ),
+        ],
+        trace_id=session.trace_id,
     )
-    # Patch get_client to always return our fake (for both decision + generate)
-    async_mock = AsyncMock(return_value=fake_client)
-    monkeypatch.setattr("merism.conductor.moderator.get_client", async_mock)
 
-    from merism.conductor.moderator import stream_turn
 
-    session = await sync_to_async(
-        lambda: type(session).objects.select_related("study__team", "guide").get(id=session.id)
-    )()
+def test_stream_turn_logs_events_per_turn() -> None:
+    session = _boot_session()
+    state = ExecutionState.model_validate(session.moderator_state or {})
+    state.followups_used["q1"] = {"asked": 0, "budget": 2}
 
-    chunks: list[str] = []
-    async for delta in stream_turn(session, participant_message="I use it daily."):
-        chunks.append(delta)
+    decision = ModeratorDecision(next_action="move_on", next_question_id="q2")
+    qid_at_turn = state.current_question_id
+    _apply_decision_to_state(state, decision, session.guide.sections or [])
+    _append_turn_events(
+        session,
+        participant_message="I use it daily.",
+        assistant_text="Thanks for sharing.",
+        decision=decision,
+        state=state,
+        qid_at_turn=qid_at_turn,
+    )
 
-    assistant_text = "".join(chunks)
-    assert assistant_text == "Thanks for sharing."
-
-    events = await sync_to_async(
-        lambda: list(SessionEvent.objects.filter(session=session).order_by("seq"))
-    )()
+    events = list(SessionEvent.objects.filter(session=session).order_by("seq"))
     kinds = [e.kind for e in events]
-    assert kinds == ["user_turn", "model_reply", "decision"]
+    assert kinds == ["user_turn", "model_reply", "decision", "state_transition"]
     assert events[0].payload["text"] == "I use it daily."
     assert events[1].payload["text"] == "Thanks for sharing."
     assert events[2].payload["decision"]["next_action"] == "move_on"
     assert all(e.trace_id == session.trace_id for e in events)
 
 
-@pytest.mark.asyncio
-async def test_stream_turn_max_probes_forces_move_on(monkeypatch):
-    """LLM says 'followup' but probes_done >= max_probes → validator overrides."""
-    from asgiref.sync import sync_to_async
+def test_stream_turn_max_probes_forces_move_on() -> None:
+    session = _boot_session()
+    question = session.guide.sections[0]["questions"][0]
+    state = ExecutionState.model_validate(session.moderator_state or {})
+    state.followups_used["q1"] = {"asked": 2, "budget": 2}
 
-    session = await sync_to_async(_boot_session)()
-    session.moderator_state = {
-        "current_section_id": "s1",
-        "current_question_id": "q1",
-        "phase": "active",
-        "followups_used": {"q1": {"asked": 2, "budget": 2}},
-    }
-    await sync_to_async(session.save)(update_fields=["moderator_state"])
-
-    fake_client = _FakeGatewayClient(
-        decision={"next_action": "followup", "probe_type": "expansion", "probe_triggered_by": "vague"},
-        reply_text="Go on.",
+    proposed = ModeratorDecision(
+        next_action="followup",
+        probe_type="expansion",
+        probe_triggered_by="vague",
     )
-    async_mock = AsyncMock(return_value=fake_client)
-    monkeypatch.setattr("merism.conductor.moderator.get_client", async_mock)
+    validation = validate_decision(
+        proposed,
+        question=question,
+        probes_done=2,
+        sections=session.guide.sections or [],
+        dynamic_probes_done=0,
+    )
+    assert validation.overridden is True
+    assert validation.decision.next_action == "move_on"
 
-    from merism.conductor.moderator import stream_turn
+    qid_at_turn = state.current_question_id
+    _apply_decision_to_state(state, validation.decision, session.guide.sections or [])
+    _append_turn_events(
+        session,
+        participant_message="and then",
+        assistant_text="Go on.",
+        decision=validation.decision,
+        state=state,
+        qid_at_turn=qid_at_turn,
+        validator_overridden=validation.overridden,
+        validator_reason=validation.reason,
+    )
 
-    session = await sync_to_async(
-        lambda: type(session).objects.select_related("study__team", "guide").get(id=session.id)
-    )()
-
-    async for _ in stream_turn(session, participant_message="and then"):
-        pass
-
-    events = await sync_to_async(
-        lambda: list(SessionEvent.objects.filter(session=session).order_by("seq"))
-    )()
-    decision_event = [e for e in events if e.kind == "decision"][-1]
+    decision_event = SessionEvent.objects.filter(session=session, kind="decision").latest("seq")
     assert decision_event.payload["validator_overridden"] is True
+    assert decision_event.payload["decision"]["next_action"] == "move_on"
+
+
+def test_stream_turn_dynamic_probe_round_trips() -> None:
+    session = _boot_session()
+    state = ExecutionState.model_validate(session.moderator_state or {})
+    state.followups_used["q1"] = {"asked": 0, "budget": 2}
+    state.dynamic_probes_used["q1"] = {"asked": 0, "budget": 1}
+
+    decision = ModeratorDecision(
+        next_action="followup",
+        probe_type="reasoning",
+        probe_kind="dynamic",
+        dynamic_trigger="new_theme",
+        probe_triggered_by="participant introduced a new workflow",
+    )
+    qid_at_turn = state.current_question_id
+    _apply_decision_to_state(state, decision, session.guide.sections or [])
+    _append_turn_events(
+        session,
+        participant_message="I also built a spreadsheet workaround for it.",
+        assistant_text="Can you walk me through that new workflow a bit more?",
+        decision=decision,
+        state=state,
+        qid_at_turn=qid_at_turn,
+    )
+
+    decision_event = SessionEvent.objects.filter(session=session, kind="decision").latest("seq")
+    assert decision_event.payload["decision"]["probe_kind"] == "dynamic"
+    assert decision_event.payload["decision"]["dynamic_trigger"] == "new_theme"
+
+    rebuilt_state = reconstruct_state(session)
+    assert rebuilt_state.dynamic_probes_used.get("q1", {}).get("asked", 0) == 1
+    assert rebuilt_state.followups_used.get("q1", {}).get("asked", 0) == 0

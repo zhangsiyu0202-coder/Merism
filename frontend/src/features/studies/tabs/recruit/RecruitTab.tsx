@@ -13,9 +13,11 @@ import {
     SectionLabel,
     Tag,
 } from "~/lib/merism"
+import { useLinkShare } from "~/lib/hooks/useLinkShare"
 import { studyLogic } from "~/features/studies/studyLogic"
 
 import { broadcastsLogic, type BroadcastRow, type StudyLinkRow } from "./broadcastsLogic"
+import { launchRecruitmentLogic } from "./launchRecruitmentLogic"
 import { QuotaDialog } from "./QuotaDialog"
 import { recruitPlanLogic } from "./recruitPlanLogic"
 
@@ -39,6 +41,7 @@ import { recruitPlanLogic } from "./recruitPlanLogic"
 export default function RecruitTab(): JSX.Element {
     useMountedLogic(recruitPlanLogic)
     useMountedLogic(broadcastsLogic)
+    useMountedLogic(launchRecruitmentLogic)
     const { study } = useValues(studyLogic)
     const {
         draftAudience,
@@ -208,7 +211,7 @@ export default function RecruitTab(): JSX.Element {
             )}
 
             <QuotaDialog />
-            <RecruitmentStatusPanel />
+            <RecruitmentStatusPanel hasUnsavedChanges={hasUnsavedChanges} />
         </div>
     )
 }
@@ -322,12 +325,85 @@ function QuotaRow({
 // This panel is just a mirror so researchers can see status in-app.
 // ─────────────────────────────────────────────────────────────
 
-function RecruitmentStatusPanel(): JSX.Element {
+function RecruitmentStatusPanel({
+    hasUnsavedChanges,
+}: {
+    hasUnsavedChanges: boolean
+}): JSX.Element {
     const { broadcasts, studyLinks, broadcastsLoading, studyLinksLoading } = useValues(broadcastsLogic)
     const { createStudyLink } = useActions(broadcastsLogic)
+    const { isLaunching, lastLaunchResult, launchError } = useValues(launchRecruitmentLogic)
+    const { launchRecruitment, clearLaunchFeedback } = useActions(launchRecruitmentLogic)
 
     return (
         <section className="flex flex-col gap-6">
+            <SectionLabel>Recruitment outreach</SectionLabel>
+            <div className="flex flex-col gap-4 rounded-merism-lg bg-merism-surface p-6 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="max-w-2xl">
+                        <p className="text-merism-body font-medium text-merism-text">
+                            Generate and send invites automatically
+                        </p>
+                        <p className="text-merism-body-sm text-merism-text-muted">
+                            Merism will turn your target audience and quotas into a
+                            group-ready invite, then send it to the default QQ / WeCom
+                            groups configured in admin.
+                        </p>
+                    </div>
+                    <Button
+                        iconLeft={<Send className="h-4 w-4" />}
+                        isLoading={isLaunching}
+                        disabled={hasUnsavedChanges}
+                        onClick={launchRecruitment}
+                    >
+                        Start recruitment
+                    </Button>
+                </div>
+
+                {hasUnsavedChanges && (
+                    <p className="text-merism-body-sm text-[color:var(--merism-status-warning)]">
+                        Save the recruitment plan before sending outreach.
+                    </p>
+                )}
+
+                {launchError && (
+                    <div className="flex items-start justify-between gap-3 rounded-merism-md bg-[color:var(--merism-status-danger-soft)] px-4 py-3">
+                        <p className="text-merism-body-sm text-merism-text">
+                            {launchError}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={clearLaunchFeedback}
+                            className="text-merism-caption text-merism-text-subtle hover:text-merism-text"
+                        >
+                            Dismiss
+                        </button>
+                    </div>
+                )}
+
+                {lastLaunchResult && (
+                    <div className="flex flex-col gap-2 rounded-merism-md bg-[color:var(--merism-status-success-soft)] px-4 py-3">
+                        <p className="text-merism-body-sm text-merism-text">
+                            Queued {lastLaunchResult.created_count} deliveries across{" "}
+                            {lastLaunchResult.queued_broadcast_ids.length} broadcasts.
+                        </p>
+                        {lastLaunchResult.skipped_channels.length > 0 && (
+                            <p className="text-merism-caption text-merism-text-muted">
+                                Skipped:{" "}
+                                {lastLaunchResult.skipped_channels
+                                    .map((item: { channel_name: string }) => item.channel_name)
+                                    .join(", ")}
+                            </p>
+                        )}
+                        {lastLaunchResult.errors.length > 0 && (
+                            <p className="text-merism-caption text-merism-text-muted">
+                                Errors: {lastLaunchResult.errors.join(" · ")}
+                            </p>
+                        )}
+                    </div>
+                )}
+            </div>
+
             <SectionLabel>Participant URL</SectionLabel>
             <StudyLinkRow studyLinks={studyLinks} loading={studyLinksLoading} onCreate={createStudyLink} />
 
@@ -346,7 +422,6 @@ function StudyLinkRow({
     loading: boolean
     onCreate: () => void
 }): JSX.Element {
-    const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
     const [qrSlug, setQrSlug] = useState<string | null>(null)
     if (loading && studyLinks.length === 0) {
         return <div className="rounded-merism-lg bg-merism-surface p-6 text-merism-body-sm text-merism-text-muted shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">Loading links…</div>
@@ -364,53 +439,61 @@ function StudyLinkRow({
     }
     return (
         <div className="flex flex-col gap-3">
-            {studyLinks.map((link) => {
-                const url = `${window.location.origin}/i/${link.slug}`
-                const handleCopy = async () => {
-                    await navigator.clipboard.writeText(url)
-                    setCopiedSlug(link.slug)
-                    window.setTimeout(() => setCopiedSlug(null), 1500)
-                }
-                return (
-                    <div key={link.id} className="flex flex-col gap-2">
-                        <div
-                            className="flex items-center gap-3 rounded-merism-lg bg-merism-surface px-4 py-3 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]"
-                        >
-                        <Link2 className="h-4 w-4 shrink-0 text-merism-text-subtle" />
-                        <code className="flex-1 truncate font-mono text-merism-label text-merism-text">{url}</code>
-                        {link.is_active ? (
-                            <Tag variant="success" size="sm">active</Tag>
-                        ) : (
-                            <Tag variant="neutral" size="sm">inactive</Tag>
-                        )}
-                        <button
-                            type="button"
-                            onClick={handleCopy}
-                            className="flex h-8 w-8 items-center justify-center rounded-merism-md bg-merism-bg-subtle text-merism-text-muted transition-colors hover:bg-merism-accent-soft hover:text-merism-text"
-                            title="Copy link"
-                        >
-                            <Copy className="h-4 w-4" />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setQrSlug(qrSlug === link.slug ? null : link.slug)}
-                            className="flex h-8 w-8 items-center justify-center rounded-merism-md bg-merism-bg-subtle text-merism-text-muted transition-colors hover:bg-merism-accent-soft hover:text-merism-text"
-                            title="Show QR code"
-                        >
-                            <QrCode className="h-4 w-4" />
-                        </button>
-                        {copiedSlug === link.slug && (
-                            <span className="font-mono text-merism-caption text-[color:var(--merism-status-success)]">copied</span>
-                        )}
-                    </div>
-                    {qrSlug === link.slug && (
-                        <div className="flex justify-center rounded-merism-md border border-merism-border bg-white p-4">
-                            <QRCodeSVG value={url} size={160} level="H" />
-                        </div>
-                    )}
-                    </div>
-                )
-            })}
+            {studyLinks.map((link) => (
+                <StudyLinkItem key={link.id} link={link} qrSlug={qrSlug} setQrSlug={setQrSlug} />
+            ))}
+        </div>
+    )
+}
+
+function StudyLinkItem({
+    link,
+    qrSlug,
+    setQrSlug,
+}: {
+    link: StudyLinkRow
+    qrSlug: string | null
+    setQrSlug: (slug: string | null) => void
+}): JSX.Element {
+    const { copyLink, copied } = useLinkShare(link.slug)
+    const url = `${window.location.origin}/i/${link.slug}`
+    return (
+        <div className="flex flex-col gap-2">
+            <div
+                className="flex items-center gap-3 rounded-merism-lg bg-merism-surface px-4 py-3 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]"
+            >
+                <Link2 className="h-4 w-4 shrink-0 text-merism-text-subtle" />
+                <code className="flex-1 truncate font-mono text-merism-label text-merism-text">{url}</code>
+                {link.is_active ? (
+                    <Tag variant="success" size="sm">active</Tag>
+                ) : (
+                    <Tag variant="neutral" size="sm">inactive</Tag>
+                )}
+                <button
+                    type="button"
+                    onClick={copyLink}
+                    className="flex h-8 w-8 items-center justify-center rounded-merism-md bg-merism-bg-subtle text-merism-text-muted transition-colors hover:bg-merism-accent-soft hover:text-merism-text"
+                    title="Copy link"
+                >
+                    <Copy className="h-4 w-4" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setQrSlug(qrSlug === link.slug ? null : link.slug)}
+                    className="flex h-8 w-8 items-center justify-center rounded-merism-md bg-merism-bg-subtle text-merism-text-muted transition-colors hover:bg-merism-accent-soft hover:text-merism-text"
+                    title="Show QR code"
+                >
+                    <QrCode className="h-4 w-4" />
+                </button>
+                {copied && (
+                    <span className="font-mono text-merism-caption text-[color:var(--merism-status-success)]">copied</span>
+                )}
+            </div>
+            {qrSlug === link.slug && (
+                <div className="flex justify-center rounded-merism-md border border-merism-border bg-white p-4">
+                    <QRCodeSVG value={url} size={160} level="H" />
+                </div>
+            )}
         </div>
     )
 }
@@ -425,7 +508,8 @@ function BroadcastList({ rows, loading }: { rows: BroadcastRow[]; loading: boole
                 <div>
                     <p className="text-merism-body font-medium text-merism-text">No broadcasts sent yet</p>
                     <p className="text-merism-body-sm text-merism-text-muted">
-                        Configure channels + send broadcasts in <a href="/admin/merism/recruitmentbroadcast/add/" className="text-merism-accent hover:underline" target="_blank" rel="noreferrer">Django admin</a>.
+                        Configure active channels and default target groups in{" "}
+                        <a href="/admin/merism/channelconfig/" className="text-merism-accent hover:underline" target="_blank" rel="noreferrer">Django admin</a>.
                     </p>
                 </div>
                 <Send className="h-5 w-5 text-merism-text-subtle" />
@@ -438,7 +522,9 @@ function BroadcastList({ rows, loading }: { rows: BroadcastRow[]; loading: boole
                 <li key={b.id} className="flex items-center gap-4 px-4 py-3">
                     <Send className="h-4 w-4 shrink-0 text-merism-text-subtle" />
                     <div className="flex-1 min-w-0">
-                        <p className="text-merism-body-sm text-merism-text">{b.channel ?? "(channel)"}</p>
+                        <p className="text-merism-body-sm text-merism-text">
+                            {b.channel_name ?? b.channel ?? "(channel)"}
+                        </p>
                         <p className="font-mono text-merism-caption text-merism-text-subtle">
                             sent: {b.counters.sent ?? 0} · failed: {b.counters.failed ?? 0} · pending: {b.counters.pending ?? 0}
                         </p>

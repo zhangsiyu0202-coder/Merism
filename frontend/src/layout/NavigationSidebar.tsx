@@ -3,17 +3,17 @@ import { router } from "kea-router"
 import {
     BookMarked,
     ChevronsUpDown,
+    FileText,
     FlaskConical,
     Home,
     Inbox,
     Lightbulb,
-    LogOut,
     PanelLeftClose,
     PanelLeftOpen,
     Plus,
     Search,
     Settings,
-    ShieldCheck,
+    Sparkles,
     type LucideIcon,
 } from "lucide-react"
 
@@ -47,6 +47,8 @@ interface NavItem {
 const ENTITY_NAV: NavItem[] = [
     { scene: Scene.Home, i18nKey: "nav.home", label: "Home", path: urls.home(), icon: Home },
     { scene: Scene.Studies, i18nKey: "nav.studies", label: "Studies", path: urls.studies(), icon: FlaskConical },
+    { scene: Scene.Insights, label: "Insights", path: urls.insights(), icon: Sparkles },
+    { scene: Scene.Reports, label: "Reports", path: urls.reports(), icon: FileText },
     { scene: Scene.Inbox, i18nKey: "nav.inbox", label: "Inbox", path: urls.inbox(), icon: Inbox },
     { scene: Scene.Repository, i18nKey: "nav.repository", label: "Repository", path: urls.repository(), icon: BookMarked },
     { scene: Scene.Decisions, i18nKey: "nav.decisions", label: "Decisions", path: urls.decisions(), icon: Lightbulb },
@@ -268,31 +270,14 @@ function BottomZone({
     isCollapsed: boolean
     onNavigate: (path: string) => void
 }): JSX.Element {
-    const { t } = useTranslation()
-    const { user } = useValues(userLogic)
     const { toggleCollapsed } = useActions(sidebarLogic)
 
     return (
         <div className="border-t border-[color:var(--merism-hairline)] p-2">
-            {user?.is_superuser && (
-                <a
-                    href="/admin/"
-                    target="_blank"
-                    rel="noreferrer"
-                    title={isCollapsed ? t("nav.admin") : undefined}
-                    className={cn(
-                        "group mx-1 my-0.5 flex items-center gap-3 rounded-merism-md text-merism-label text-merism-text-muted transition-colors hover:bg-merism-bg-subtle hover:text-merism-text",
-                        isCollapsed ? "justify-center px-0 py-2" : "px-3 py-1.5",
-                    )}
-                >
-                    <ShieldCheck className="h-4 w-4 shrink-0 text-merism-text-subtle group-hover:text-merism-text" />
-                    {!isCollapsed && <span>{t("nav.admin")}</span>}
-                </a>
-            )}
             <NavLink
                 item={{
                     scene: Scene.Settings,
-                    label: "Settings",
+                    label: "设置",
                     path: urls.settings(),
                     icon: Settings,
                 }}
@@ -300,12 +285,11 @@ function BottomZone({
                 isCollapsed={isCollapsed}
                 onNavigate={onNavigate}
             />
-            {!isCollapsed && <UserBadge />}
             <button
                 type="button"
                 onClick={toggleCollapsed}
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                title={`${isCollapsed ? "Expand" : "Collapse"} sidebar (⌘/)`}
+                aria-label={isCollapsed ? "展开" : "收起"}
+                title={isCollapsed ? "展开" : "收起"}
                 className={cn(
                     "mt-1 flex items-center rounded-merism-md text-merism-text-subtle transition-colors hover:bg-merism-bg-subtle hover:text-merism-text",
                     isCollapsed
@@ -318,59 +302,9 @@ function BottomZone({
                 ) : (
                     <>
                         <PanelLeftClose className="h-4 w-4 shrink-0" strokeWidth={1.6} />
-                        <span className="flex-1 text-left text-merism-label">Collapse</span>
-                        <kbd className="rounded-merism-sm bg-merism-bg-subtle px-1.5 py-0.5 font-mono text-[10px] text-merism-text-subtle">
-                            ⌘/
-                        </kbd>
+                        <span className="flex-1 text-left text-merism-label">收起</span>
                     </>
                 )}
-            </button>
-        </div>
-    )
-}
-
-function UserBadge(): JSX.Element | null {
-    const { user } = useValues(userLogic)
-    if (!user) return null
-
-    const displayName =
-        [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email
-    const initial = (displayName[0] ?? "U").toUpperCase()
-
-    async function handleLogout(): Promise<void> {
-        try {
-            await fetch("/accounts/logout/", { method: "POST", credentials: "include" })
-        } catch {
-            // ignore
-        }
-        window.location.assign(urls.login())
-    }
-
-    return (
-        <div className="mt-1 flex items-center gap-3 rounded-merism-md px-3 py-1.5">
-            <div
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-merism-full bg-merism-bg-subtle text-merism-text"
-                aria-hidden="true"
-            >
-                <span className="font-display text-merism-caption font-[600]">
-                    {initial}
-                </span>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-0">
-                <span className="truncate text-merism-label font-medium text-merism-text">
-                    {displayName}
-                </span>
-                <span className="truncate text-merism-caption text-merism-text-subtle">
-                    {user.email}
-                </span>
-            </div>
-            <button
-                type="button"
-                onClick={handleLogout}
-                aria-label="Sign out"
-                className="inline-flex h-6 w-6 items-center justify-center rounded-merism-md text-merism-text-subtle transition-colors hover:bg-merism-bg-subtle hover:text-merism-text"
-            >
-                <LogOut className="h-3.5 w-3.5" strokeWidth={1.8} />
             </button>
         </div>
     )
@@ -444,7 +378,7 @@ function SearchTrigger({ isCollapsed }: { isCollapsed: boolean }): JSX.Element {
             <button
                 type="button"
                 onClick={open}
-                title={`${t("common.search")} (⌘K)`}
+                title={t("common.search")}
                 className="mx-2 mt-2 flex items-center justify-center rounded-merism-md border border-[color:var(--merism-hairline-strong)] bg-merism-surface py-2 text-merism-text-subtle transition-colors hover:bg-merism-bg-subtle hover:text-merism-text"
             >
                 <Search className="h-3.5 w-3.5 shrink-0" />
@@ -459,9 +393,6 @@ function SearchTrigger({ isCollapsed }: { isCollapsed: boolean }): JSX.Element {
         >
             <Search className="h-3.5 w-3.5 shrink-0 text-merism-text-subtle" />
             <span className="flex-1 truncate">{t("common.search")}</span>
-            <kbd className="rounded-merism-sm bg-merism-bg-subtle px-1.5 py-0.5 font-mono text-[10px] text-merism-text-subtle">
-                ⌘K
-            </kbd>
         </button>
     )
 }

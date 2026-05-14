@@ -13,7 +13,6 @@ Public surface:
 
 from __future__ import annotations
 
-from merism.conductor.moderator import stream_turn
 from merism.conductor.prompts import (
     ModeratorDecision,
     build_system_prompt,
@@ -26,3 +25,11 @@ __all__ = [
     "build_system_prompt",
     "stream_turn",
 ]
+
+
+def __getattr__(name: str):
+    if name == "stream_turn":
+        from merism.conductor.moderator import stream_turn
+
+        return stream_turn
+    raise AttributeError(name)

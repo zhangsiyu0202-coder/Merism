@@ -14,9 +14,8 @@ All three route through the vendored adapters in
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
-from uuid import UUID
 
 from celery import shared_task
 from django.db import transaction
@@ -28,8 +27,9 @@ from merism.models import (
     RecruitmentBroadcast,
 )
 from merism.recruitment import decrypt_credentials, get_adapter
+from merism.recruitment.adapters.base import IMMessage
 from merism.recruitment.rate_limit import check_and_increment_rate
-from merism.recruitment.renderer import render_and_adapt
+from merism.recruitment.renderer import render_template
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ def dispatch_recruitment_delivery(self, broadcast_id: str) -> dict[str, Any]:
         logger.exception("recruit.dispatch.adapter_init_failed")
         broadcast.status = RecruitmentBroadcast.Status.FAILED
         broadcast.save(update_fields=["status", "updated_at"])
-        raise self.retry(exc=exc, countdown=60)
+        raise self.retry(exc=exc, countdown=60) from exc
 
     counters = {"sent": 0, "failed": 0, "pending": 0}
     pending_qs = DeliveryRecord.objects.filter(
@@ -79,13 +79,20 @@ def dispatch_recruitment_delivery(self, broadcast_id: str) -> dict[str, Any]:
             continue
 
         snapshot = broadcast.approved_snapshot or {}
-        content, _missing = render_and_adapt(
+        rendered_text, _missing = render_template(
             snapshot.get("template_content") or broadcast.template.content,
             context=_delivery_context(broadcast, delivery),
-            channel_type=broadcast.channel.channel_type,
+        )
+        message = IMMessage(
+            content=rendered_text,
+            msg_type=snapshot.get("msg_format") or "markdown",
+            extra=_message_extra(snapshot),
         )
         try:
-            result = adapter.send_message(delivery.recipient_id, content)
+            if delivery.recipient_kind == "group":
+                result = adapter.send_to_group(delivery.recipient_id, message)
+            else:
+                result = adapter.send_message(delivery.recipient_id, message)
         except Exception as exc:
             delivery.status = DeliveryRecord.Status.FAILED
             delivery.error = str(exc)[:500]
@@ -97,7 +104,7 @@ def dispatch_recruitment_delivery(self, broadcast_id: str) -> dict[str, Any]:
         if result.success:
             delivery.status = DeliveryRecord.Status.SENT
             delivery.message_id = result.message_id or ""
-            delivery.sent_at = datetime.now(timezone.utc)
+            delivery.sent_at = datetime.now(UTC)
             counters["sent"] += 1
             # Propagate delivery success to the recipient's Invitation.
             if delivery.trace_id:
@@ -135,7 +142,7 @@ def _delivery_context(
     link_url = ""
     invitation: Invitation | None = None
 
-    if study_link is not None:
+    if study_link is not None and delivery.recipient_kind != "group":
         rh = hash_recipient(delivery.recipient_id)
         invitation, _ = Invitation.objects.get_or_create(
             study_link=study_link,
@@ -154,6 +161,9 @@ def _delivery_context(
         # Always include the token — harmless on open links, required on
         # closed ones. Researchers don't need to know the difference.
         link_url = f"{base}?t={invitation.token}"
+    elif study_link is not None:
+        base = f"https://merism.test{study_link.url_path}"
+        link_url = base
 
     return {
         "study_name": broadcast.study.name or broadcast.study.research_goal[:60],
@@ -193,6 +203,17 @@ def _finalize_broadcast_status(
     }
     broadcast.status = new_status
     broadcast.save(update_fields=["counters", "status", "updated_at"])
+
+
+def _message_extra(snapshot: dict[str, Any]) -> dict[str, Any]:
+    extra: dict[str, Any] = {}
+    title = snapshot.get("title")
+    if isinstance(title, str) and title.strip():
+        extra["subject"] = title.strip()
+    body_text = snapshot.get("body_text")
+    if isinstance(body_text, str) and body_text.strip():
+        extra["text_alt"] = body_text
+    return extra
 
 
 @shared_task
@@ -238,7 +259,7 @@ def health_check_channels() -> dict[str, Any]:
             channel.status = ChannelConfig.Status.ACTIVE
             channel.consecutive_failures = 0
             channel.last_error = ""
-            channel.last_healthy_at = datetime.now(timezone.utc)
+            channel.last_healthy_at = datetime.now(UTC)
             checked["ok"] += 1
         else:
             channel.consecutive_failures = (channel.consecutive_failures or 0) + 1
@@ -285,4 +306,3 @@ def dispatch_pending_broadcasts() -> dict[str, int]:
             )
     logger.info("recruit.catch_up.run", extra={"enqueued": enqueued})
     return {"enqueued": enqueued}
-

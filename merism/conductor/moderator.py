@@ -19,6 +19,9 @@ Flow:
     └───────────────────────────────────┘
         │
         ▼
+    decision_validator (server-side enforcement of probe rules)
+        │
+        ▼
     ┌───────────────────────────────────┐
     │ generate (streaming)              │ ~300-500ms first token
     │ → yields str chunks to TTS        │
@@ -27,9 +30,8 @@ Flow:
         ▼
     post-stream persistence (unchanged)
 
-No fallback: if either phase errors out, ``stream_turn`` propagates the
-exception. SSE/voice consumers already handle errors via the wire format
-they use.
+No LangGraph — just two sequential async calls. No fallback: if either
+phase errors out, ``stream_turn`` propagates the exception.
 """
 
 from __future__ import annotations
@@ -42,7 +44,12 @@ from typing import Any
 from merism.conductor.decision_prompt import build_decision_prompt
 from merism.conductor.decision_validator import validate_decision
 from merism.conductor.generation_prompt import build_generation_prompt
-from merism.conductor.guide_cursor import find_question, followup_budget, next_question
+from merism.conductor.guide_cursor import (
+    dynamic_probe_config,
+    find_question,
+    followup_budget,
+    next_question,
+)
 from merism.conductor.prompts import ModeratorDecision, format_concept_context
 from merism.conductor.state import ExecutionState
 from merism.llm_gateway.client import get_client
@@ -64,7 +71,7 @@ async def stream_turn(
     after the stream closes.
 
     Signature + semantics unchanged from the previous single-call
-    implementation; internally it's now a 2-node pipeline.
+    implementation; internally it's now a 2-step pipeline (decide → generate).
     """
     state, current_question, current_section, effective_sections = await _resolve_state(session)
     probes_done = state.probes_done_for(state.current_question_id)
@@ -86,6 +93,8 @@ async def stream_turn(
 
     # ── Node 1: coverage_steer — await a structured decision ──
     qinfo = _question_info(current_question)
+    dynamic_probes_done = state.dynamic_probes_done_for(state.current_question_id)
+    dp_config = qinfo["dynamic_probe"]
     decision = await _coverage_steer_node(
         session=session,
         research_goal=session.study.research_goal or "",
@@ -100,14 +109,20 @@ async def stream_turn(
         coverage_context=coverage_context_text,
         recent_turns=recent_turns_text,
         participant_message=participant_message,
+        probe_directions=qinfo["probe_directions"],
+        dynamic_probe_enabled=dp_config["enabled"],
+        dynamic_probe_remaining=max(0, dp_config["max_extra_rounds"] - dynamic_probes_done),
+        dynamic_probe_triggers=dp_config["triggers"],
+        dynamic_probes_done=dynamic_probes_done,
     )
 
-    # Server-side enforcement (probe_policy caps, etc)
+    # Server-side enforcement (probe_policy caps, dynamic probe rules, etc)
     validation = validate_decision(
         decision,
         question=current_question,
         probes_done=probes_done,
         sections=effective_sections,
+        dynamic_probes_done=dynamic_probes_done,
     )
     decision = validation.decision if validation.overridden else decision
 
@@ -133,17 +148,18 @@ async def stream_turn(
         target_goal_text=target_goal_text,
         recent_turns=recent_turns_text,
         participant_message=participant_message,
+        probe_directions=qinfo["probe_directions"],
     ):
         text_buffer += chunk
         yield chunk
 
     # ── Post-stream: same persistence as before ──
-    _apply_decision_to_state(state, decision, effective_sections)
-    session.moderator_state = state.model_dump(mode="json")
-
     qid_at_turn = state.current_question_id
     concept_info = state.concept_by_question_id.get(qid_at_turn) or {}
     concept_id_at_turn = concept_info.get("concept_id")
+    _apply_decision_to_state(state, decision, effective_sections)
+    session.moderator_state = state.model_dump(mode="json")
+
     transcript = list(session.transcript or [])
     transcript.append(
         {
@@ -171,6 +187,8 @@ async def stream_turn(
                 "next_action": decision.next_action,
                 "next_question_id": decision.next_question_id,
                 "probe_type": decision.probe_type,
+                "probe_kind": getattr(decision, "probe_kind", None),
+                "dynamic_trigger": getattr(decision, "dynamic_trigger", None),
                 "probe_triggered_by": decision.probe_triggered_by,
                 "matches_rule": decision.matches_rule,
                 "think_notes": decision.think_notes,
@@ -192,6 +210,7 @@ async def stream_turn(
         validator_overridden=validation.overridden,
         validator_reason=validation.reason,
         qid_at_turn=qid_at_turn,
+        state=state,
     )
 
     await _acheck_closure(session)
@@ -215,6 +234,11 @@ async def _coverage_steer_node(
     coverage_context: str,
     recent_turns: str,
     participant_message: str,
+    probe_directions: list[str] | None = None,
+    dynamic_probe_enabled: bool = False,
+    dynamic_probe_remaining: int = 0,
+    dynamic_probe_triggers: list[str] | None = None,
+    dynamic_probes_done: int = 0,
 ) -> ModeratorDecision | None:
     """Call the LLM gateway to produce a structured decision. Awaited."""
     messages = build_decision_prompt(
@@ -230,6 +254,11 @@ async def _coverage_steer_node(
         coverage_context=coverage_context,
         recent_turns=recent_turns,
         participant_latest=participant_message,
+        probe_directions=probe_directions,
+        dynamic_probe_enabled=dynamic_probe_enabled,
+        dynamic_probe_remaining=dynamic_probe_remaining,
+        dynamic_probe_triggers=dynamic_probe_triggers,
+        dynamic_probes_done=dynamic_probes_done,
     )
     try:
         client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
@@ -263,6 +292,7 @@ async def _generate_node(
     target_goal_text: str,
     recent_turns: str,
     participant_message: str,
+    probe_directions: list[str] | None = None,
 ) -> AsyncIterator[str]:
     """Stream the spoken reply, informed by the upstream decision.
 
@@ -282,6 +312,8 @@ async def _generate_node(
     messages = build_generation_prompt(
         decision_next_action=decision.next_action,
         decision_probe_type=decision.probe_type,
+        decision_probe_kind=decision.probe_kind,
+        decision_dynamic_trigger=decision.dynamic_trigger,
         decision_target_goal_id=decision.target_goal_id,
         decision_off_topic=decision.off_topic or False,
         decision_steering_strategy=decision.steering_strategy or "advance",
@@ -291,6 +323,7 @@ async def _generate_node(
         target_goal_text=target_goal_text,
         recent_turns=recent_turns,
         participant_latest=participant_message,
+        probe_directions=probe_directions,
     )
 
     # Dynamic max_tokens — probes are short, transitions can be longer
@@ -360,7 +393,12 @@ async def _resolve_state(
             state.current_question_id = first_q.get("id", "")
             state.followups_used[first_q["id"]] = {
                 "asked": 0,
-                "budget": int(first_q.get("followup_depth", 0)),
+                "budget": followup_budget(effective_sections, first_q["id"]),
+            }
+            dp = dynamic_probe_config(effective_sections, first_q["id"])
+            state.dynamic_probes_used[first_q["id"]] = {
+                "asked": 0,
+                "budget": int(dp.get("max_extra_rounds", 0)),
             }
 
     return state, current_question, current_section, effective_sections
@@ -374,6 +412,8 @@ def _question_info(q: dict[str, Any] | None) -> dict[str, Any]:
             "intent": "",
             "probe_policy": "light",
             "max_probes": 0,
+            "probe_directions": [],
+            "dynamic_probe": {"enabled": False, "max_extra_rounds": 0, "triggers": []},
         }
     return {
         "id": q.get("id", ""),
@@ -381,6 +421,8 @@ def _question_info(q: dict[str, Any] | None) -> dict[str, Any]:
         "intent": q.get("intent", ""),
         "probe_policy": q.get("probe_policy", "light"),
         "max_probes": int(q.get("max_probes", q.get("followup_depth", 3))),
+        "probe_directions": list(q.get("probe_directions", [])),
+        "dynamic_probe": dynamic_probe_config([{"id": "_", "questions": [q]}], q.get("id", "")),
     }
 
 
@@ -431,7 +473,11 @@ def _apply_decision_to_state(
     state.last_action = decision.next_action
 
     if decision.next_action == "followup":
-        state.mark_followup_used(state.current_question_id)
+        probe_kind = getattr(decision, "probe_kind", None) or "preset"
+        if probe_kind == "dynamic":
+            state.mark_dynamic_probe_used(state.current_question_id)
+        else:
+            state.mark_followup_used(state.current_question_id)
     elif decision.next_action == "move_on":
         state.mark_answered(state.current_question_id)
         target_id = decision.next_question_id
@@ -444,6 +490,11 @@ def _apply_decision_to_state(
                 state.followups_used[target_id] = {
                     "asked": 0,
                     "budget": followup_budget(sections, target_id),
+                }
+                dp = question.get("dynamic_probe") or {}
+                state.dynamic_probes_used[target_id] = {
+                    "asked": 0,
+                    "budget": int(dp.get("max_extra_rounds", 0)),
                 }
                 from merism.conductor.concept_plan import concept_transition_payload
 
@@ -567,6 +618,7 @@ async def _alog_turn_events(
     validator_overridden: bool,
     validator_reason,
     qid_at_turn: str,
+    state: ExecutionState,
 ) -> None:
     from asgiref.sync import sync_to_async
 
@@ -585,6 +637,8 @@ async def _alog_turn_events(
                         "next_action": decision.next_action,
                         "next_question_id": decision.next_question_id,
                         "probe_type": decision.probe_type,
+                        "probe_kind": decision.probe_kind,
+                        "dynamic_trigger": decision.dynamic_trigger,
                         "matches_rule": decision.matches_rule,
                         "think_notes": decision.think_notes,
                         "target_goal_id": decision.target_goal_id,
@@ -596,6 +650,24 @@ async def _alog_turn_events(
                 },
             )
         )
+    payload_events.append(
+        (
+            "state_transition",
+            {
+                "current_question_id": state.current_question_id,
+                "current_section_id": state.current_section_id,
+                "phase": state.phase,
+                "turn_count": state.turn_count,
+                "answered_question_ids": state.answered_question_ids,
+                "followups_used": state.followups_used,
+                "dynamic_probes_used": state.dynamic_probes_used,
+                "expanded_sections": state.expanded_sections,
+                "concept_by_question_id": state.concept_by_question_id,
+                "concepts_shown": state.concepts_shown,
+                "pending_stimulus_events": state.pending_stimulus_events,
+            },
+        )
+    )
 
     trace_id = getattr(session, "trace_id", None)
     await sync_to_async(append_events)(session, payload_events, trace_id=trace_id)

@@ -52,6 +52,10 @@ class SessionEvent(models.Model):
     seq = models.BigIntegerField()
     kind = models.CharField(max_length=32, choices=Kind.choices)
     payload = models.JSONField(default=dict, blank=True)
+    # Which guide question was active when this event occurred.
+    question_id = models.CharField(max_length=64, blank=True, default="")
+    # Explicit turn counter (user speaks → turn increments).
+    turn_number = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

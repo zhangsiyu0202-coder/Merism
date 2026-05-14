@@ -52,12 +52,30 @@ class ModeratorDecision(BaseModel):
             "Required when next_action == 'followup'."
         ),
     )
+    # ── Dual-layer probe fields (Typebot-inspired) ────────────────
+    probe_kind: Literal["preset", "dynamic"] | None = Field(
+        default=None,
+        description=(
+            "'preset' — follows researcher's probe_directions, counts against max_probes. "
+            "'dynamic' — AI detected unexpected insight, counts against dynamic_probe.max_extra_rounds. "
+            "Required when next_action == 'followup'; null otherwise."
+        ),
+    )
+    dynamic_trigger: Literal[
+        "new_theme", "contradiction", "strong_emotion", "surprise_finding"
+    ] | None = Field(
+        default=None,
+        description=(
+            "Which signal triggered the dynamic probe. Required when probe_kind == 'dynamic'; "
+            "must be in the question's dynamic_probe.triggers list."
+        ),
+    )
     matches_rule: int | None = Field(
         default=None,
         ge=1,
-        le=4,
+        le=3,
         description=(
-            "Which DECISION RULE (1-4) the model claims it followed. "
+            "Which DECISION RULE (1-3) the model claims it followed. "
             "Used only for telemetry; the server-side validator enforces "
             "rules regardless."
         ),
@@ -82,7 +100,7 @@ class ModeratorDecision(BaseModel):
         ),
     )
 
-    # ── 2-node LangGraph additions: coverage_steer outputs ────────
+    # ── coverage_steer outputs (used by generate step) ────────
     off_topic: bool = Field(
         default=False,
         description=(

@@ -45,20 +45,25 @@ logger = logging.getLogger(__name__)
 
 
 class TTSProcessor(FrameProcessor):
-    """Streaming TTS — feeds LLM tokens into Qwen-TTS realtime."""
+    """Streaming TTS — feeds LLM tokens into realtime TTS.
+
+    Provider-agnostic: accepts any client that implements ``stream_tts(text_iter)``.
+    Defaults to CosyVoiceClient for backward compatibility.
+    """
 
     BYTES_PER_SAMPLE = 2   # PCM16 mono
 
     def __init__(
         self,
         *,
+        client: CosyVoiceClient | None = None,
         voice: str = "Cherry",
         language_type: str = "Chinese",
         sample_rate: int = 24000,
         name: str = "TTS",
     ) -> None:
         super().__init__(name)
-        self._client = CosyVoiceClient(voice=voice, language_type=language_type)
+        self._client = client or CosyVoiceClient(voice=voice, language_type=language_type)
         self._sample_rate = sample_rate
         self._text_in: asyncio.Queue[str] | None = None
         self._tts_task: asyncio.Task[None] | None = None

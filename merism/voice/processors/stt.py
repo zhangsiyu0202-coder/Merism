@@ -41,16 +41,21 @@ logger = logging.getLogger(__name__)
 
 
 class STTProcessor(FrameProcessor):
-    """DashScope Qwen-ASR as a pipeline processor."""
+    """DashScope Qwen-ASR as a pipeline processor.
+
+    Provider-agnostic: accepts any client that implements ``stream_stt(audio_iter)``.
+    Defaults to ParaformerClient for backward compatibility.
+    """
 
     def __init__(
         self,
         *,
+        client: ParaformerClient | None = None,
         language: str = "zh",
         name: str = "STT",
     ) -> None:
         super().__init__(name)
-        self._client = ParaformerClient(language=language)
+        self._client = client or ParaformerClient(language=language)
         self._audio_in: asyncio.Queue[bytes] | None = None
         self._stream_task: asyncio.Task[None] | None = None
         self._user_speaking = False

@@ -87,7 +87,7 @@ function PanelShell({
                     type="button"
                     onClick={onClose}
                     aria-label="Close"
-                    title="Close (⌘.)"
+                    title="Close"
                     className="inline-flex h-7 w-7 items-center justify-center rounded-merism-md text-merism-text-subtle transition-colors hover:bg-merism-bg-subtle hover:text-merism-text"
                 >
                     <X className="h-3.5 w-3.5" strokeWidth={2} />

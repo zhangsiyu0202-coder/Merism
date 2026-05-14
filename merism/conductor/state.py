@@ -35,9 +35,14 @@ class ExecutionState(BaseModel):
     # ── progress through the guide ────────────────────────
     current_section_id: str = ""
     current_question_id: str = ""
-    # Per-question follow-up budget tracking.
+    # Per-question preset follow-up budget tracking.
     # {question_id: {"asked": int, "budget": int}}
     followups_used: dict[str, dict[str, int]] = Field(default_factory=dict)
+    # Per-question dynamic follow-up budget tracking (Typebot-inspired
+    # dual-layer probe model — see docs/specs/dual-layer-followup/design.md).
+    # Researcher must opt-in per question via ``question.dynamic_probe.enabled``.
+    # {question_id: {"asked": int, "budget": int}}
+    dynamic_probes_used: dict[str, dict[str, int]] = Field(default_factory=dict)
     # Question IDs already answered (moved past).
     answered_question_ids: list[str] = Field(default_factory=list)
 
@@ -80,6 +85,22 @@ class ExecutionState(BaseModel):
 
     def mark_followup_used(self, question_id: str) -> None:
         info = self.followups_used.setdefault(question_id, {"asked": 0, "budget": 0})
+        info["asked"] += 1
+
+    def dynamic_probes_done_for(self, question_id: str) -> int:
+        """Count of dynamic probes already asked for this question."""
+        info = self.dynamic_probes_used.get(question_id, {"asked": 0, "budget": 0})
+        return int(info.get("asked", 0))
+
+    def remaining_dynamic_probes(self, question_id: str) -> int:
+        """How many more dynamic probes can be fired for this question."""
+        info = self.dynamic_probes_used.get(question_id, {"asked": 0, "budget": 0})
+        return max(0, info["budget"] - info["asked"])
+
+    def mark_dynamic_probe_used(self, question_id: str) -> None:
+        info = self.dynamic_probes_used.setdefault(
+            question_id, {"asked": 0, "budget": 0}
+        )
         info["asked"] += 1
 
     def mark_answered(self, question_id: str) -> None:

@@ -9,5 +9,6 @@ urlpatterns = [
     path("<slug:slug>/", views.resolve_link, name="participant-resolve"),
     path("<slug:slug>/consent/", views.post_consent, name="participant-consent"),
     path("<slug:slug>/screener/", views.screener, name="participant-screener"),
+    path("<slug:slug>/share/", views.share_link, name="participant-share"),
     path("<slug:slug>/start/", views.start_session, name="participant-start"),
 ]
