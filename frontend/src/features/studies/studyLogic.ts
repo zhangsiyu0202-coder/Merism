@@ -23,7 +23,7 @@ export const studyLogic = kea<studyLogicType>([
 
     selectors({
         studyId: [(s) => [s.sceneParams], (p) => p.params["id"] ?? null],
-        activeTab: [(s) => [s.sceneParams], (p) => p.params["tab"] ?? "brief"],
+        activeTab: [(s) => [s.sceneParams], (p) => p.params["tab"] ?? "guide"],
     }),
 
     loaders(({ values }) => ({

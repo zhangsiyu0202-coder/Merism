@@ -97,22 +97,90 @@
     },
     "study": {
         "tabs": {
-            "brief": "Brief",
-            "outline": "Outline",
+            "overview": "Overview",
+            "guide": "Guide",
             "screener": "Screener",
-            "stimuli": "Stimuli",
             "recruit": "Recruit",
-            "analysis": "Analysis",
-            "report": "Report",
-            "sessions": "Sessions",
-            "settings": "Settings"
+            "results": "Results"
         },
         "mode": {
             "voice": "Voice",
             "video": "Video",
             "text": "Text",
             "offline": "Offline"
+        },
+        "actions": {
+            "menu": "Study actions",
+            "rename": "Rename",
+            "duplicate": "Duplicate",
+            "share": "Share",
+            "archive": "Archive",
+            "delete": "Delete",
+            "test_interview": "Test Interview",
+            "add_section_randomization": "Add section randomization"
         }
+    },
+    "create_study": {
+        "title": "New Study",
+        "description": "Tell us what you want to learn. AI will generate a complete discussion guide for you.",
+        "research_goal_label": "Research Goal",
+        "research_goal_placeholder": "e.g. Why do advanced users cancel after day 14?",
+        "research_goal_hint": "Write it as a question your team would ask in a meeting.",
+        "study_type_label": "Study Type",
+        "study_type": {
+            "discovery": "Discovery",
+            "concept_testing": "Concept Testing"
+        },
+        "context_label": "Context for AI (optional)",
+        "context_placeholder": "Background info about your product, audience, or what the AI should know...",
+        "context_hint": "The more context you provide, the better the generated guide will be.",
+        "submit": "Generate Guide"
+    },
+    "guide": {
+        "general_settings": "General Settings",
+        "interview_method": "Interview Method",
+        "interview_method_hint": "How participants will respond to the interview.",
+        "method": {
+            "voice": "Voice response",
+            "video": "Video response",
+            "text": "Text response",
+            "offline": "Offline (upload recordings)"
+        },
+        "allow_fallback_chat": "Allow participants to switch to chat if their camera/microphone is not working.",
+        "language": "Language",
+        "intro_message": "Intro Message (optional)",
+        "intro_message_hint": "This will be shown as the first message from the AI interviewer.",
+        "end_message": "End Message",
+        "context_for_ai": "Context for AI",
+        "context_for_ai_hint": "Background information to help the AI conduct a better interview.",
+        "questions": "Questions",
+        "questions_count": "questions",
+        "add_question": "Add question",
+        "add_section": "Add section",
+        "interview_summary": "Interview Summary",
+        "minutes_estimated": "minutes estimated time",
+        "ai_companion_title": "AI Guide Companion",
+        "ai_companion_description": "Describe your research goals and AI will generate a structured discussion guide.",
+        "ai_companion_cta": "Generate with AI"
+    },
+    "overview": {
+        "draft_title": "Your study is ready to configure",
+        "draft_body": "Head to the Guide tab to set up your interview method, questions, and AI context. Once configured, you can recruit participants and start collecting responses.",
+        "study_info": "Study Information",
+        "goal": "Research Goal",
+        "status": "Status",
+        "mode": "Interview Mode",
+        "created": "Created",
+        "participants": "Participants",
+        "sessions_completed": "Sessions Completed",
+        "avg_duration": "Avg Duration",
+        "completion_rate": "Completion Rate",
+        "activity": "Activity",
+        "activity_empty": "Activity will appear here once interviews begin."
+    },
+    "results": {
+        "empty_title": "No results yet",
+        "empty_body": "Results will appear here once interviews are completed. AI will automatically extract themes, codes, and key quotes."
     },
     "ask": {
         "title": "Ask Merism",
