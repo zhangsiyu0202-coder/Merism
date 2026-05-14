@@ -112,6 +112,16 @@
             "video": "Video",
             "text": "Text",
             "offline": "Offline"
+        },
+        "actions": {
+            "menu": "Study actions",
+            "rename": "Rename",
+            "duplicate": "Duplicate",
+            "share": "Share",
+            "archive": "Archive",
+            "delete": "Delete",
+            "test_interview": "Test Interview",
+            "add_section_randomization": "Add section randomization"
         }
     },
     "ask": {

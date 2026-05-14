@@ -112,6 +112,16 @@
             "video": "视频",
             "text": "文字",
             "offline": "离线"
+        },
+        "actions": {
+            "menu": "研究操作",
+            "rename": "重命名",
+            "duplicate": "复制",
+            "share": "分享",
+            "archive": "归档",
+            "delete": "删除",
+            "test_interview": "测试访谈",
+            "add_section_randomization": "添加分区随机化"
         }
     },
     "ask": {
