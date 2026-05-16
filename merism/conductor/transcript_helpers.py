@@ -6,7 +6,7 @@ Sprint 2 introduced a dual-text shape for interview turns:
     {
         "ts": 1234567890.0,
         "role": "agent" | "participant",
-        "text_raw":   "嗯嗯，我觉得挺好的",  # original ASR
+        "text_raw":   "嗯嗯,我觉得挺好的",  # original ASR
         "text_clean": "我觉得挺好的",         # intelligent verbatim
         "text":       "我觉得挺好的",          # legacy mirror of clean
         "question_id": "...",
@@ -22,7 +22,21 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+PARTICIPANT_ROLE_ALIASES = {"participant", "user"}
+AGENT_ROLE_ALIASES = {"agent", "assistant"}
+CONVERSATION_ROLE_ALIASES = PARTICIPANT_ROLE_ALIASES | AGENT_ROLE_ALIASES
+
 TurnTextMode = Literal["clean", "raw"]
+
+
+def normalize_turn_role(role: str | None) -> str:
+    """Normalize transcript role aliases to the canonical participant/agent pair."""
+    raw = (role or "").strip().lower()
+    if raw in PARTICIPANT_ROLE_ALIASES:
+        return "participant"
+    if raw in AGENT_ROLE_ALIASES:
+        return "agent"
+    return raw
 
 
 def get_turn_text(turn: dict[str, Any], mode: TurnTextMode = "clean") -> str:
@@ -63,12 +77,15 @@ def get_transcript_text(
     default newline produces a simple readable log.
     """
     parts: list[str] = []
+    normalized_include_roles = {
+        normalize_turn_role(role) for role in include_roles
+    }
     for turn in transcript or []:
-        if turn.get("role") not in include_roles:
+        role = normalize_turn_role(turn.get("role"))
+        if role not in normalized_include_roles:
             continue
         text = get_turn_text(turn, mode)
         if text:
-            role = turn.get("role", "")
             parts.append(f"[{role}] {text}")
     return separator.join(parts)
 
@@ -82,7 +99,7 @@ def has_clean_transcript(transcript: list[dict[str, Any]]) -> bool:
     if not transcript:
         return False
     for turn in transcript:
-        if turn.get("role") not in {"agent", "participant"}:
+        if normalize_turn_role(turn.get("role")) not in {"agent", "participant"}:
             continue
         if not turn.get("text_clean"):
             return False

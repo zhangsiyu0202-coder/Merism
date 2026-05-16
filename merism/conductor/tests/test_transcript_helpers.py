@@ -68,6 +68,15 @@ class TestGetTranscriptText:
         assert "[agent] Hi" in out
         assert "[participant] Hello" in out
 
+    def test_user_assistant_aliases_render(self):
+        transcript = [
+            {"role": "user", "text": "Hi"},
+            {"role": "assistant", "text": "Hello"},
+        ]
+        out = get_transcript_text(transcript)
+        assert "[participant] Hi" in out
+        assert "[agent] Hello" in out
+
 
 class TestHasCleanTranscript:
     def test_all_clean(self):
@@ -92,5 +101,12 @@ class TestHasCleanTranscript:
             {"role": "agent", "text_clean": "Hi"},
             {"role": "system", "text": "meta"},  # ignored
             {"role": "participant", "text_clean": "Hello"},
+        ]
+        assert has_clean_transcript(t) is True
+
+    def test_user_assistant_aliases_count_as_conversation(self):
+        t = [
+            {"role": "assistant", "text_clean": "Hi"},
+            {"role": "user", "text_clean": "Hello"},
         ]
         assert has_clean_transcript(t) is True

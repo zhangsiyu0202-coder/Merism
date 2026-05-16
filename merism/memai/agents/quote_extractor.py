@@ -27,7 +27,7 @@ from typing import Any
 from asgiref.sync import sync_to_async
 from pydantic import BaseModel, ConfigDict, Field
 
-from merism.conductor.transcript_helpers import get_turn_text
+from merism.conductor.transcript_helpers import get_turn_text, normalize_turn_role
 from merism.memai.llm import LLMUnavailableError, default_model, get_llm
 from merism.models import InterviewSession, SessionQuote
 
@@ -102,7 +102,7 @@ async def extract_quotes(session: InterviewSession) -> list[SessionQuote]:
     participant_turns: list[tuple[int, dict[str, Any]]] = [
         (idx, turn)
         for idx, turn in enumerate(transcript)
-        if turn.get("role") == "participant"
+        if normalize_turn_role(turn.get("role")) == "participant"
     ]
     if not participant_turns:
         return []
@@ -126,7 +126,7 @@ async def extract_quotes(session: InterviewSession) -> list[SessionQuote]:
         try:
             from merism.llm_gateway.client import get_client
 
-            gw_client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
+            gw_client = await get_client("chat", team=session.team, trace_id=session.trace_id)
         except Exception:
             pass
 
@@ -145,7 +145,7 @@ async def extract_quotes(session: InterviewSession) -> list[SessionQuote]:
             )
             raw = completion.choices[0].message.content or "{}"
         parsed = ExtractedQuotes.model_validate_json(raw)
-    except (LLMUnavailableError, Exception) as exc:  # noqa: BLE001
+    except (LLMUnavailableError, Exception) as exc:
         logger.warning(
             "quote_extractor.llm_failed",
             extra={"error": str(exc), "session_id": str(session.id)},

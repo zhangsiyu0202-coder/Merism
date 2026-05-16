@@ -61,8 +61,8 @@ async def run_codebook_governance(study_id: str | UUID, session_id: str | UUID) 
         counters["retagged"] += retagged
 
     # ── 5. Theme synthesizer trigger ──
-    saturated = await is_codebook_saturated(study)
-    target_reached = study.is_target_reached
+    saturated = await sync_to_async(is_codebook_saturated)(study)
+    target_reached = await _is_target_reached(study)
     if saturated or target_reached:
         counters["theme_triggered"] = True
         logger.info(
@@ -90,6 +90,11 @@ def _get_session_quotes(session):
     from merism.models import SessionQuote
 
     return list(SessionQuote.objects.filter(session=session))
+
+
+@sync_to_async
+def _is_target_reached(study) -> bool:
+    return study.is_target_reached
 
 
 @sync_to_async
