@@ -43,14 +43,11 @@ export enum Scene {
 }
 
 export type StudyTab =
-    | "brief"
-    | "outline"
+    | "overview"
+    | "guide"
     | "screener"
-    | "stimuli"
     | "recruit"
-    | "report"
-    | "sessions"
-    | "settings"
+    | "results"
 
 export const urls = {
     default: (): string => "/",
@@ -64,7 +61,7 @@ export const urls = {
         section ? `/settings/${section}` : "/settings",
 
     studies: (): string => "/studies",
-    study: (id: string, tab: StudyTab = "brief"): string => `/studies/${id}/${tab}`,
+    study: (id: string, tab: StudyTab = "guide"): string => `/studies/${id}/${tab}`,
 
     insights: (studyId?: string): string => studyId ? `/insights?study=${studyId}` : "/insights",
     reports: (studyId?: string): string => studyId ? `/reports?study=${studyId}` : "/reports",

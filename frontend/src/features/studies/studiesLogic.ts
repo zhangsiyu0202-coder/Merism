@@ -17,7 +17,11 @@ export const studiesLogic = kea<studiesLogicType>([
     path(["features", "studies", "studiesLogic"]),
 
     actions({
-        createStudy: true,
+        createStudy: (params?: {
+            research_goal?: string
+            study_type?: string
+            context?: string
+        }) => ({ params: params ?? {} }),
         setPage: (page: number) => ({ page }),
         setPageSize: (size: number) => ({ size }),
     }),
@@ -53,10 +57,12 @@ export const studiesLogic = kea<studiesLogicType>([
         newStudy: [
             null as Study | null,
             {
-                createStudy: async () => {
+                createStudy: async ({ params }: { params: { research_goal?: string; study_type?: string; context?: string } }) => {
                     return await api.create<Study>("/api/studies/", {
                         name: "Untitled study",
-                        research_goal: "(Draft — set a research goal)",
+                        research_goal: params.research_goal || "(Draft — set a research goal)",
+                        study_type: params.study_type || "discovery",
+                        ai_context: params.context || "",
                     })
                 },
             },
@@ -66,7 +72,7 @@ export const studiesLogic = kea<studiesLogicType>([
     listeners({
         createStudySuccess: ({ newStudy }) => {
             if (newStudy?.id) {
-                router.actions.push(urls.study(newStudy.id, "settings"))
+                router.actions.push(urls.study(newStudy.id, "guide"))
             }
         },
     }),

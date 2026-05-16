@@ -15,6 +15,7 @@ import {
 } from "~/lib/merism";
 import type { Study } from "~/types";
 
+import { CreateStudyDialog } from "./CreateStudyDialog";
 import { studiesLogic } from "./studiesLogic";
 
 type StudiesFilterTab = "all" | "active" | "drafts" | "archived";
@@ -46,6 +47,7 @@ export default function StudiesPage(): JSX.Element {
     useActions(studiesLogic);
 
   const [activeTab, setActiveTab] = useState<StudiesFilterTab>("all");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     loadStudies();
@@ -87,7 +89,7 @@ export default function StudiesPage(): JSX.Element {
         actions={
           <Button
             iconLeft={<Plus className="h-4 w-4" />}
-            onClick={createStudy}
+            onClick={() => setCreateDialogOpen(true)}
             isLoading={newStudyLoading}
             size="sm"
           >
@@ -102,7 +104,7 @@ export default function StudiesPage(): JSX.Element {
       {studiesLoading && studies.length === 0 ? (
         <EmptyPlaceholder text={t("common.loading")} />
       ) : studies.length === 0 ? (
-        <FirstStudyHero onCreate={createStudy} isCreating={newStudyLoading} />
+        <FirstStudyHero onCreate={() => setCreateDialogOpen(true)} isCreating={newStudyLoading} />
       ) : visibleStudies.length === 0 ? (
         <EmptyPlaceholder
           text={t("studies.empty_tab_body", {
@@ -124,6 +126,8 @@ export default function StudiesPage(): JSX.Element {
           )}
         </>
       )}
+
+      <CreateStudyDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
     </div>
   );
 }

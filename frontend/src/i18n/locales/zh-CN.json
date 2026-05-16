@@ -97,22 +97,90 @@
     },
     "study": {
         "tabs": {
-            "brief": "简介",
-            "outline": "大纲",
+            "overview": "概览",
+            "guide": "访谈指南",
             "screener": "筛选",
-            "stimuli": "刺激物",
             "recruit": "招募",
-            "analysis": "分析",
-            "report": "报告",
-            "sessions": "访谈",
-            "settings": "设置"
+            "results": "结果"
         },
         "mode": {
             "voice": "语音",
             "video": "视频",
             "text": "文字",
             "offline": "离线"
+        },
+        "actions": {
+            "menu": "研究操作",
+            "rename": "重命名",
+            "duplicate": "复制",
+            "share": "分享",
+            "archive": "归档",
+            "delete": "删除",
+            "test_interview": "测试访谈",
+            "add_section_randomization": "添加分区随机化"
         }
+    },
+    "create_study": {
+        "title": "新建研究",
+        "description": "告诉我们你想了解什么，AI 将为你生成完整的访谈指南。",
+        "research_goal_label": "研究目标",
+        "research_goal_placeholder": "例如：为什么高级用户会在第14天后流失？",
+        "research_goal_hint": "把它写成一个你的团队会在会议中提出的问题。",
+        "study_type_label": "研究类型",
+        "study_type": {
+            "discovery": "探索性研究",
+            "concept_testing": "概念测试"
+        },
+        "context_label": "AI 上下文（可选）",
+        "context_placeholder": "关于你的产品、受众的背景信息，或者 AI 需要知道的任何内容...",
+        "context_hint": "提供的上下文越多，生成的指南就越好。",
+        "submit": "生成指南"
+    },
+    "guide": {
+        "general_settings": "通用设置",
+        "interview_method": "访谈方式",
+        "interview_method_hint": "参与者将如何回应访谈。",
+        "method": {
+            "voice": "语音回复",
+            "video": "视频回复",
+            "text": "文字回复",
+            "offline": "离线（上传录音）"
+        },
+        "allow_fallback_chat": "当摄像头/麦克风不可用时，允许参与者切换为聊天模式。",
+        "language": "语言",
+        "intro_message": "开场语（可选）",
+        "intro_message_hint": "这将作为 AI 访谈员的第一条消息展示。",
+        "end_message": "结束语",
+        "context_for_ai": "AI 上下文",
+        "context_for_ai_hint": "帮助 AI 更好地进行访谈的背景信息。",
+        "questions": "问题列表",
+        "questions_count": "个问题",
+        "add_question": "添加问题",
+        "add_section": "添加分区",
+        "interview_summary": "访谈摘要",
+        "minutes_estimated": "分钟预计时长",
+        "ai_companion_title": "AI 指南助手",
+        "ai_companion_description": "描述你的研究目标，AI 将生成结构化的访谈指南。",
+        "ai_companion_cta": "AI 生成"
+    },
+    "overview": {
+        "draft_title": "你的研究已准备好配置",
+        "draft_body": "前往「访谈指南」标签页设置你的访谈方式、问题和 AI 上下文。配置完成后，你可以招募参与者并开始收集回复。",
+        "study_info": "研究信息",
+        "goal": "研究目标",
+        "status": "状态",
+        "mode": "访谈方式",
+        "created": "创建时间",
+        "participants": "参与者",
+        "sessions_completed": "已完成访谈",
+        "avg_duration": "平均时长",
+        "completion_rate": "完成率",
+        "activity": "活动记录",
+        "activity_empty": "访谈开始后，活动记录将显示在此处。"
+    },
+    "results": {
+        "empty_title": "暂无结果",
+        "empty_body": "访谈完成后结果将显示在此处。AI 将自动提取主题、编码和关键引述。"
     },
     "ask": {
         "title": "问答 Merism",
