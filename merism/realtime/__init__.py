@@ -21,7 +21,7 @@ from merism.realtime.sse_interview import (
     iter_session_sse,
     publish_session_event,
 )
-from merism.realtime.voice import VoiceConsumer
+from merism.realtime.voice import VoiceConsumerV2 as VoiceConsumer
 
 __all__ = [
     "iter_session_sse",

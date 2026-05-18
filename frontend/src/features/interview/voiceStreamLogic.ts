@@ -185,7 +185,7 @@ export const voiceStreamLogic = kea<voiceStreamLogicType>([
 
                 const proto = location.protocol === "https:" ? "wss" : "ws"
                 ws = new WebSocket(
-                    `${proto}://${location.host}/ws/sessions/${sessionId}/voice/v2`,
+                    `${proto}://${location.host}/ws/sessions/${sessionId}/voice/`,
                 )
                 ws.binaryType = "arraybuffer"
 
