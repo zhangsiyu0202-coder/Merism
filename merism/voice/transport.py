@@ -1,67 +1,70 @@
-"""WebSocket transport for pipecat — bridges Django Channels WebSocket.
-
-Pipecat's built-in WebSocket transport expects a standalone server.
-We need an adapter that works with Django Channels' WebSocket consumer.
-"""
+"""WebSocket transport adapters for pipecat + Django Channels."""
 
 from __future__ import annotations
 
 import asyncio
 import logging
 
-from pipecat.frames.frames import AudioRawFrame, Frame, TTSAudioRawFrame
+from pipecat.frames.frames import AudioRawFrame, Frame, TTSAudioRawFrame, StartFrame, EndFrame, CancelFrame
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 
 logger = logging.getLogger(__name__)
 
 
 class WebSocketInputTransport(FrameProcessor):
-    """Reads audio from Django Channels WebSocket, emits AudioRawFrame."""
+    """Receives audio via a queue (fed by Django Channels consumer)."""
 
-    def __init__(self, websocket, *, sample_rate: int = 16000, **kwargs):
+    def __init__(self, consumer, *, sample_rate: int = 16000, **kwargs):
         super().__init__(name="WSInput", **kwargs)
-        self._ws = websocket
+        self._consumer = consumer
         self._sample_rate = sample_rate
-        self._receive_task: asyncio.Task | None = None
+        self._queue: asyncio.Queue[bytes] = asyncio.Queue()
+        self._task: asyncio.Task | None = None
 
-    async def start(self, frame):
+    def push_audio(self, data: bytes):
+        """Called by the consumer's receive() to feed audio."""
+        self._queue.put_nowait(data)
+
+    async def start(self, frame: StartFrame):
         await super().start(frame)
-        self._receive_task = asyncio.create_task(self._receive_loop())
+        self._task = asyncio.create_task(self._pump())
 
-    async def stop(self, frame):
-        if self._receive_task:
-            self._receive_task.cancel()
+    async def stop(self, frame: EndFrame):
+        if self._task:
+            self._task.cancel()
         await super().stop(frame)
 
-    async def _receive_loop(self):
+    async def cancel(self, frame: CancelFrame):
+        if self._task:
+            self._task.cancel()
+        await super().cancel(frame)
+
+    async def _pump(self):
         try:
             while True:
-                data = await self._ws.receive_bytes()
-                if data:
-                    await self.push_frame(AudioRawFrame(
-                        audio=data,
-                        sample_rate=self._sample_rate,
-                        num_channels=1,
-                    ))
+                data = await self._queue.get()
+                await self.push_frame(AudioRawFrame(
+                    audio=data,
+                    sample_rate=self._sample_rate,
+                    num_channels=1,
+                ))
         except asyncio.CancelledError:
             pass
-        except Exception as exc:
-            logger.debug("ws_input.closed", extra={"reason": str(exc)})
 
 
 class WebSocketOutputTransport(FrameProcessor):
-    """Sends TTSAudioRawFrame back to client via WebSocket."""
+    """Sends TTS audio back to client via Django Channels consumer."""
 
-    def __init__(self, websocket, **kwargs):
+    def __init__(self, consumer, **kwargs):
         super().__init__(name="WSOutput", **kwargs)
-        self._ws = websocket
+        self._consumer = consumer
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
         await super().process_frame(frame, direction)
 
         if isinstance(frame, TTSAudioRawFrame):
             try:
-                await self._ws.send_bytes(frame.audio)
+                await self._consumer.send(bytes_data=frame.audio)
             except Exception:
                 pass
         else:
@@ -69,14 +72,15 @@ class WebSocketOutputTransport(FrameProcessor):
 
 
 class WebSocketTransport:
-    """Convenience wrapper providing input() and output() processors."""
+    """Convenience wrapper."""
 
-    def __init__(self, websocket, *, sample_rate: int = 16000):
-        self._ws = websocket
+    def __init__(self, consumer, *, sample_rate: int = 16000):
+        self._consumer = consumer
         self._sample_rate = sample_rate
+        self._input = WebSocketInputTransport(consumer, sample_rate=sample_rate)
 
     def input(self) -> WebSocketInputTransport:
-        return WebSocketInputTransport(self._ws, sample_rate=self._sample_rate)
+        return self._input
 
     def output(self) -> WebSocketOutputTransport:
-        return WebSocketOutputTransport(self._ws)
+        return WebSocketOutputTransport(self._consumer)
