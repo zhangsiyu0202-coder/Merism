@@ -1,4 +1,5 @@
-import ReactEChartsCore from "echarts-for-react/lib/core"
+import _ReactEChartsCore from "echarts-for-react/lib/core"
+const ReactEChartsCore = (_ReactEChartsCore as any).default ?? _ReactEChartsCore
 import * as echarts from "echarts/core"
 import { BarChart, LineChart, PieChart } from "echarts/charts"
 import {

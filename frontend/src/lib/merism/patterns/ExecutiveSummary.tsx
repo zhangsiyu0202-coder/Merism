@@ -96,8 +96,8 @@ export function ExecutiveSummary({
                         ease: [0.22, 0.61, 0.36, 1],
                     }}
                     className={
-                        "font-display text-merism-subtitle leading-[var(--text-merism-subtitle--line-height)] " +
-                        "tracking-[var(--text-merism-subtitle--letter-spacing)] " +
+                        "font-display text-merism-body leading-relaxed " +
+                        "" +
                         "max-w-[var(--spacing-merism-reading-max)] text-merism-text"
                     }
                 >

@@ -23,6 +23,7 @@ class MerismConfig(AppConfig):
         from merism.conductor import study_closure_signal as _study_closure  # noqa: F401
         from merism.conductor import inbox_signals as _inbox_signals  # noqa: F401
         from merism.signals import user_signup as _user_signup  # noqa: F401
+        from merism.signals import transcript_index as _transcript_index  # noqa: F401
 
         # Chinese verbose_name for Django Admin
         from merism.verbose_names import apply_verbose_names

@@ -40,6 +40,8 @@ class Conversation(TimestampedModel):
     # Messages persisted via LangGraph checkpointer — the Conversation row
     # itself is the stable pointer for UI / billing.
     metadata = models.JSONField(default=dict, blank=True)
+    messages = models.JSONField(default=list, blank=True, help_text="Persisted chat messages [{role, content, tool_calls?}]")
+    study = models.ForeignKey("merism.Study", on_delete=models.SET_NULL, null=True, blank=True, related_name="ai_conversations", help_text="Context study if opened from a study page")
 
     class Meta:
         db_table = "merism_conversation"
@@ -66,6 +68,8 @@ class AgentMemory(TimestampedModel):
     )
     content = models.TextField()
     metadata = models.JSONField(default=dict, blank=True)
+    messages = models.JSONField(default=list, blank=True, help_text="Persisted chat messages [{role, content, tool_calls?}]")
+    study = models.ForeignKey("merism.Study", on_delete=models.SET_NULL, null=True, blank=True, related_name="agent_memories_by_study", help_text="Context study if opened from a study page")
     # Soft-delete flag — semantic retrieval filters out deleted rows but keeps
     # them for audit trail.
     is_deleted = models.BooleanField(default=False)

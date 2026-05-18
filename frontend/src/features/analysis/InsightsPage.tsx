@@ -51,7 +51,30 @@ export function InsightsPage(): JSX.Element {
                         <KpiCard label={t("insights.kpi_topics")} value={String(insights.interview_topics?.length ?? 0)} size="title" variant="card" />
                         <KpiCard label={t("insights.kpi_last_updated")} value={insights.generated_at ? new Date(insights.generated_at).toLocaleDateString() : "\u2014"} size="title" variant="card" />
                     </div>
-                    {insights.executive_summary && <ExecutiveSummary eyebrow={t("insights.executive_summary")} summary={insights.executive_summary} byline={t("insights.based_on", { count: insights.completed_interviews })} />}
+                    {insights.executive_summary && (
+                        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+                            <section className="rounded-merism-lg border border-[color:var(--merism-hairline)] bg-merism-surface p-6">
+                                <h2 className="mb-3 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">{t("insights.executive_summary")}</h2>
+                                <div className="text-merism-body leading-relaxed text-merism-text whitespace-pre-wrap">{insights.executive_summary}</div>
+                                <p className="mt-4 border-t border-[color:var(--merism-hairline)] pt-3 font-mono text-merism-caption text-merism-text-subtle">{t("insights.based_on", { count: insights.completed_interviews })}</p>
+                            </section>
+                            <section className="rounded-merism-lg border border-[color:var(--merism-hairline)] bg-merism-surface p-6">
+                                <h2 className="mb-3 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">访谈主题</h2>
+                                {insights.interview_topics?.length > 0 ? (
+                                    <ul className="flex flex-col gap-3">
+                                        {insights.interview_topics.map((topic: any, i: number) => (
+                                            <li key={i} className="flex items-start gap-3 text-[15px] leading-relaxed text-merism-text">
+                                                <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-merism-accent" />
+                                                <div className="flex flex-col"><span className="font-medium">{typeof topic === "string" ? topic : topic.name}</span>{typeof topic !== "string" && topic.description && <span className="text-merism-body-sm text-merism-text-muted">{topic.description}</span>}</div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-merism-body-sm text-merism-text-muted">暂无主题数据</p>
+                                )}
+                            </section>
+                        </div>
+                    )}
                     {highlights.length > 0 && (
                         <section>
                             <h2 className="mb-4 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">{t("insights.highlights")}</h2>
@@ -92,7 +115,7 @@ function FindingRow({ finding, expanded, onToggle }: { finding: InsightFinding; 
                 <Chevron className="h-4 w-4 shrink-0 text-merism-text-muted" />
                 <div className="min-w-0 flex-1">
                     <h3 className="text-merism-body-sm font-medium text-merism-text truncate">{finding.title}</h3>
-                    <p className="text-merism-caption text-merism-text-muted truncate">{finding.summary}</p>
+                    <p className="text-merism-caption text-merism-text-muted">{finding.summary}</p>
                 </div>
             </button>
             {expanded && <FindingDetail finding={finding} />}

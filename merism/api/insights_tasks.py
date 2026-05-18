@@ -233,7 +233,7 @@ def _build_insights_prompt(
 请生成一份全面的研究洞察报告。以 JSON 格式返回：
 {{
   "executive_summary": "2-3 段叙述性总结",
-  "topics": ["话题1", "话题2", ...],
+  "topics": [{"name": "话题名", "description": "一句话描述该话题在访谈中的表现"}, ...],
   "highlights": [
     {{"headline": "...", "summary": "...", "icon": "lightbulb|trending-up|users|alert-triangle|heart|zap"}}
   ],

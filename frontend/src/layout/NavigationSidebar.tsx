@@ -49,7 +49,7 @@ const ENTITY_NAV: NavItem[] = [
     { scene: Scene.Reports, i18nKey: "nav.reports", label: "Reports", path: urls.reports(), icon: FileText },
     { scene: Scene.Inbox, i18nKey: "nav.inbox", label: "Inbox", path: urls.inbox(), icon: Inbox },
     { scene: Scene.Repository, i18nKey: "nav.repository", label: "Repository", path: urls.repository(), icon: BookMarked },
-    { scene: Scene.Decisions, i18nKey: "nav.decisions", label: "Decisions", path: urls.decisions(), icon: Lightbulb },
+    { scene: Scene.Decisions, i18nKey: "nav.decisions", label: "AI 助手", path: urls.decisions(), icon: Lightbulb },
 ]
 
 /**

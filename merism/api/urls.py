@@ -27,7 +27,10 @@ from merism.api.insights_views import (
 )
 from merism.api.cleaning_views import GlossaryViewSet
 from merism.api.home import HomeStatsView
-from merism.api.ask_views import ask_stream, knowledge_search
+from merism.api.ask_views import ask_stream, ask_title, knowledge_search
+from merism.api.conversation_views import list_conversations, get_conversation, save_conversation, delete_conversation
+from merism.api.conversation_views import list_conversations, get_conversation, save_conversation, delete_conversation
+from merism.api.conversation_views import list_conversations, get_conversation, save_conversation, delete_conversation
 from merism.api.interview_message_view import post_message
 from merism.api.link_tracking_views import LinkClickViewSet, LinkShareEventViewSet
 from merism.api.users import UserMeView
@@ -99,6 +102,31 @@ urlpatterns = [
     path("users/me/", UserMeView.as_view(), name="user-me"),
     path("home/stats/", HomeStatsView.as_view(), name="home-stats"),
     path("ask/stream/", ask_stream, name="ask-stream"),
+    path("ask/title/", ask_title, name="ask-title"),
+    path("conversations/", list_conversations, name="conversations-list"),
+    path("conversations/save/", save_conversation, name="conversations-save"),
+    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/", list_conversations, name="conversations-list"),
+    path("conversations/save/", save_conversation, name="conversations-save"),
+    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/save/", save_conversation, name="conversations-save"),
+    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/", list_conversations, name="conversations-list"),
+    path("conversations/save/", save_conversation, name="conversations-save"),
+    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/save/", save_conversation, name="conversations-save"),
+    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
+    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
     path("sessions/<uuid:session_id>/message/", post_message, name="session-message"),
     path("knowledge/search/", knowledge_search, name="knowledge-search"),
     path("shared/report/<str:token>/", shared_report_view, name="shared-report"),

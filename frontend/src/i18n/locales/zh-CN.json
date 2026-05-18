@@ -30,7 +30,7 @@
         "ask": "问答",
         "inbox": "收件箱",
         "repository": "资料库",
-        "decisions": "决策",
+        "decisions": "AI 助手",
         "settings": "设置",
         "admin": "后台",
         "pinned": "置顶",
@@ -146,7 +146,7 @@
         "empty_body": "研究完成后，Merism 会为每条引语和编码建立索引，支持跨研究搜索。"
     },
     "decisions": {
-        "title": "决策",
+        "title": "AI 助手",
         "lede": "从研究中抽取的行动项，跟踪至关闭。",
         "empty_title": "暂无待决策。",
         "empty_body": "已完成访谈中的行动项会出现在这里，并附上证据链接。"
