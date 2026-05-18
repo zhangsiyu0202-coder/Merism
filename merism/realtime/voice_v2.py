@@ -18,6 +18,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.task import PipelineParams, PipelineTask
+from pipecat.pipeline.base_task import PipelineTaskParams
 
 from merism.models import InterviewSession
 from merism.voice.services.moderator_processor import ModeratorProcessor
@@ -62,7 +63,7 @@ class VoiceConsumerV2(AsyncWebsocketConsumer):
                 audio_out_sample_rate=24000,
             ),
         )
-        await self._task.run()
+        asyncio.create_task(self._task.run(PipelineTaskParams(asyncio.get_running_loop())))
 
         # Send ready message
         await self.send(text_data=json.dumps({
