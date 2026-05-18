@@ -55,7 +55,7 @@ export const loginLogic = kea<loginLogicType>([
                             : `Login failed (${response.status}).`,
                     )
                 }
-                actions.push(urls.ask())
+                window.location.href = urls.ask()
             },
         },
     })),

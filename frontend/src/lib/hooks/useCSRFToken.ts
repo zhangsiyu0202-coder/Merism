@@ -63,13 +63,17 @@ async function primeToken(signal: AbortSignal): Promise<string | null> {
  * Convenience wrapper — returns ``fetch`` init with CSRF + credentials
  * already set. Use for any unsafe-method request.
  */
-export function csrfFetch(
+export async function csrfFetch(
     input: RequestInfo | URL,
     init: RequestInit = {},
 ): Promise<Response> {
-    const token = readCookie("csrftoken") ?? ""
+    let token = readCookie("csrftoken")
+    if (!token) {
+        await primeToken(AbortSignal.timeout(5000))
+        token = readCookie("csrftoken")
+    }
     const headers = new Headers(init.headers)
-    headers.set("X-CSRFToken", token)
+    headers.set("X-CSRFToken", token ?? "")
     return fetch(input, {
         ...init,
         credentials: init.credentials ?? "include",
