@@ -66,6 +66,7 @@ dependencies = [
     "numpy>=1.26",
     "langgraph>=0.2",
     "langchain-openai>=0.2",
+    "pipecat-ai[silero,websocket]>=1.2.1",
 ]
 
 [project.optional-dependencies]
