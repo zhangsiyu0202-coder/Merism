@@ -1,5 +1,6 @@
-import { kea, path, actions, reducers, listeners, selectors } from "kea"
+import { kea, path, actions, reducers, listeners, selectors, afterMount } from "kea"
 import { loaders } from "kea-loaders"
+import { actionToUrl, urlToAction } from "kea-router"
 import { api } from "~/lib/api"
 
 import type { reportsLogicType } from "./reportsLogicType"
@@ -65,7 +66,7 @@ export const reportsLogic = kea<reportsLogicType>([
                 loadReports: async () => {
                     if (!values.studyId) return []
                     const res = await api.get(`/api/custom-reports/?study=${values.studyId}`)
-                    return res.results ?? res
+                    return (res as any).results ?? res
                 },
             },
         ],
@@ -76,7 +77,7 @@ export const reportsLogic = kea<reportsLogicType>([
             actions.loadReports()
         },
         createReport: async ({ title }) => {
-            await api.post("/api/custom-reports/", { study: values.studyId, title })
+            await api.create("/api/custom-reports/", { study: values.studyId, title })
             actions.loadReports()
         },
         deleteReport: async ({ reportId }) => {
@@ -85,7 +86,27 @@ export const reportsLogic = kea<reportsLogicType>([
         },
     })),
 
+    // Persist studyId to URL ?study=xxx
+    actionToUrl(({ values }) => ({
+        setStudyId: () => ["/reports", { study: values.studyId || undefined }],
+    })),
+
+    urlToAction(({ actions, values }) => ({
+        "/reports": (_, searchParams) => {
+            const urlStudy = (searchParams as Record<string, string>).study || ""
+            if (urlStudy && urlStudy !== values.studyId) {
+                actions.setStudyId(urlStudy)
+            }
+        },
+    })),
+
+    afterMount(({ values, actions }) => {
+        if (values.studyId) {
+            actions.loadReports()
+        }
+    }),
+
     selectors({
-        isLoading: [(s) => [s.reportsLoading], (loading) => loading],
+        isLoading: [(s) => [s.reportsLoading], (loading: boolean) => loading],
     }),
 ])

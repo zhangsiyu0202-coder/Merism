@@ -1,6 +1,7 @@
 import { Clock, FileText, MoreHorizontal, Plus, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useValues, useActions } from "kea"
+import { useTranslation } from "react-i18next"
 
 import { Button, Card, Dialog, DialogContent, DialogTitle, Input } from "~/lib/merism"
 
@@ -13,28 +14,29 @@ export function ReportsListPage({
 }: {
     onSelectReport: (reportId: string) => void
 }): JSX.Element {
+    const { t } = useTranslation()
     const { reports, isLoading } = useValues(reportsLogic)
     const { createReport, deleteReport } = useActions(reportsLogic)
     const [showCreate, setShowCreate] = useState(false)
     const [newTitle, setNewTitle] = useState("")
 
-    if (isLoading) return <LoadingState message="Loading reports..." />
+    if (isLoading) return <LoadingState message={t("reports.loading")} />
 
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-end">
                 <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>
                     <Plus className="mr-2 h-3.5 w-3.5" />
-                    New Report
+                    {t("reports.create_report")}
                 </Button>
             </div>
 
             {reports.length === 0 ? (
                 <EmptyState
                     icon={<FileText className="h-6 w-6" />}
-                    title="No reports yet"
-                    description="Create a custom report to ask new research questions of your interview data."
-                    action={{ label: "Create Report", onClick: () => setShowCreate(true) }}
+                    title={t("reports.no_reports")}
+                    description={t("reports.no_reports_desc")}
+                    action={{ label: t("reports.create_report"), onClick: () => setShowCreate(true) }}
                 />
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -49,10 +51,9 @@ export function ReportsListPage({
                 </div>
             )}
 
-            {/* Create dialog */}
             <Dialog open={showCreate} onOpenChange={setShowCreate}>
                 <DialogContent>
-                    <DialogTitle>New Report</DialogTitle>
+                    <DialogTitle>{t("reports.create_report")}</DialogTitle>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault()
@@ -67,15 +68,15 @@ export function ReportsListPage({
                         <Input
                             value={newTitle}
                             onChange={(e) => setNewTitle(e.target.value)}
-                            placeholder="Report title..."
+                            placeholder={t("reports.report_title_placeholder")}
                             autoFocus
                         />
                         <div className="flex justify-end gap-2">
                             <Button variant="secondary" size="sm" onClick={() => setShowCreate(false)} type="button">
-                                Cancel
+                                {t("common.cancel")}
                             </Button>
                             <Button variant="primary" size="sm" type="submit">
-                                Create
+                                {t("common.create")}
                             </Button>
                         </div>
                     </form>
@@ -94,6 +95,7 @@ function ReportCard({
     onClick: () => void
     onDelete: () => void
 }): JSX.Element {
+    const { t } = useTranslation()
     const [menuOpen, setMenuOpen] = useState(false)
 
     return (
@@ -111,7 +113,7 @@ function ReportCard({
                             <Clock className="h-3 w-3" />
                             {report.generated_at
                                 ? new Date(report.generated_at).toLocaleDateString()
-                                : "Not generated"}
+                                : t("reports.not_generated")}
                         </span>
                         <span>{report.questions_count} questions</span>
                     </div>
@@ -141,7 +143,7 @@ function ReportCard({
                         className="flex w-full items-center gap-2 rounded-merism-sm px-3 py-1.5 text-merism-caption text-merism-danger hover:bg-merism-bg-subtle"
                     >
                         <Trash2 className="h-3 w-3" />
-                        Delete
+                        {t("common.delete")}
                     </button>
                 </div>
             )}

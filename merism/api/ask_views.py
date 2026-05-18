@@ -26,11 +26,10 @@ import json
 import logging
 from typing import Any, Iterator
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
-from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from rest_framework.permissions import IsAuthenticated
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +46,11 @@ def _stream_answer(question: str) -> Iterator[bytes]:
     Falls back to a stub echo if the LLM client isn't configured — keeps
     the frontend usable in dev without requiring a DEEPSEEK_API_KEY.
     """
-    from merism.memai.llm import get_llm_client, get_llm_model
+    from merism.memai.llm import get_llm, default_model
 
     try:
-        client = get_llm_client()
-        model = get_llm_model()
+        client = get_llm()
+        model = default_model()
     except Exception as exc:
         logger.warning("ask.client_init_failed", extra={"err": str(exc)})
         yield _sse("delta", {"partial": "(LLM client not configured in this env.)"})
@@ -110,7 +109,8 @@ def _stream_answer(question: str) -> Iterator[bytes]:
     yield _sse("done", {"answer_markdown": answer, "chart": None, "citations": []})
 
 
-@method_decorator(csrf_exempt, name="dispatch")
+@csrf_exempt
+@login_required
 @require_http_methods(["POST"])
 def ask_stream(request: HttpRequest) -> StreamingHttpResponse:
     try:
@@ -131,6 +131,7 @@ def ask_stream(request: HttpRequest) -> StreamingHttpResponse:
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(["POST"])
 def knowledge_search(request: HttpRequest) -> JsonResponse:
     """Stub — hybrid search lands with the Repository tab build-out."""

@@ -105,6 +105,14 @@ pnpm --filter merism-frontend install  # frontend deps
 docker compose up -d                 # postgres + redis
 ```
 
+Local dev servers:
+
+- Before starting `manage.py runserver` or `pnpm dev`, clear any stale
+  listeners on `8000` and `5173` so you do not keep hitting an old bundle
+  or an old Django process.
+- If the browser still shows old UI text after edits, verify the port and
+  restart the local server before changing code again.
+
 Tests:
 
 ```bash

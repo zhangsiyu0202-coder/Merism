@@ -1,4 +1,4 @@
-import { kea, path, actions, reducers, listeners, selectors, props } from "kea"
+import { kea, path, actions, reducers, listeners, selectors, props, beforeUnmount } from "kea"
 import { loaders } from "kea-loaders"
 import { api } from "~/lib/api"
 
@@ -19,6 +19,8 @@ export const reportDetailLogic = kea<reportDetailLogicType>([
         togglePublic: true,
         setActiveSegment: (segmentId: string | null) => ({ segmentId }),
         addQuestion: (title: string, questionType: string) => ({ title, questionType }),
+        startPolling: true,
+        stopPolling: true,
     }),
 
     reducers({
@@ -48,7 +50,7 @@ export const reportDetailLogic = kea<reportDetailLogicType>([
                 loadQuestions: async () => {
                     if (!values.reportId) return []
                     const res = await api.get(`/api/report-questions/?report=${values.reportId}`)
-                    return res.results ?? res
+                    return (res as any).results ?? res
                 },
             },
         ],
@@ -58,31 +60,39 @@ export const reportDetailLogic = kea<reportDetailLogicType>([
                 loadSegments: async () => {
                     if (!values.reportId) return []
                     const res = await api.get(`/api/report-segments/?report=${values.reportId}`)
-                    return res.results ?? res
+                    return (res as any).results ?? res
                 },
             },
         ],
     })),
 
-    listeners(({ actions, values }) => ({
+    listeners(({ actions, values, cache }) => ({
         setReportId: () => {
+            actions.stopPolling()
             actions.loadReport()
             actions.loadQuestions()
             actions.loadSegments()
         },
+        loadReportSuccess: () => {
+            if (values.report?.status === "generating") {
+                actions.startPolling()
+            } else {
+                actions.stopPolling()
+            }
+        },
         generateReport: async () => {
             if (!values.reportId) return
-            await api.post(`/api/custom-reports/${values.reportId}/generate/`)
+            await api.action(`/api/custom-reports/${values.reportId}/generate/`)
             actions.loadReport()
             actions.loadQuestions()
         },
         togglePublic: async () => {
             if (!values.reportId) return
-            await api.post(`/api/custom-reports/${values.reportId}/toggle_public/`)
+            await api.action(`/api/custom-reports/${values.reportId}/toggle_public/`)
             actions.loadReport()
         },
         addQuestion: async ({ title, questionType }) => {
-            await api.post("/api/report-questions/", {
+            await api.create("/api/report-questions/", {
                 report: values.reportId,
                 title,
                 question_type: questionType,
@@ -90,20 +100,40 @@ export const reportDetailLogic = kea<reportDetailLogicType>([
             })
             actions.loadQuestions()
         },
+        startPolling: () => {
+            if (cache.pollTimer) clearInterval(cache.pollTimer)
+            cache.pollTimer = setInterval(() => {
+                actions.loadReport()
+                actions.loadQuestions()
+            }, 3000)
+        },
+        stopPolling: () => {
+            if (cache.pollTimer) {
+                clearInterval(cache.pollTimer)
+                cache.pollTimer = null
+            }
+        },
     })),
+
+    beforeUnmount(({ cache }) => {
+        if (cache.pollTimer) {
+            clearInterval(cache.pollTimer)
+            cache.pollTimer = null
+        }
+    }),
 
     selectors({
         isLoading: [
             (s) => [s.reportLoading, s.questionsLoading],
-            (a, b) => a || b,
+            (a: boolean, b: boolean) => a || b,
         ],
         isGenerating: [
             (s) => [s.report],
-            (report) => report?.status === "generating",
+            (report: CustomReportData | null) => report?.status === "generating",
         ],
         filteredQuestions: [
             (s) => [s.questions, s.activeSegment],
-            (questions, segment) =>
+            (questions: ReportQuestion[], segment: string | null) =>
                 segment ? questions.filter((q) => q.segment === segment || !q.segment) : questions,
         ],
     }),

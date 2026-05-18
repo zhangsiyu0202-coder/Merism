@@ -542,9 +542,8 @@ def dashboard_callback(request: Any, context: dict[str, Any]) -> dict[str, Any]:
         "study_count": Study.objects.count(),
         "active_study_count": Study.objects.filter(
             status__in=[
-                Study.Status.RECRUITING,
-                Study.Status.ACTIVE,
-                Study.Status.READY,
+                Study.Status.DRAFT,
+                Study.Status.LIVE,
             ]
         ).count(),
         "session_count": InterviewSession.objects.count(),

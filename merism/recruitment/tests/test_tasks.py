@@ -28,7 +28,7 @@ class TestDispatchRecruitmentDelivery(MerismTestCase):
             name="Recruiting study",
             target_audience="QQ and WeCom group members who fit our target profile.",
             target_completed_count=5,
-            status=Study.Status.RECRUITING,
+            status=Study.Status.LIVE,
         )
         cls.study_link = StudyLink.objects.create(study=cls.study, team=cls.team)
 

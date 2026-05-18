@@ -2,34 +2,28 @@ import { useActions, useValues } from "kea"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Button, Illustration } from "~/lib/merism"
+import { Button, Illustration, Input } from "~/lib/merism"
 
-import { participantEntryLogic, type ParticipantStep } from "./participantEntryLogic"
+import {
+    participantEntryLogic,
+    type ParticipantStep,
+} from "./participantEntryLogic"
 
-/**
- * ParticipantEntryPage — orchestrates the /i/:slug flow.
- *
- * Slug comes from the URL. Everything else is driven by the backend's
- * ``next_step`` response.
- */
 export default function ParticipantEntryPage(): JSX.Element {
     const { t } = useTranslation()
-
-    // Parse slug from URL. kea-router doesn't know about /i/:slug since
-    // it's served by the same SPA shell without being registered in the
-    // main Scene enum — we read the pathname directly.
     const slug = useSlugFromPath()
 
-    const { setSlug, startSession, submitConsent, submitScreener } = useActions(participantEntryLogic)
-    const { context, nextStep, screenerQuestions, contextLoading } =
-        useValues(participantEntryLogic)
+    const { setSlug, startSession, submitConsent } = useActions(participantEntryLogic)
+    const { context, nextStep, contextLoading, errorCode } = useValues(participantEntryLogic)
 
     useEffect(() => {
         if (slug) setSlug(slug)
     }, [slug, setSlug])
 
-    if (!slug) return <FullscreenMessage title="Invalid link" body="Your invite URL is missing its code." />
-    if (contextLoading && !context) return <FullscreenMessage title={t("interview.loading")} illustration="loading-time" />
+    if (!slug) return <FullscreenMessage title="链接无效" body="链接格式不正确。" />
+    if (contextLoading && !context) return <FullscreenMessage title="加载中…" illustration="loading-time" />
+
+    const linkMode = (context as any)?.link_mode || "anonymous"
 
     return (
         <main className="min-h-screen bg-merism-bg px-6 py-10">
@@ -41,137 +35,136 @@ export default function ParticipantEntryPage(): JSX.Element {
                     <span className="font-display text-merism-subtitle font-[500]">Merism</span>
                 </header>
 
-                <Step context={context} step={nextStep} screenerQuestions={screenerQuestions}
-                      onConsent={submitConsent} onScreener={submitScreener} onStart={startSession} />
+                <StepView
+                    step={nextStep}
+                    linkMode={linkMode}
+                    errorCode={errorCode}
+                    context={context}
+                    onConsent={submitConsent}
+                    onStart={startSession}
+                />
             </div>
         </main>
     )
 }
 
-function Step({
-    context,
+function StepView({
     step,
-    screenerQuestions,
+    linkMode,
+    errorCode,
+    context,
     onConsent,
-    onScreener,
     onStart,
 }: {
-    context: ReturnType<typeof useValues<typeof participantEntryLogic>>["context"]
     step: ParticipantStep
-    screenerQuestions: Array<{ id: string; text: string; kind?: string; options?: string[] }>
-    onConsent: () => void
-    onScreener: (answers: Record<string, unknown>) => void
+    linkMode: string
+    errorCode: string | null
+    context: any
+    onConsent: (data?: any) => void
     onStart: () => void
 }): JSX.Element {
-    const { t } = useTranslation()
-    if (step === "error") return <FullscreenMessage title="Something went wrong" body="This invitation link may have expired or the study has closed." />
-    if (step === "thanks") return <FullscreenMessage title="Thank you" body="Your session has been recorded." illustration="peace" />
-    if (step === "dropped") return <FullscreenMessage title="Thanks for your interest" body="We appreciate your time — this particular study was looking for a different profile." illustration="chill-time" />
+    if (step === "error") {
+        const { title, body } = errorCopy(errorCode)
+        return <FullscreenMessage title={title} body={body} />
+    }
+    if (step === "thanks") return <FullscreenMessage title="感谢参与" body="你的回答已保存，可以关闭此页面。" illustration="peace" />
+    if (step === "dropped") return <FullscreenMessage title="感谢你的关注" body="本研究需要不同的参与者画像，感谢你的时间。" illustration="chill-time" />
 
+    // Named mode: show info form
+    if (step === "consent" && linkMode === "named") {
+        return <NamedInfoForm context={context} onSubmit={onConsent} />
+    }
+
+    // Consent step for anonymous (shouldn't normally reach here since backend auto-consents)
     if (step === "consent") {
-        return (
-            <article className="rounded-merism-lg bg-merism-surface p-8 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">
-                <h1 className="mb-3 font-display text-merism-headline font-[500] text-merism-text">
-                    You're invited to participate
-                </h1>
-                <p className="mb-6 text-merism-body text-merism-text-muted">{context?.study.research_goal}</p>
-                <div className="mb-6 rounded-merism-md bg-merism-bg-subtle p-4 text-merism-body-sm text-merism-text">
-                    <p className="mb-3 font-medium">About your participation</p>
-                    <ul className="list-disc space-y-1 pl-5 text-merism-text-muted">
-                        <li>This session takes about {context?.study.estimated_minutes ?? 20} minutes.</li>
-                        <li>Your responses are used for research only.</li>
-                        <li>We store transcripts; we do <strong>not</strong> store raw audio.</li>
-                        <li>You can leave at any time.</li>
-                    </ul>
-                </div>
-                <Button onClick={onConsent} size="lg" className="w-full">
-                    I agree — continue
-                </Button>
-            </article>
-        )
+        return <ReadyToStart context={context} onStart={() => onConsent()} />
     }
 
-    if (step === "screener") {
-        return <ScreenerForm questions={screenerQuestions} onSubmit={onScreener} />
-    }
+    // Session step: ready to begin
+    return <ReadyToStart context={context} onStart={onStart} />
+}
 
-    // step === "session"
+function NamedInfoForm({
+    context,
+    onSubmit,
+}: {
+    context: any
+    onSubmit: (data?: any) => void
+}): JSX.Element {
+    const [name, setName] = useState("")
+    const [contact, setContact] = useState("")
+
     return (
-        <article className="rounded-merism-lg bg-merism-surface p-8 text-center shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">
-            <Illustration name="fast-internet" size="xl" className="mx-auto mb-6 text-merism-text" />
-            <h1 className="mb-3 font-display text-merism-headline font-[500] text-merism-text">
-                Ready to begin
+        <article className="rounded-merism-lg bg-merism-surface p-8 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">
+            <h1 className="mb-2 font-display text-merism-headline font-[500] text-merism-text">
+                参与访谈
             </h1>
             <p className="mb-6 text-merism-body text-merism-text-muted">
-                The session opens in the next screen. Make sure you're in a quiet place with your microphone ready.
+                {context?.study?.research_goal || "请填写以下信息以开始访谈。"}
             </p>
-            <Button onClick={onStart} size="lg" className="w-full">
-                {t("interview.start_cta")}
-            </Button>
+            <form
+                className="flex flex-col gap-4"
+                onSubmit={(e) => {
+                    e.preventDefault()
+                    onSubmit({ name, contact })
+                }}
+            >
+                <div className="flex flex-col gap-1">
+                    <label className="font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">
+                        姓名
+                    </label>
+                    <Input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="你的姓名"
+                        required
+                        autoFocus
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">
+                        联系方式（可选）
+                    </label>
+                    <Input
+                        value={contact}
+                        onChange={(e) => setContact(e.target.value)}
+                        placeholder="手机号或邮箱"
+                    />
+                </div>
+                <div className="mt-2 rounded-merism-md bg-merism-bg-subtle p-3 text-merism-caption text-merism-text-muted">
+                    预计时长约 {context?.study?.estimated_minutes ?? 20} 分钟 · 回答仅用于研究 · 随时可退出
+                </div>
+                <Button type="submit" size="lg" className="mt-2 w-full">
+                    开始访谈
+                </Button>
+            </form>
         </article>
     )
 }
 
-function ScreenerForm({
-    questions,
-    onSubmit,
+function ReadyToStart({
+    context,
+    onStart,
 }: {
-    questions: Array<{ id: string; text: string; kind?: string; options?: string[] }>
-    onSubmit: (answers: Record<string, unknown>) => void
+    context: any
+    onStart: () => void
 }): JSX.Element {
-    const [answers, setAnswers] = useState<Record<string, unknown>>({})
     return (
-        <form
-            className="rounded-merism-lg bg-merism-surface p-8 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]"
-            onSubmit={(e) => {
-                e.preventDefault()
-                onSubmit(answers)
-            }}
-        >
-            <h1 className="mb-6 font-display text-merism-headline font-[500] text-merism-text">
-                A few quick questions
+        <article className="rounded-merism-lg bg-merism-surface p-8 text-center shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">
+            <Illustration name="fast-internet" size="xl" className="mx-auto mb-6 text-merism-text" />
+            <h1 className="mb-3 font-display text-merism-headline font-[500] text-merism-text">
+                准备开始
             </h1>
-            <div className="flex flex-col gap-6">
-                {questions.map((q) => (
-                    <div key={q.id} className="flex flex-col gap-2">
-                        <label className="text-merism-body font-medium text-merism-text">{q.text}</label>
-                        {q.kind === "single" && q.options ? (
-                            <div className="flex flex-col gap-2">
-                                {q.options.map((opt) => (
-                                    <label key={opt} className="flex items-center gap-2 text-merism-body-sm text-merism-text">
-                                        <input
-                                            type="radio"
-                                            name={q.id}
-                                            value={opt}
-                                            checked={answers[q.id] === opt}
-                                            onChange={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                                        />
-                                        {opt}
-                                    </label>
-                                ))}
-                            </div>
-                        ) : q.kind === "number" ? (
-                            <input
-                                type="number"
-                                className="rounded-merism-md bg-merism-bg-subtle px-3 py-2 text-merism-body ring-1 ring-[color:var(--merism-hairline-strong)]"
-                                value={(answers[q.id] as number) ?? ""}
-                                onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: Number(e.target.value) }))}
-                            />
-                        ) : (
-                            <input
-                                type="text"
-                                className="rounded-merism-md bg-merism-bg-subtle px-3 py-2 text-merism-body ring-1 ring-[color:var(--merism-hairline-strong)]"
-                                value={(answers[q.id] as string) ?? ""}
-                                onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-                            />
-                        )}
-                    </div>
-                ))}
+            <p className="mb-6 text-merism-body text-merism-text-muted">
+                访谈将在下一个页面开始。请确保你在安静的环境中，麦克风已准备好。
+            </p>
+            <div className="mb-6 text-merism-caption text-merism-text-subtle">
+                预计 {context?.study?.estimated_minutes ?? 20} 分钟
             </div>
-            <Button type="submit" size="lg" className="mt-8 w-full">
-                Continue
+            <Button onClick={onStart} size="lg" className="w-full">
+                开始访谈
             </Button>
-        </form>
+        </article>
     )
 }
 
@@ -195,11 +188,31 @@ function FullscreenMessage({
     )
 }
 
-function useSlugFromPath(): string | null {
-    const [slug, setSlug] = useState<string | null>(null)
+function errorCopy(errorCode: string | null): { title: string; body: string } {
+    switch (errorCode) {
+        case "not_found":
+            return { title: "链接无效", body: "找不到此链接，请检查 URL 或联系研究员获取新链接。" }
+        case "link_closed":
+        case "study_closed":
+            return { title: "研究已关闭", body: "此研究已不再接受新参与者。" }
+        case "study_full":
+            return { title: "名额已满", body: "此研究已达到目标访谈数。" }
+        case "link_expired":
+            return { title: "链接已过期", body: "此链接已失效。" }
+        case "no_session":
+            return { title: "会话丢失", body: "请重新打开访谈链接。" }
+        case "consent_required":
+            return { title: "需要同意", body: "请先完成信息填写再开始访谈。" }
+        default:
+            return { title: "出了点问题", body: "此链接可能已过期或研究已关闭。" }
+    }
+}
+
+function useSlugFromPath(): string {
+    const [slug, setSlug] = useState("")
     useEffect(() => {
-        const match = window.location.pathname.match(/^\/i\/([a-z0-9]+)\/?$/i)
-        setSlug(match?.[1] ?? null)
+        const match = window.location.pathname.match(/^\/i\/([^/]+)/)
+        if (match) setSlug(match[1])
     }, [])
     return slug
 }

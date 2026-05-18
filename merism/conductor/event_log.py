@@ -164,7 +164,7 @@ def reconstruct_state(session: InterviewSession) -> ExecutionState:
                 if state.current_question_id:
                     state.mark_answered(state.current_question_id)
             elif decision.get("next_action") == "close":
-                state.phase = "closing"
+                state.phase = "ended"
         elif ev.kind == SessionEvent.Kind.STATE_TRANSITION:
             for key in (
                 "current_question_id",

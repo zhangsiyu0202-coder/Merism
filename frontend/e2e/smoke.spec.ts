@@ -1,14 +1,18 @@
 import { expect, test } from "@playwright/test"
 
 test.describe("smoke", () => {
-    test("home page renders the design system showcase", async ({ page }) => {
+    test("app loads and redirects unauthenticated user to login", async ({ page }) => {
         await page.goto("/")
 
-        // Brand mark must render.
-        await expect(page.getByText("Merism")).toBeVisible()
+        // Auth guard redirects to login.
+        await page.waitForURL(/\/login/, { timeout: 5000 })
 
-        // Primitive tab should be clickable + its contents appear.
-        await page.getByRole("tab", { name: "Primitives" }).click()
-        await expect(page.getByRole("button", { name: "Primary" })).toBeVisible()
+        // Brand mark must render.
+        await expect(page.locator("text=Merism").first()).toBeVisible()
+
+        // Login form is functional.
+        await expect(page.locator("#login-email")).toBeVisible()
+        await expect(page.locator("#login-password")).toBeVisible()
+        await expect(page.getByRole("button", { name: /continue/i })).toBeVisible()
     })
 })

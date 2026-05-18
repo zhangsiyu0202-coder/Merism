@@ -26,7 +26,7 @@ def _boot(target=2):
     study = Study.objects.create(
         team=team,
         research_goal="counter test",
-        status=Study.Status.RECRUITING,
+        status=Study.Status.LIVE,
         target_completed_count=target,
     )
     InterviewGuide.objects.create(team=team, study=study, is_current=True, sections=[])
@@ -73,7 +73,7 @@ def test_auto_close_when_target_reached():
     p1.save()
     study.refresh_from_db()
     # still open, only 1 completed.
-    assert study.status == Study.Status.RECRUITING
+    assert study.status == Study.Status.LIVE
     p2.status = Participation.Status.COMPLETED
     p2.save()
     study.refresh_from_db()
@@ -88,4 +88,4 @@ def test_auto_close_ignores_preview_completions():
     p.status = Participation.Status.COMPLETED
     p.save()
     study.refresh_from_db()
-    assert study.status == Study.Status.RECRUITING
+    assert study.status == Study.Status.LIVE

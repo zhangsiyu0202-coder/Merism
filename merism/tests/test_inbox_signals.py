@@ -26,7 +26,7 @@ def _boot():
     org = Organization.objects.create(name="Ib", slug=f"ib-{uuid.uuid4().hex[:6]}")
     team = Team.objects.create(organization=org, name="IbT")
     study = Study.objects.create(
-        team=team, research_goal="inbox", status=Study.Status.RECRUITING,
+        team=team, research_goal="inbox", status=Study.Status.LIVE,
         target_completed_count=1,
     )
     guide = InterviewGuide.objects.create(team=team, study=study, is_current=True, sections=[])

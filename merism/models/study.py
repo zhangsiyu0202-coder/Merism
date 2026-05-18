@@ -37,11 +37,8 @@ class Study(TimestampedModel):
 
     class Status(models.TextChoices):
         DRAFT = "draft"
-        READY = "ready"
-        RECRUITING = "recruiting"
-        ACTIVE = "active"
+        LIVE = "live"
         CLOSED = "closed"
-        ARCHIVED = "archived"
 
     class InterviewMode(models.TextChoices):
         VOICE = "voice"
@@ -144,10 +141,10 @@ class Study(TimestampedModel):
 
     @classmethod
     def annotate_completed_count(cls, qs=None):
-        """Return a queryset with ``actual_completed_count`` annotated.
+        """Return a queryset with ``actual_completed_count_annot`` annotated.
 
         Usage in admin/API:
-            Study.annotate_completed_count().values("id", "actual_completed_count")
+            Study.annotate_completed_count().values("id", "actual_completed_count_annot")
         """
         from django.db.models import Count, Q
         qs = qs if qs is not None else cls.objects.all()
@@ -174,16 +171,26 @@ class Study(TimestampedModel):
         return self.status == self.Status.DRAFT
 
     def is_active(self) -> bool:
-        return self.status == self.Status.ACTIVE
+        return self.status == self.Status.LIVE
 
 
 class StudyLink(TimestampedModel):
     """Public slug URL a participant opens to join a study."""
 
+    class LinkMode(models.TextChoices):
+        ANONYMOUS = "anonymous", "不记名"
+        NAMED = "named", "记名"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     study = models.ForeignKey(Study, on_delete=models.CASCADE, related_name="links")
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="study_links")
     slug = models.SlugField(max_length=16, unique=True, default=_generate_slug)
+    link_mode = models.CharField(
+        max_length=16,
+        choices=LinkMode.choices,
+        default=LinkMode.ANONYMOUS,
+        help_text="anonymous=直接开始; named=需输入姓名/联系方式",
+    )
     short_link_domain = models.CharField(
         max_length=255,
         blank=True,

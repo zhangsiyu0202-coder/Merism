@@ -103,7 +103,7 @@ def _boot_study(interview_mode="text"):
     study = Study.objects.create(
         team=team,
         research_goal="What makes users stick?",
-        status=Study.Status.RECRUITING,
+        status=Study.Status.LIVE,
         interview_mode=interview_mode,
         target_completed_count=1,
     )

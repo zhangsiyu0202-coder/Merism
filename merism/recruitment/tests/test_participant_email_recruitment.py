@@ -42,7 +42,7 @@ class TestParticipantEmailRecruitment(MerismTestCase):
             research_goal="Understand willingness to join a user interview.",
             target_audience="Existing product users with valid email addresses.",
             target_completed_count=5,
-            status=Study.Status.READY,
+            status=Study.Status.DRAFT,
         )
 
     def test_launch_creates_email_broadcast_from_participant_emails(self) -> None:

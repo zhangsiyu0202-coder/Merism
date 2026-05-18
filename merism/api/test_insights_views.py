@@ -47,7 +47,7 @@ class TestInsightsAPI(MerismAPITestCase):
             created_by=cls.user,
             name="Test Study",
             research_goal="Test goal",
-            status=Study.Status.READY,
+            status=Study.Status.DRAFT,
         )
         cls.insights = StudyInsights.objects.create(
             team=cls.team,
@@ -91,7 +91,7 @@ class TestCustomReportAPI(MerismAPITestCase):
             created_by=cls.user,
             name="Test Study",
             research_goal="Test goal",
-            status=Study.Status.READY,
+            status=Study.Status.DRAFT,
         )
 
     def setUp(self):
@@ -174,7 +174,7 @@ class TestReportQuestionAPI(MerismAPITestCase):
             created_by=cls.user,
             name="Test Study",
             research_goal="Test goal",
-            status=Study.Status.READY,
+            status=Study.Status.DRAFT,
         )
 
     def setUp(self):

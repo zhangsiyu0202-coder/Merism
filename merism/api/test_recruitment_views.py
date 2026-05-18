@@ -34,7 +34,7 @@ class TestStudyLaunchRecruitmentAction(MerismAPITestCase):
             target_audience="Chinese knowledge workers who use productivity tools weekly.",
             target_completed_count=8,
             estimated_minutes=25,
-            status=Study.Status.READY,
+            status=Study.Status.DRAFT,
         )
 
     def test_launch_recruitment_creates_broadcasts_and_deliveries(self) -> None:
@@ -92,7 +92,7 @@ class TestStudyLaunchRecruitmentAction(MerismAPITestCase):
         assert RecruitmentBroadcast.objects.filter(study=self.study).count() == 2
         assert DeliveryRecord.objects.filter(broadcast__study=self.study).count() == 2
         self.study.refresh_from_db()
-        assert self.study.status == Study.Status.RECRUITING
+        assert self.study.status == Study.Status.LIVE
         assert delay_mock.call_count == 2
 
     def test_launch_recruitment_returns_400_without_active_channels(self) -> None:

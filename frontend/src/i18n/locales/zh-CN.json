@@ -25,6 +25,8 @@
     "nav": {
         "home": "首页",
         "studies": "研究",
+        "insights": "洞察",
+        "reports": "报告",
         "ask": "问答",
         "inbox": "收件箱",
         "repository": "资料库",
@@ -84,15 +86,12 @@
             "all": "全部",
             "active": "进行中",
             "drafts": "草稿",
-            "archived": "已归档"
+            "archived": "已结束"
         },
         "status": {
             "draft": "草稿",
-            "ready": "就绪",
-            "recruiting": "招募中",
-            "active": "进行中",
-            "closed": "已结束",
-            "archived": "已归档"
+            "live": "进行中",
+            "closed": "已结束"
         }
     },
     "study": {
@@ -228,5 +227,220 @@
         "not_found_title": "页面未找到",
         "not_found_body": "你访问的页面不存在或已迁移。",
         "not_found_cta": "返回首页"
-    }
+    },
+    "insights": {
+        "title": "洞察",
+        "select_study": "选择研究",
+        "select_study_desc": "选择一项研究以查看 AI 生成的研究洞察。",
+        "loading": "正在加载洞察…",
+        "no_insights": "暂无洞察",
+        "no_insights_desc": "访谈完成后将自动生成洞察。",
+        "generate": "生成洞察",
+        "rerun": "重新生成",
+        "kpi_interviews": "访谈数",
+        "kpi_avg_session": "平均时长",
+        "kpi_topics": "话题数",
+        "kpi_last_updated": "最后更新",
+        "executive_summary": "摘要总结",
+        "based_on": "基于 {{count}} 场访谈",
+        "highlights": "核心发现",
+        "findings": "详细发现",
+        "themes": "主题",
+        "supporting_evidence": "支撑证据"
+    },
+    "reports": {
+        "title": "报告",
+        "select_study": "选择研究",
+        "select_study_desc": "选择一项研究以创建和查看自定义 AI 研究报告。",
+        "loading": "正在加载报告…",
+        "no_reports": "暂无报告",
+        "no_reports_desc": "创建自定义报告，对访谈数据提出新的研究问题。",
+        "create_report": "创建报告",
+        "report_title_placeholder": "报告标题…",
+        "loading_report": "正在加载报告…",
+        "generating": "正在生成报告分析",
+        "not_generated": "未生成",
+        "not_yet_generated": "尚未生成",
+        "back_to_reports": "返回报告列表",
+        "share": "分享",
+        "unshare": "取消分享",
+        "public_link_active": "公开链接已启用",
+        "question_placeholder": "研究问题…",
+        "question_types": {
+            "open_ended": "开放式问题",
+            "multi_select": "多选题",
+            "single_select": "单选题",
+            "rating": "评分题",
+            "ranking": "排序题"
+        }
+    },
+    "participant": {
+        "invalid_link": "链接无效",
+        "something_wrong": "出了点问题",
+        "something_wrong_desc": "此邀请链接可能已过期或研究已关闭。",
+        "thank_you": "感谢参与",
+        "thanks_interest": "感谢你的关注",
+        "errors": {
+            "link_invalid": "链接无效",
+            "study_closed": "研究已关闭",
+            "study_full": "名额已满",
+            "link_expired": "链接已过期",
+            "invitation_required": "需要邀请",
+            "invitation_invalid": "邀请无效",
+            "invitation_revoked": "邀请已撤销",
+            "invitation_expired": "邀请已过期",
+            "session_missing": "会话不存在",
+            "consent_required": "需要同意",
+            "interview_not_ready": "访谈未就绪",
+            "generic": "出了点问题"
+        }
+    },
+    "interview_room": {
+        "voice_only": "仅语音",
+        "voice_only_desc": "仅使用麦克风，无摄像头。",
+        "voice_video": "语音 + 视频",
+        "voice_video_desc": "开启摄像头，反馈更丰富。",
+        "text_placeholder": "不方便说话？可以打字…",
+        "text_answer_placeholder": "输入你的回答…"
+    },
+    "analysis": {
+        "title": "分析",
+        "sessions": "访谈场次",
+        "quotes": "引语",
+        "insights_label": "洞察",
+        "insights_subtitle": "每场访谈生成",
+        "talk_time": "对话时长",
+        "talk_time_subtitle": "已完成访谈",
+        "sentiment_over_time": "情感趋势",
+        "action_items": "行动项",
+        "top_themes": "热门主题",
+        "concept_comparison": "概念对比",
+        "sessions_seen": "已查看场次",
+        "custom_report": "自定义报告",
+        "custom_report_desc": "对这项研究提出任何问题",
+        "custom_report_placeholder": "你想了解什么？",
+        "pinned": "已置顶",
+        "pin_to_dashboard": "置顶到面板"
+    },
+    "outline": {
+        "question_text": "问题文本",
+        "task_text": "任务文本",
+        "question_text_helper": "展示给参与者的主要文本。",
+        "question_text_placeholder": "编写参与者将看到或听到的提示语。",
+        "question_type": "问题类型",
+        "question_type_helper": "切换类型会更换下方的配置区块。",
+        "probing_amount": "追问程度",
+        "probing_instructions": "追问指引",
+        "probing_placeholder": "访谈员应追问什么？",
+        "allow_skip": "允许访谈员跳过此问题",
+        "allow_skip_helper": "当参与者已在其他地方回答过时使用。",
+        "allow_dynamic_probe": "允许访谈员在任务完成后动态追问",
+        "allow_dynamic_probe_helper": "让主持人在完成后提出后续问题。",
+        "selection_type": "选择类型",
+        "single_select": "单选",
+        "multi_select": "多选",
+        "randomize_options": "随机选项顺序",
+        "randomize_options_helper": "在重复访谈中保持选项列表新鲜。",
+        "other_option_helper": "当列出的选项不适用时，添加自定义回答路径。",
+        "allow_skip_select": "允许访谈员跳过此问题",
+        "allow_skip_select_helper": "当问题在实际访谈中应为可选时使用。",
+        "scale_range": "量表范围",
+        "low_label": "低分标签",
+        "middle_label": "中间标签",
+        "high_label": "高分标签",
+        "ask_explanation": "评分后追问原因",
+        "ask_explanation_helper": "主持人会询问参与者为何选择该分数。",
+        "allow_skip_rating_helper": "使评分在实际主持中为可选。",
+        "placeholder_label": "占位文本",
+        "unit_suffix": "单位 / 后缀",
+        "min_value": "最小值",
+        "max_value": "最大值",
+        "allow_decimal": "允许小数",
+        "allow_decimal_helper": "当答案可能包含分数或百分比时使用。",
+        "allow_skip_number_helper": "使数字问题在实际访谈中为可选。",
+        "add_section_randomization": "添加章节随机化",
+        "add_section_randomization_helper": "开启章节级别的排序控制。",
+        "randomization_mode": "随机化模式",
+        "shuffle_sections": "打乱章节",
+        "shuffle_questions": "打乱问题",
+        "save_failed": "保存失败",
+        "unsaved_changes": "有未保存的更改",
+        "duplicate_section": "复制章节",
+        "delete_section": "删除章节",
+        "review_title": "让 AI 审查你的大纲",
+        "review_desc": "六个维度：隐私 · 顺序 · 结构 · 偏见 · 对齐 · 追问深度",
+        "review_placeholder": "让我审查任何具体内容…"
+    },
+    "brief": {
+        "research_goal": "研究目标",
+        "research_goal_placeholder": "为什么高级用户在第 14 天后取消？",
+        "background": "背景（可选）",
+        "hypothesis": "假设（可选）",
+        "duration": "预计时长（分钟）",
+        "review_mode": "模式",
+        "review_duration": "时长",
+        "review_barge_in": "打断"
+    },
+    "recruit": {
+        "target_sessions": "目标场次",
+        "target_sessions_subtitle": "期望完成的访谈数",
+        "quotas": "配额",
+        "quota_sum": "配额总计",
+        "criteria_placeholder": "例如：25-40 岁的中国职场人士，每天使用效率工具，过去 6 个月使用过至少 2 款竞品。",
+        "copy_link": "复制链接",
+        "show_qr": "显示二维码",
+        "quota_name_placeholder": "例如：年龄段",
+        "segment_label_placeholder": "分组标签"
+    },
+    "screener": {
+        "question_placeholder": "筛选问题…",
+        "summary_title": "筛选摘要",
+        "summary_subtitle": "保存前确认通过条件已闭环。",
+        "with_pass_logic": "已设置通过逻辑",
+        "missing_logic": "缺少逻辑"
+    },
+    "sessions_tab": {
+        "search_placeholder": "搜索 ID、状态…"
+    },
+    "study_settings": {
+        "project_details": "项目详情",
+        "study_name_placeholder": "研究名称",
+        "research_objectives": "研究目标",
+        "research_objectives_desc": "本研究旨在回答的具体问题。",
+        "add_objective": "添加目标",
+        "objective_placeholder": "例如：了解结账流程中哪些地方让人困惑…"
+    },
+    "stimuli": {
+        "label_placeholder": "标签（例如：概念 A）",
+        "no_stimuli": "暂无刺激物 — 请先上传"
+    },
+    "glossary": {
+        "title": "术语表",
+        "description": "转录清洗时应用的术语替换。适用于 ASR 容易误识别的产品名、人名或术语。",
+        "correct_placeholder": "例如：Merism",
+        "variants_placeholder": "例如：米瑞姆, merism, meriism"
+    },
+    "llm_gateway": {
+        "providers_title": "供应商",
+        "providers_desc": "团队可用的 LLM 供应商。凭证已加密存储。",
+        "routes_title": "路由",
+        "routes_desc": "将逻辑能力映射到供应商。",
+        "select_provider": "选择供应商",
+        "no_providers": "暂无可用供应商",
+        "budget_title": "预算",
+        "budget_desc": "团队月度开支追踪。"
+    },
+    "side_panel": {
+        "ask_merism": "问答 Merism",
+        "close": "关闭"
+    },
+    "home_kpi": {
+        "talk_time": "对话时长",
+        "talk_time_subtitle": "累计访谈时间",
+        "sessions_subtitle": "过去 7 天完成",
+        "participants_subtitle": "所有研究合计",
+        "insights_subtitle": "已捕获"
+    },
+    "select_study_placeholder": "选择研究…",
+    "untitled": "未命名"
 }

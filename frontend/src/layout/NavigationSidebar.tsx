@@ -4,7 +4,6 @@ import {
     BookMarked,
     ChevronsUpDown,
     FileText,
-    FlaskConical,
     Home,
     Inbox,
     Lightbulb,
@@ -46,9 +45,8 @@ interface NavItem {
  */
 const ENTITY_NAV: NavItem[] = [
     { scene: Scene.Home, i18nKey: "nav.home", label: "Home", path: urls.home(), icon: Home },
-    { scene: Scene.Studies, i18nKey: "nav.studies", label: "Studies", path: urls.studies(), icon: FlaskConical },
-    { scene: Scene.Insights, label: "Insights", path: urls.insights(), icon: Sparkles },
-    { scene: Scene.Reports, label: "Reports", path: urls.reports(), icon: FileText },
+    { scene: Scene.Insights, i18nKey: "nav.insights", label: "Insights", path: urls.insights(), icon: Sparkles },
+    { scene: Scene.Reports, i18nKey: "nav.reports", label: "Reports", path: urls.reports(), icon: FileText },
     { scene: Scene.Inbox, i18nKey: "nav.inbox", label: "Inbox", path: urls.inbox(), icon: Inbox },
     { scene: Scene.Repository, i18nKey: "nav.repository", label: "Repository", path: urls.repository(), icon: BookMarked },
     { scene: Scene.Decisions, i18nKey: "nav.decisions", label: "Decisions", path: urls.decisions(), icon: Lightbulb },
@@ -98,7 +96,7 @@ export function NavigationSidebar(): JSX.Element {
                     {ENTITY_NAV.map((item) => {
                         const isActive =
                             activeScene === item.scene ||
-                            (item.scene === Scene.Studies && activeScene === Scene.Study)
+                            (item.scene === Scene.Home && activeScene === Scene.Study)
                         return (
                             <NavLink
                                 key={item.scene}

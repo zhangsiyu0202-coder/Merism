@@ -45,7 +45,7 @@ from merism.models import (
     Team,
 )
 from merism.recruitment.crypto import decrypt_credentials, encrypt_credentials
-from merism.reports.schema import validate_blocks_list, validate_study_report_content
+from merism.reports.schema import validate_study_report_content
 
 
 # ── Team ───────────────────────────────────────────────────
@@ -577,6 +577,7 @@ class InboxItemSerializer(serializers.ModelSerializer):
     """Read-only list serializer for researcher inbox."""
 
     class Meta:
-        model = __import__("merism.models", fromlist=["InboxItem"]).InboxItem
+        from merism.models import InboxItem
+        model = InboxItem
         fields = ("id", "kind", "ref_kind", "ref_id", "title", "body", "payload", "read_by", "trace_id", "created_at")
         read_only_fields = ("id", "created_at")

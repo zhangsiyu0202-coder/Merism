@@ -30,6 +30,21 @@ export default defineConfig({
         proxy: {
             "/api": { target: "http://localhost:8000", changeOrigin: true },
             "/accounts": { target: "http://localhost:8000", changeOrigin: true },
+            "/i/": {
+                target: "http://localhost:8000",
+                changeOrigin: true,
+                // Only proxy XHR/fetch requests (Accept: application/json),
+                // not browser navigations (Accept: text/html). This lets the
+                // SPA handle /i/:slug page rendering while API calls like
+                // fetch("/i/slug/") reach Django.
+                bypass(req) {
+                    const accept = req.headers.accept || ""
+                    if (accept.includes("text/html")) {
+                        // Return the path to serve index.html (SPA fallback)
+                        return req.url
+                    }
+                },
+            },
             "/ws": { target: "ws://localhost:8000", ws: true, changeOrigin: true },
         },
     },

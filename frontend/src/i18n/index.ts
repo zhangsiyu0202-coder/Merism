@@ -29,15 +29,12 @@ export type MerismLocale = "en" | "zh-CN"
 export const SUPPORTED_LOCALES: readonly MerismLocale[] = ["en", "zh-CN"] as const
 
 function detectInitialLocale(): MerismLocale {
-    if (typeof window === "undefined") return "en"
+    if (typeof window === "undefined") return "zh-CN"
     const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY)
     if (stored && SUPPORTED_LOCALES.includes(stored as MerismLocale)) {
         return stored as MerismLocale
     }
-    // Browser fallback — take the first matching prefix.
-    const browser = (navigator.language || "en").toLowerCase()
-    if (browser.startsWith("zh")) return "zh-CN"
-    return "en"
+    return "zh-CN"
 }
 
 void i18n.use(initReactI18next).init({

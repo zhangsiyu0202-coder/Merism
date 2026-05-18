@@ -137,7 +137,7 @@ def stage_index_and_insight(self, session_id: str) -> dict[str, Any]:
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=30)
-def process_completed_session(self, session_id: str | UUID) -> dict[str, int] | str:
+def process_completed_session(self, session_id: str | UUID) -> dict[str, Any]:
     """Entry point triggered by the InterviewSession post_save signal.
 
     Kicks off a Celery chain of stage tasks. Keeping a single entry point

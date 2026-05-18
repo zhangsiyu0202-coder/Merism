@@ -31,9 +31,8 @@ from merism.models import (
 
 
 ACTIVE_STATUSES = {
-    Study.Status.READY,
-    Study.Status.RECRUITING,
-    Study.Status.ACTIVE,
+    Study.Status.DRAFT,
+    Study.Status.LIVE,
 }
 
 

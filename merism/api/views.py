@@ -78,12 +78,12 @@ class StudyViewSet(TeamScopedModelViewSet):
     def launch(self, request: Request, pk: str | None = None) -> Response:
         """Flip draft → recruiting after the outline is finalized."""
         study = self.get_object()
-        if study.status not in (Study.Status.DRAFT, Study.Status.READY):
+        if study.status != Study.Status.DRAFT:
             return Response(
                 {"detail": f"Cannot launch a study in status '{study.status}'."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        study.status = Study.Status.RECRUITING
+        study.status = Study.Status.LIVE
         study.save(update_fields=["status", "updated_at"])
         return Response(self.get_serializer(study).data)
 
@@ -285,9 +285,6 @@ class InterviewGuideViewSet(TeamScopedModelViewSet):
         InterviewGuide.objects.filter(study=guide.study).update(is_current=False)
         guide.is_current = True
         guide.save(update_fields=["is_current", "updated_at"])
-        if guide.study.status == Study.Status.DRAFT:
-            guide.study.status = Study.Status.READY
-            guide.study.save(update_fields=["status", "updated_at"])
         return Response(self.get_serializer(guide).data)
 
 
@@ -638,6 +635,7 @@ def _choose_winner(rows: list[dict]) -> str | None:
 class InboxItemViewSet(TeamScopedModelViewSet):
     """Researcher inbox — read + mark-read only. No create (written by signals)."""
 
+    http_method_names = ["get", "post", "head", "options"]
     queryset = None  # set below
 
     def get_queryset(self):
@@ -645,8 +643,9 @@ class InboxItemViewSet(TeamScopedModelViewSet):
         team = _team_from_request(self.request)
         return InboxItem.objects.filter(team=team).order_by("-created_at")
 
-    from merism.api.serializers import InboxItemSerializer
-    serializer_class = InboxItemSerializer
+    def get_serializer_class(self):
+        from merism.api.serializers import InboxItemSerializer
+        return InboxItemSerializer
 
     def perform_create(self, serializer):
         raise RuntimeError("InboxItem is write-only via signals")

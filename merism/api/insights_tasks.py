@@ -150,7 +150,13 @@ def generate_report_task(self, report_id: str) -> None:
         # Gather interview data
         from merism.models import InterviewSession, SessionInsight
 
-        InterviewSession.objects.filter(study=study, status=InterviewSession.Status.COMPLETED)
+        completed_sessions = InterviewSession.objects.filter(study=study, status=InterviewSession.Status.COMPLETED)
+        if not completed_sessions.exists():
+            report.status = CustomReport.Status.FAILED
+            report.error_message = "No completed interviews to analyse."
+            report.save(update_fields=["status", "error_message", "updated_at"])
+            return
+
         session_insights = SessionInsight.objects.filter(session__study=study)
         summaries = list(session_insights.values_list("summary", flat=True)[:20])
 
@@ -213,30 +219,30 @@ def _build_insights_prompt(
     summaries: list[str],
     highlights_data: list[Any],
 ) -> str:
-    return f"""You are a senior UX researcher analyzing qualitative interview data.
+    return f"""你是一位资深用户研究员，正在分析定性访谈数据。
 
-Research Goal: {research_goal}
-Completed Interviews: {session_count}
+研究目标：{research_goal}
+已完成访谈数：{session_count}
 
-Session Summaries:
+访谈摘要：
 {chr(10).join(f"- {s}" for s in summaries if s)}
 
-Session Highlights:
+访谈亮点：
 {json.dumps(highlights_data[:10], ensure_ascii=False, indent=2)}
 
-Generate a comprehensive research insights report. Return JSON with:
+请生成一份全面的研究洞察报告。以 JSON 格式返回：
 {{
-  "executive_summary": "2-3 paragraph narrative summary",
-  "topics": ["topic1", "topic2", ...],
+  "executive_summary": "2-3 段叙述性总结",
+  "topics": ["话题1", "话题2", ...],
   "highlights": [
     {{"headline": "...", "summary": "...", "icon": "lightbulb|trending-up|users|alert-triangle|heart|zap"}}
   ],
   "findings": [
     {{
-      "title": "Finding title",
-      "summary": "One-line summary",
+      "title": "发现标题",
+      "summary": "一句话总结",
       "chart_spec": {{"type": "bar|pie|line", "title": "...", "categories": [...], "series": [{{"name": "...", "data": [...]}}]}},
-      "chart_interpretation": "What the chart shows",
+      "chart_interpretation": "图表说明",
       "themes": [{{"name": "...", "count": N, "description": "..."}}],
       "subthemes": [{{"name": "...", "parent": "...", "description": "..."}}],
       "insight_nuggets": [{{"label": "...", "value": "...", "unit": "..."}}],
@@ -245,7 +251,7 @@ Generate a comprehensive research insights report. Return JSON with:
   ]
 }}
 
-Generate 3-6 highlights and 4-8 findings. Be specific and data-driven."""
+请生成 3-6 个亮点和 4-8 个发现。内容要具体、有数据支撑。所有文本必须使用中文。"""
 
 
 def _build_question_prompt(
@@ -254,24 +260,24 @@ def _build_question_prompt(
     question_type: str,
     summaries: list[str],
 ) -> str:
-    return f"""You are a senior UX researcher analyzing interview data for a specific question.
+    return f"""你是一位资深用户研究员，正在针对一个具体问题分析访谈数据。
 
-Research Goal: {research_goal}
-Question: {question_title}
-Question Type: {question_type}
+研究目标：{research_goal}
+问题：{question_title}
+问题类型：{question_type}
 
-Interview Summaries:
+访谈摘要：
 {chr(10).join(f"- {s}" for s in summaries if s)}
 
-Analyze the interview data for this question. Return JSON with:
+请针对此问题分析访谈数据。以 JSON 格式返回：
 {{
-  "summary": "2-3 sentence AI summary of findings for this question",
+  "summary": "2-3 句 AI 总结",
   "chart_spec": {{"type": "bar|pie|line", "title": "...", "categories": [...], "series": [{{"name": "...", "data": [...]}}]}},
   "themes": [{{"name": "...", "count": N, "description": "...", "sentiment": "positive|negative|neutral"}}],
-  "quotes": [{{"text": "...", "source": "Participant X", "theme": "..."}}]
+  "quotes": [{{"text": "...", "source": "参与者 X", "theme": "..."}}]
 }}
 
-Be specific and evidence-based."""
+内容要具体、有证据支撑。所有文本必须使用中文。"""
 
 
 def _build_synthesis_prompt(
@@ -279,12 +285,12 @@ def _build_synthesis_prompt(
     questions: list[dict[str, str]],
 ) -> str:
     q_text = "\n".join(f"- {q['title']}: {q['summary']}" for q in questions)
-    return f"""You are a senior UX researcher writing an executive synthesis.
+    return f"""你是一位资深用户研究员，正在撰写执行摘要。
 
-Research Goal: {research_goal}
+研究目标：{research_goal}
 
-Question-level findings:
+各问题发现：
 {q_text}
 
-Write a 2-3 paragraph synthesis that ties together the findings across all questions.
-Focus on actionable insights and key patterns."""
+请撰写 2-3 段综合总结，将所有问题的发现串联起来。
+重点关注可执行的洞察和关键模式。所有文本必须使用中文。"""

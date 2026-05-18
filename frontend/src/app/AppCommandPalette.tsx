@@ -47,13 +47,6 @@ export function AppCommandPalette(): JSX.Element {
                 onRun: nav(urls.home()),
             },
             {
-                id: "go-studies",
-                label: t("command_palette.commands.go_studies"),
-                section: t("command_palette.sections.go_to"),
-                icon: <FlaskConical className="h-4 w-4" />,
-                onRun: nav(urls.studies()),
-            },
-            {
                 id: "go-ask",
                 label: t("command_palette.commands.go_ask"),
                 section: t("command_palette.sections.go_to"),

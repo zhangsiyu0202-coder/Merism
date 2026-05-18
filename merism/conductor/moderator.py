@@ -76,7 +76,7 @@ async def stream_turn(
     state, current_question, current_section, effective_sections = await _resolve_state(session)
     probes_done = state.probes_done_for(state.current_question_id)
     current_question_text = (current_question or {}).get("text", "")
-    current_stimulus_text = _resolve_stimulus_description(
+    current_stimulus_text = await _resolve_stimulus_description(
         session, (current_question or {}).get("linked_stimulus_ids", [])
     )
     concept_info = state.concept_by_question_id.get(state.current_question_id) or {}
@@ -512,7 +512,7 @@ def _apply_decision_to_state(
         state.phase = "ended"
 
 
-def _resolve_stimulus_description(
+async def _resolve_stimulus_description(
     session: InterviewSession, stimulus_ids: list[str]
 ) -> str:
     if not stimulus_ids:
@@ -528,9 +528,7 @@ def _resolve_stimulus_description(
             parts.append(f"{s.kind}: {s.title or ''} — {s.description or ''}")
         return "\n".join(parts).strip()
 
-    import asyncio
-
-    return asyncio.get_event_loop().run_until_complete(_load())
+    return await _load()
 
 
 async def _asave_session(session: InterviewSession) -> None:

@@ -97,15 +97,15 @@ def launch_study_recruitment(*, study: Study) -> LaunchRecruitmentResult:
         result.queued_broadcast_ids.append(str(broadcast.id))
         result.created_count += len(targets)
 
-    if result.created_count > 0 and study.status in (Study.Status.DRAFT, Study.Status.READY):
-        study.status = Study.Status.RECRUITING
+    if result.created_count > 0 and study.status == Study.Status.DRAFT:
+        study.status = Study.Status.LIVE
         study.save(update_fields=["status", "updated_at"])
 
     return result
 
 
 def _validate_study(study: Study) -> None:
-    if study.status in (Study.Status.CLOSED, Study.Status.ARCHIVED):
+    if study.status == Study.Status.CLOSED:
         raise RecruitmentLaunchError(
             f"Study cannot recruit participants while in status '{study.status}'."
         )

@@ -97,7 +97,7 @@ def _resolve_link(
         return link, "link_expired"
 
     study = link.study
-    if study.status in (Study.Status.CLOSED, Study.Status.ARCHIVED):
+    if study.status == Study.Status.CLOSED:
         if study.actual_completed_count >= study.target_completed_count:
             return link, "study_full"
         return link, "study_closed"
@@ -194,6 +194,7 @@ def _ok(
     payload = {
         "ok": True,
         "next_step": next_step,
+        "link_mode": link.link_mode,
         "participation": {
             "id": str(participation.id),
             "status": participation.status,
@@ -236,14 +237,26 @@ def _compute_next_step(
         return "thanks"
     if participation.status == Participation.Status.DROPPED:
         return "dropped"
+
+    # Anonymous mode: skip consent/info, go straight to session
+    if link.link_mode == StudyLink.LinkMode.ANONYMOUS:
+        # Auto-consent
+        if participation.consented_at is None:
+            participation.consented_at = timezone.now()
+            if participation.status == Participation.Status.INVITED:
+                participation.status = Participation.Status.CONSENTED
+            participation.save(update_fields=["consented_at", "status", "updated_at"])
+        return "session"
+
+    # Named mode: need info collection (consent step doubles as info form)
     if participation.consented_at is None:
         return "consent"
+
     # Has screener on the study?
     has_screener = Screener.objects.filter(study=link.study).exists()
     if has_screener and participation.screener_score is None:
         return "screener"
-    if participation.status == Participation.Status.INTERVIEWING:
-        return "session"
+
     return "session"
 
 
@@ -310,7 +323,10 @@ def resolve_link(request: HttpRequest, slug: str) -> JsonResponse:
 @csrf_exempt
 @require_http_methods(["POST"])
 def post_consent(request: HttpRequest, slug: str) -> JsonResponse:
-    """``POST /i/<slug>/consent/`` — record consent."""
+    """``POST /i/<slug>/consent/`` — record consent + optional participant info.
+
+    Body (for named links): {"name": "...", "contact": "..."}
+    """
     link, err = _resolve_link(slug)
     if err:
         if err == "not_found":
@@ -329,6 +345,24 @@ def post_consent(request: HttpRequest, slug: str) -> JsonResponse:
         if participation.status == Participation.Status.INVITED:
             participation.status = Participation.Status.CONSENTED
         participation.save(update_fields=["consented_at", "status", "updated_at"])
+
+    # For named links, save participant info
+    if link.link_mode == StudyLink.LinkMode.NAMED:
+        import json
+        try:
+            body = json.loads(request.body or b"{}")
+        except Exception:
+            body = {}
+        name = body.get("name", "").strip()
+        contact = body.get("contact", "").strip()
+        if name or contact:
+            participant = Participant.objects.create(
+                team=link.team,
+                name=name,
+                email=contact,
+            )
+            participation.participant = participant
+            participation.save(update_fields=["participant", "updated_at"])
 
     return _ok(participation, link, _compute_next_step(participation, link))
 
@@ -450,7 +484,14 @@ def start_session(request: HttpRequest, slug: str) -> JsonResponse:
         study=link.study, is_current=True
     ).order_by("-created_at").first()
     if guide is None:
-        return _err("no_guide", http_status=503)
+        guide = InterviewGuide.objects.create(
+            team=link.team,
+            study=link.study,
+            version=f"auto-{uuid.uuid4().hex[:8]}",
+            is_current=True,
+            language="en",
+            sections=[],
+        )
 
     # Reuse existing session if already interviewing.
     existing = InterviewSession.objects.filter(

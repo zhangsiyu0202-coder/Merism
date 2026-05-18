@@ -62,7 +62,7 @@ export default function StudyPage(): JSX.Element {
     ]
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex min-h-0 flex-1 flex-col">
             <PageHeading
                 eyebrow={`${t("studies.title")} · ${studyId.slice(0, 8)}`}
                 title={study?.name ?? (studyLoading ? t("common.loading") : "—")}
@@ -81,7 +81,7 @@ export default function StudyPage(): JSX.Element {
                 }
             />
 
-            <div className="flex flex-col gap-8">
+            <div className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
                 <TabRail
                     tabs={TABS}
                     activeTab={activeTab}
@@ -89,7 +89,9 @@ export default function StudyPage(): JSX.Element {
                 />
 
                 <Suspense fallback={<div className="text-merism-text-muted">{t("common.loading")}</div>}>
-                    <TabComponent />
+                    <div className="min-h-0 flex-1">
+                        <TabComponent />
+                    </div>
                 </Suspense>
             </div>
         </div>

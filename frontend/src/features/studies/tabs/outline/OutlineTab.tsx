@@ -34,11 +34,6 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
 import {
     Button,
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
     Input,
     InputHelperText,
     InputLabel,
@@ -312,8 +307,8 @@ export default function OutlineTab(): JSX.Element {
             : "Saved"
 
     return (
-        <div className="flex min-h-0 flex-col gap-6">
-            <header className="rounded-merism-lg border border-[color:var(--merism-hairline)] bg-merism-surface px-5 py-4 shadow-merism-card">
+        <div className="flex h-full min-h-0 flex-col">
+            <header className="shrink-0 border-b border-[color:var(--merism-hairline)] px-6 py-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
@@ -340,7 +335,7 @@ export default function OutlineTab(): JSX.Element {
 
                 <nav
                     aria-label="Project modules"
-                    className="mt-4 flex gap-6 overflow-x-auto border-b border-[color:var(--merism-hairline)]"
+                    className="mt-4 flex gap-6 overflow-x-auto"
                 >
                     {MODULE_TABS.map((tab) => {
                         const active = tab.value === "guide"
@@ -365,8 +360,8 @@ export default function OutlineTab(): JSX.Element {
                 </nav>
             </header>
 
-            <div className="grid min-h-0 gap-6 lg:grid-cols-[19rem_minmax(0,1fr)_18rem]">
-                <aside className="min-h-0">
+            <div className="grid min-h-0 flex-1 lg:grid-cols-[19rem_minmax(0,1fr)_18rem]">
+                <aside className="min-h-0 overflow-y-auto border-r border-[color:var(--merism-hairline)] px-4 py-4">
                     <GuideOutlinePanel
                         sections={sections}
                         selectedQuestionId={selectedQuestionId}
@@ -384,7 +379,7 @@ export default function OutlineTab(): JSX.Element {
                     />
                 </aside>
 
-                <main className="min-h-0">
+                <main className="min-h-0 overflow-y-auto px-6 py-4">
                     <DynamicQuestionEditor
                         section={selectedLocation?.section ?? null}
                         question={selectedLocation?.question ?? null}
@@ -402,7 +397,7 @@ export default function OutlineTab(): JSX.Element {
                     />
                 </main>
 
-                <aside className="min-h-0">
+                <aside className="min-h-0 overflow-y-auto border-l border-[color:var(--merism-hairline)] px-4 py-4">
                     <SettingsAndSummaryPanel
                         sections={sections}
                         summary={summary}
@@ -448,26 +443,24 @@ function GuideOutlinePanel({
     onMoveQuestion: (sectionId: string, fromIndex: number, toIndex: number) => void
 }): JSX.Element {
     return (
-        <Card className="flex h-full min-h-0 flex-col">
-            <CardHeader className="gap-3 border-b border-[color:var(--merism-hairline)]">
-                <div className="flex items-center justify-between gap-3">
-                    <div>
-                        <CardTitle className="text-base font-medium">Guide Outline</CardTitle>
-                        <CardDescription>
-                            Structure first: sections, questions, and type-specific controls.
-                        </CardDescription>
-                    </div>
-                    <Button size="sm" variant="secondary" iconLeft={<Plus className="h-4 w-4" />} onClick={onAddSection}>
-                        Add section
-                    </Button>
+        <div className="flex h-full min-h-0 flex-col">
+            <div className="flex items-center justify-between gap-3 pb-3">
+                <div>
+                    <h2 className="text-sm font-medium text-merism-text">Guide Outline</h2>
+                    <p className="mt-0.5 text-xs text-merism-text-muted">
+                        Sections &amp; questions
+                    </p>
                 </div>
-            </CardHeader>
+                <Button size="sm" variant="secondary" iconLeft={<Plus className="h-4 w-4" />} onClick={onAddSection}>
+                    Add
+                </Button>
+            </div>
 
-            <CardContent className="min-h-0 flex-1 overflow-y-auto p-3">
-                <div className="flex flex-col gap-4">
+            <div className="min-h-0 flex-1 overflow-y-auto">
+                <div className="flex flex-col gap-3">
                     {sections.length === 0 ? (
-                        <div className="rounded-merism-lg border border-dashed border-[color:var(--merism-hairline-strong)] bg-merism-bg-subtle p-4 text-sm text-merism-text-muted">
-                            No sections yet. Add one to start shaping the guide structure.
+                        <div className="rounded-merism-md border border-dashed border-[color:var(--merism-hairline-strong)] p-4 text-sm text-merism-text-muted">
+                            No sections yet. Add one to start.
                         </div>
                     ) : (
                         sections.map((section, index) => (
@@ -490,8 +483,8 @@ function GuideOutlinePanel({
                         ))
                     )}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }
 
@@ -541,8 +534,8 @@ function SectionBlock({
     return (
         <section
             className={cn(
-                "rounded-merism-lg border border-[color:var(--merism-hairline)] bg-merism-surface p-3 shadow-merism-xs",
-                selectedSectionId === section.id && "ring-1 ring-[color:var(--merism-accent-outline)]",
+                "rounded-merism-md border border-[color:var(--merism-hairline)] p-3",
+                selectedSectionId === section.id && "border-[color:var(--merism-accent-outline)] bg-merism-bg-subtle",
             )}
         >
             <div className="flex items-start gap-3">
@@ -774,38 +767,35 @@ function DynamicQuestionEditor({
 }): JSX.Element {
     if (!section || !question) {
         return (
-            <Card className="h-full min-h-[28rem]">
-                <CardContent className="flex h-full items-center justify-center p-8 text-center">
-                    <div className="max-w-sm">
-                        <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-merism-full bg-merism-bg-subtle text-merism-text-subtle">
-                            <WandSparkles className="h-5 w-5" />
-                        </div>
-                        <h2 className="text-base font-medium text-merism-text">
-                            Select a question to edit
-                        </h2>
-                        <p className="mt-2 text-sm leading-relaxed text-merism-text-muted">
-                            The center panel changes by question type. This is where you edit probing,
-                            stimulus behavior, options, and other interview-specific controls.
-                        </p>
+            <div className="flex h-full min-h-[28rem] items-center justify-center text-center">
+                <div className="max-w-sm">
+                    <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-merism-full bg-merism-bg-subtle text-merism-text-subtle">
+                        <WandSparkles className="h-5 w-5" />
                     </div>
-                </CardContent>
-            </Card>
+                    <h2 className="text-base font-medium text-merism-text">
+                        Select a question to edit
+                    </h2>
+                    <p className="mt-2 text-sm leading-relaxed text-merism-text-muted">
+                        The center panel changes by question type.
+                    </p>
+                </div>
+            </div>
         )
     }
 
     const meta = QUESTION_TYPE_META[question.type]
 
     return (
-        <Card className="h-full min-h-0">
-            <CardHeader className="gap-4 border-b border-[color:var(--merism-hairline)]">
+        <div className="flex h-full min-h-0 flex-col">
+            <div className="shrink-0 border-b border-[color:var(--merism-hairline)] pb-4">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <CardTitle className="text-base font-medium">
+                        <h2 className="text-base font-medium text-merism-text">
                             {questionNumber ? `Question ${questionNumber}` : "Question"}
-                        </CardTitle>
-                        <CardDescription className="mt-1">
+                        </h2>
+                        <p className="mt-1 text-sm text-merism-text-muted">
                             {section.title} · {meta.label}
-                        </CardDescription>
+                        </p>
                     </div>
 
                     <div className="flex items-center gap-1">
@@ -825,9 +815,9 @@ function DynamicQuestionEditor({
                         />
                     </div>
                 </div>
-            </CardHeader>
+            </div>
 
-            <CardContent className="min-h-0 overflow-y-auto p-5">
+            <div className="min-h-0 flex-1 overflow-y-auto pt-4">
                 <div className="flex flex-col gap-6">
                     <EditorField label={question.type === "task" ? "Task text" : "Question text"} helper="Main text shown to participants.">
                         <Textarea
@@ -950,8 +940,8 @@ function DynamicQuestionEditor({
                         )}
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }
 
@@ -1373,13 +1363,10 @@ function SettingsAndSummaryPanel({
     onChangeRandomizationMode: (mode: SectionRandomizationMode) => void
 }): JSX.Element {
     return (
-        <div className="flex h-full min-h-0 flex-col gap-4">
-            <Card className="shrink-0">
-                <CardHeader className="gap-2 pb-3">
-                    <CardTitle className="text-sm font-medium">General settings</CardTitle>
-                    <CardDescription>Lightweight context controls for the guide.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4 pt-0">
+        <div className="flex h-full min-h-0 flex-col gap-6">
+            <div className="shrink-0">
+                <h3 className="text-sm font-medium text-merism-text">Settings</h3>
+                <div className="mt-3 flex flex-col gap-4">
                     <CheckboxRow
                         label="Add section randomization"
                         helper="Turns on section-level ordering controls."
@@ -1397,42 +1384,27 @@ function SettingsAndSummaryPanel({
                             disabled={!randomizationEnabled}
                         />
                     </EditorField>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
-            <Card
-                className="shrink-0 overflow-hidden"
-                style={{ backgroundColor: `${functional.quote[500]}12` }}
-            >
-                <CardHeader className="gap-2 pb-3">
-                    <CardTitle className="text-sm font-medium">Interview Summary</CardTitle>
-                    <CardDescription>
-                        A quiet snapshot of the structure while you edit.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                    <dl className="grid grid-cols-2 gap-3">
-                        {summary.stats.map((stat) => (
-                            <SummaryStat key={stat.label} label={stat.label} value={stat.value} />
-                        ))}
-                    </dl>
-                </CardContent>
-            </Card>
+            <div className="shrink-0 border-t border-[color:var(--merism-hairline)] pt-4">
+                <h3 className="text-sm font-medium text-merism-text">Summary</h3>
+                <dl className="mt-3 grid grid-cols-2 gap-3">
+                    {summary.stats.map((stat) => (
+                        <SummaryStat key={stat.label} label={stat.label} value={stat.value} />
+                    ))}
+                </dl>
+            </div>
 
-            <Card className="min-h-0 flex-1">
-                <CardHeader className="gap-2 pb-3">
-                    <CardTitle className="text-sm font-medium">Context notes</CardTitle>
-                    <CardDescription>
-                        Keep this area quiet. It should support the editor, not compete with it.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2 pt-0 text-sm text-merism-text-muted">
-                    <p>Total sections: {sections.length}</p>
-                    <p>Total questions: {summary.totalQuestions}</p>
-                    <p>Selected type: {summary.selectedType}</p>
-                    <p>Stimulus-linked questions: {summary.questionsWithStimulus}</p>
-                </CardContent>
-            </Card>
+            <div className="min-h-0 flex-1 border-t border-[color:var(--merism-hairline)] pt-4">
+                <h3 className="text-sm font-medium text-merism-text">Context</h3>
+                <div className="mt-2 flex flex-col gap-1 text-xs text-merism-text-muted">
+                    <p>Sections: {sections.length}</p>
+                    <p>Questions: {summary.totalQuestions}</p>
+                    <p>Selected: {summary.selectedType}</p>
+                    <p>With stimulus: {summary.questionsWithStimulus}</p>
+                </div>
+            </div>
         </div>
     )
 }

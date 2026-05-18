@@ -39,7 +39,7 @@ export const studiesModel = kea<studiesModelType>([
         activeStudies: [
             (s) => [s.studies],
             (studies) =>
-                studies.filter((s) => !["closed", "archived"].includes(s.status)),
+                studies.filter((s) => s.status !== "closed"),
         ],
     }),
 ])

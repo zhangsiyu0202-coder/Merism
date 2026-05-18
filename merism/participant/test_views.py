@@ -42,7 +42,7 @@ def _bootstrap(
     study = Study.objects.create(
         team=team,
         research_goal="participant flow test",
-        status=Study.Status.RECRUITING,
+        status=Study.Status.LIVE,
         target_completed_count=target_completed,
     )
     # Every study needs a current guide for /start to succeed.
@@ -234,6 +234,21 @@ def test_start_session_creates_session_with_all_fks() -> None:
     assert session.team_id == link.team.id
     assert session.guide_id is not None
     assert session.participation.status == "interviewing"
+
+
+def test_start_session_auto_creates_missing_current_guide() -> None:
+    link, _ = _bootstrap()
+    InterviewGuide.objects.filter(study=link.study).delete()
+    c = Client()
+    c.get(f"/i/{link.slug}/")
+    c.post(f"/i/{link.slug}/consent/")
+    r = c.post(f"/i/{link.slug}/start/")
+    assert r.status_code == 200, r.content
+    body = r.json()
+    session = InterviewSession.objects.get(id=body["session_id"])
+    assert session.guide.is_current is True
+    assert session.guide.study_id == link.study.id
+    assert InterviewGuide.objects.filter(study=link.study, is_current=True).count() == 1
 
 
 def test_start_session_requires_consent() -> None:

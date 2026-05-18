@@ -22,8 +22,8 @@ export function AppLayout({ children }: { children: ReactNode }): JSX.Element {
             <NavigationSidebar />
             <div className="flex min-w-0 flex-1 flex-col">
                 <TopBar />
-                <main className="min-w-0 flex-1 overflow-y-auto">
-                    <div className="w-full px-[var(--spacing-merism-gutter)] pb-16 pt-6">
+                <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                    <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto px-[var(--spacing-merism-gutter)] pb-6 pt-6 [&>*]:min-h-0 [&>*]:flex-1">
                         {children}
                     </div>
                 </main>

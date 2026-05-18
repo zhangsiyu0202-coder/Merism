@@ -81,7 +81,7 @@ class Command(BaseCommand):
                     "What do new users do in their first 5 minutes, and where do the "
                     "'aha' vs 'abandon' signals diverge?"
                 ),
-                "status": Study.Status.RECRUITING,
+                "status": Study.Status.LIVE,
                 "interview_mode": Study.InterviewMode.VOICE,
                 "estimated_minutes": 20,
             },

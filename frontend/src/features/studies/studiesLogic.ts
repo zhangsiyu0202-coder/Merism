@@ -33,7 +33,6 @@ export const studiesLogic = kea<studiesLogicType>([
             20,
             {
                 setPageSize: (_, { size }) => Math.max(10, Math.min(100, size)),
-                setPage: () => 20, // reset pagesize to default whenever jumping (no-op)
             },
         ],
     }),
@@ -79,16 +78,16 @@ export const studiesLogic = kea<studiesLogicType>([
         draftStudies: [(s) => [s.studies], (v) => v.filter((s) => s.status === "draft")],
         liveStudies: [
             (s) => [s.studies],
-            (v) => v.filter((s) => ["recruiting", "live", "active", "ready"].includes(s.status)),
+            (v) => v.filter((s) => s.status === "live"),
         ],
         archivedStudies: [
             (s) => [s.studies],
-            (v) => v.filter((s) => ["closed", "archived"].includes(s.status)),
+            (v) => v.filter((s) => s.status === "closed"),
         ],
         // Kept for back-compat with StudiesPage's old name.
         closedStudies: [
             (s) => [s.studies],
-            (v) => v.filter((s) => ["closed", "archived"].includes(s.status)),
+            (v) => v.filter((s) => s.status === "closed"),
         ],
         pageCount: [
             (s) => [s.studies, s.pageSize],

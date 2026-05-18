@@ -22,7 +22,7 @@ from merism.models.knowledge import (
     StudyKnowledgeBase,
     TeamResearchKnowledgeBase,
 )
-from merism.models.memory import AgentMemory, Conversation, CoreMemory
+from merism.models.memory import AgentMemory, AskArtifact, Conversation, CoreMemory
 from merism.models.recruitment import (
     ChannelConfig,
     ChannelHealthCheck,
@@ -118,6 +118,7 @@ __all__ = [
     "LinkShareEvent",
     # memory
     "AgentMemory",
+    "AskArtifact",
     "Conversation",
     "CoreMemory",
     # service settings

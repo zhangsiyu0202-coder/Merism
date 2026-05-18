@@ -28,7 +28,7 @@ def _boot(require_invitation: bool = False):
     study = Study.objects.create(
         team=team,
         research_goal="invite flow",
-        status=Study.Status.RECRUITING,
+        status=Study.Status.LIVE,
         target_completed_count=5,
     )
     InterviewGuide.objects.create(team=team, study=study, is_current=True, sections=[])
@@ -63,7 +63,10 @@ def test_closed_link_rejects_invalid_token():
 def test_closed_link_accepts_valid_token_and_binds_participation():
     team, study, link = _boot(require_invitation=True)
     inv = Invitation.objects.create(
-        team=team, study_link=link, recipient_hash="h1", recipient_display="a@x"
+        team=team,
+        study_link=link,
+        recipient_hash="h1",
+        recipient_display="a@x",
     )
     c = Client()
     r = c.get(f"/i/{link.slug}/?t={inv.token}")

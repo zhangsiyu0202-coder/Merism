@@ -1,5 +1,6 @@
-import { kea, path, actions, reducers, listeners, selectors } from "kea"
+import { kea, path, actions, reducers, listeners, selectors, afterMount, beforeUnmount } from "kea"
 import { loaders } from "kea-loaders"
+import { actionToUrl, urlToAction } from "kea-router"
 import { api } from "~/lib/api"
 
 import type { insightsLogicType } from "./insightsLogicType"
@@ -47,6 +48,8 @@ export const insightsLogic = kea<insightsLogicType>([
         setStudyId: (studyId: string) => ({ studyId }),
         toggleFinding: (findingId: string) => ({ findingId }),
         rerunInsights: true,
+        startPolling: true,
+        stopPolling: true,
     }),
 
     reducers({
@@ -63,6 +66,13 @@ export const insightsLogic = kea<insightsLogicType>([
                 }),
             },
         ],
+        _pollTimer: [
+            null as ReturnType<typeof setInterval> | null,
+            {
+                startPolling: () => null, // handled in listener
+                stopPolling: () => null,
+            },
+        ],
     }),
 
     loaders(({ values }) => ({
@@ -72,8 +82,8 @@ export const insightsLogic = kea<insightsLogicType>([
                 loadInsights: async () => {
                     if (!values.studyId) return null
                     const res = await api.get(`/api/study-insights/?study=${values.studyId}`)
-                    const results = res.results ?? res
-                    return results[0] ?? null
+                    const results = (res as any).results ?? res
+                    return (results as StudyInsightsData[])[0] ?? null
                 },
             },
         ],
@@ -83,7 +93,7 @@ export const insightsLogic = kea<insightsLogicType>([
                 loadHighlights: async () => {
                     if (!values.insights?.id) return []
                     const res = await api.get(`/api/insight-highlights/?insights=${values.insights.id}`)
-                    return res.results ?? res
+                    return (res as any).results ?? res
                 },
             },
         ],
@@ -93,41 +103,87 @@ export const insightsLogic = kea<insightsLogicType>([
                 loadFindings: async () => {
                     if (!values.insights?.id) return []
                     const res = await api.get(`/api/insight-findings/?insights=${values.insights.id}`)
-                    return res.results ?? res
+                    return (res as any).results ?? res
                 },
             },
         ],
     })),
 
-    listeners(({ actions, values }) => ({
+    listeners(({ actions, values, cache }) => ({
         setStudyId: () => {
+            actions.stopPolling()
             actions.loadInsights()
         },
         loadInsightsSuccess: () => {
-            if (values.insights) {
-                actions.loadHighlights()
-                actions.loadFindings()
+            if (values.insights?.status === "generating") {
+                actions.startPolling()
+            } else {
+                actions.stopPolling()
+                if (values.insights) {
+                    actions.loadHighlights()
+                    actions.loadFindings()
+                }
             }
         },
         rerunInsights: async () => {
             if (!values.insights?.id) return
-            await api.post(`/api/study-insights/${values.insights.id}/rerun/`)
+            await api.action(`/api/study-insights/${values.insights.id}/rerun/`)
             actions.loadInsights()
         },
+        startPolling: () => {
+            if (cache.pollTimer) clearInterval(cache.pollTimer)
+            cache.pollTimer = setInterval(() => {
+                actions.loadInsights()
+            }, 3000)
+        },
+        stopPolling: () => {
+            if (cache.pollTimer) {
+                clearInterval(cache.pollTimer)
+                cache.pollTimer = null
+            }
+        },
     })),
+
+    // Persist studyId to URL ?study=xxx
+    actionToUrl(({ values }) => ({
+        setStudyId: () => ["/insights", { study: values.studyId || undefined }],
+    })),
+
+    urlToAction(({ actions, values }) => ({
+        "/insights": (_, searchParams) => {
+            const urlStudy = (searchParams as Record<string, string>).study || ""
+            if (urlStudy && urlStudy !== values.studyId) {
+                actions.setStudyId(urlStudy)
+            }
+        },
+    })),
+
+    afterMount(({ values, actions }) => {
+        // If studyId was set from URL, load
+        if (values.studyId) {
+            actions.loadInsights()
+        }
+    }),
+
+    beforeUnmount(({ cache }) => {
+        if (cache.pollTimer) {
+            clearInterval(cache.pollTimer)
+            cache.pollTimer = null
+        }
+    }),
 
     selectors({
         isLoading: [
             (s) => [s.insightsLoading, s.highlightsLoading, s.findingsLoading],
-            (a, b, c) => a || b || c,
+            (a: boolean, b: boolean, c: boolean) => a || b || c,
         ],
         isGenerating: [
             (s) => [s.insights],
-            (insights) => insights?.status === "generating",
+            (insights: StudyInsightsData | null) => insights?.status === "generating",
         ],
         isEmpty: [
             (s) => [s.insights],
-            (insights) => !insights || insights.status === "pending",
+            (insights: StudyInsightsData | null) => !insights || insights.status === "pending",
         ],
     }),
 ])

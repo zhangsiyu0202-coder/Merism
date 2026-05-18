@@ -69,10 +69,7 @@ export const homeLogic = kea<homeLogicType>([
         draftStudies: [(s) => [s.studies], (v) => v.filter((s) => s.status === "draft")],
         activeStudies: [
             (s) => [s.studies],
-            (v) =>
-                v.filter((st) =>
-                    ["recruiting", "live", "active", "ready"].includes(st.status),
-                ),
+            (v) => v.filter((st) => st.status === "live"),
         ],
     }),
 

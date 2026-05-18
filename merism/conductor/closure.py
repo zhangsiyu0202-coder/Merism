@@ -185,12 +185,12 @@ def complete_session(
             participation.completed_at = now
             participation.save(update_fields=["status", "completed_at", "updated_at"])
 
-    append_event(
-        session,
-        SessionEvent.Kind.SESSION_LIFECYCLE,
-        {"lifecycle": "ended", "reason": signal.reason, "detail": signal.detail},
-        trace_id=session.trace_id,
-    )
+        append_event(
+            locked,
+            SessionEvent.Kind.SESSION_LIFECYCLE,
+            {"lifecycle": "ended", "reason": signal.reason, "detail": signal.detail},
+            trace_id=locked.trace_id,
+        )
     logger.info(
         "closure.completed",
         extra={

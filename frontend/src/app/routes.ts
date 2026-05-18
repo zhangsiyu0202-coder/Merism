@@ -21,7 +21,6 @@ export enum Scene {
     Settings = "Settings",
 
     // studies
-    Studies = "Studies",
     Study = "Study",
 
     // analysis
@@ -63,7 +62,7 @@ export const urls = {
     settings: (section?: string): string =>
         section ? `/settings/${section}` : "/settings",
 
-    studies: (): string => "/studies",
+    studies: (): string => "/",
     study: (id: string, tab: StudyTab = "brief"): string => `/studies/${id}/${tab}`,
 
     insights: (studyId?: string): string => studyId ? `/insights?study=${studyId}` : "/insights",
@@ -95,7 +94,6 @@ export const routes: Record<string, Scene> = {
     "/decisions": Scene.Decisions,
     "/settings": Scene.Settings,
     "/settings/:section": Scene.Settings,
-    "/studies": Scene.Studies,
     "/studies/:id": Scene.Study,
     "/studies/:id/:tab": Scene.Study,
     "/insights": Scene.Insights,
