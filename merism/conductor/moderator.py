@@ -41,6 +41,7 @@ import logging
 from collections.abc import AsyncIterator
 from typing import Any
 
+from merism.conductor.probe_blocks import directions_to_blocks, format_blocks_for_prompt
 from merism.conductor.decision_prompt import build_decision_prompt
 from merism.conductor.decision_validator import validate_decision
 from merism.conductor.generation_prompt import build_generation_prompt
@@ -123,7 +124,7 @@ async def stream_turn(
         participant_message=participant_message,
         phase=state.phase,
         closing_rounds_remaining=state.closing_rounds_remaining,
-        probe_directions=qinfo["probe_directions"],
+        probe_blocks=qinfo["probe_blocks"],
         dynamic_probe_enabled=dp_config["enabled"],
         dynamic_probe_remaining=max(0, dp_config["max_extra_rounds"] - dynamic_probes_done),
         dynamic_probe_triggers=dp_config["triggers"],
@@ -166,7 +167,7 @@ async def stream_turn(
         target_goal_text=target_goal_text,
         recent_turns=recent_turns_text,
         participant_message=participant_message,
-        probe_directions=qinfo["probe_directions"],
+        probe_blocks=qinfo["probe_blocks"],
         phase=state.phase,
         closing_rounds_remaining=state.closing_rounds_remaining,
     ):
@@ -256,7 +257,7 @@ async def _coverage_steer_node(
     participant_message: str,
     phase: str,
     closing_rounds_remaining: int,
-    probe_directions: list[str] | None = None,
+    probe_blocks: list[dict] | None = None,
     dynamic_probe_enabled: bool = False,
     dynamic_probe_remaining: int = 0,
     dynamic_probe_triggers: list[str] | None = None,
@@ -278,7 +279,7 @@ async def _coverage_steer_node(
         participant_latest=participant_message,
         phase=phase,
         closing_rounds_remaining=closing_rounds_remaining,
-        probe_directions=probe_directions,
+        probe_blocks=probe_blocks,
         dynamic_probe_enabled=dynamic_probe_enabled,
         dynamic_probe_remaining=dynamic_probe_remaining,
         dynamic_probe_triggers=dynamic_probe_triggers,
@@ -322,7 +323,7 @@ async def _generate_node(
     target_goal_text: str,
     recent_turns: str,
     participant_message: str,
-    probe_directions: list[str] | None = None,
+    probe_blocks: list[dict] | None = None,
     phase: str = "active",
     closing_rounds_remaining: int = 0,
 ) -> AsyncIterator[str]:
@@ -361,7 +362,7 @@ async def _generate_node(
         target_goal_text=target_goal_text,
         recent_turns=recent_turns,
         participant_latest=participant_message,
-        probe_directions=probe_directions,
+        probe_blocks=probe_blocks,
     )
 
     # Dynamic max_tokens — probes are short, transitions can be longer
@@ -454,7 +455,7 @@ def _question_info(q: dict[str, Any] | None) -> dict[str, Any]:
             "intent": "",
             "probe_policy": "light",
             "max_probes": 0,
-            "probe_directions": [],
+            "probe_blocks": [],
             "dynamic_probe": {"enabled": False, "max_extra_rounds": 0, "triggers": []},
         }
     return {
@@ -463,7 +464,7 @@ def _question_info(q: dict[str, Any] | None) -> dict[str, Any]:
         "intent": q.get("intent", ""),
         "probe_policy": q.get("probe_policy", "light"),
         "max_probes": int(q.get("max_probes", q.get("followup_depth", 3))),
-        "probe_directions": list(q.get("probe_directions", [])),
+        "probe_blocks": q.get("probe_blocks") or directions_to_blocks(list(q.get("probe_directions", []))),
         "dynamic_probe": dynamic_probe_config([{"id": "_", "questions": [q]}], q.get("id", "")),
     }
 

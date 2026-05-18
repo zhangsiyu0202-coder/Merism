@@ -9,6 +9,7 @@ tone — because this is the layer that actually talks to the participant.
 """
 
 from __future__ import annotations
+from merism.conductor.probe_blocks import format_blocks_for_prompt
 
 
 GENERATION_SYSTEM_PROMPT = """\
@@ -33,7 +34,7 @@ If decision.next_action = "followup":
     - clarification  → "What did you mean by X?" / "How would you describe X differently?"
     - feeling        → "How did that feel?" / "What stood out to you emotionally?"
     - reasoning      → "Why do you think that?" / "What's behind that?"
-  If decision.probe_kind = "preset", use the supplied probe_directions as
+  If decision.probe_kind = "preset", use the supplied probe_blocks as
   the concrete angle of the follow-up. Turn one of those directions into a
   specific, human-sounding question. Avoid generic templates when the guide
   provides a better angle.
@@ -74,7 +75,8 @@ next_action:        {next_action}
 probe_type:         {probe_type}
 probe_kind:         {probe_kind}
 dynamic_trigger:    {dynamic_trigger}
-probe_directions:   {probe_directions}
+probe_blocks:
+{probe_blocks}
 probe_policy:       {probe_policy}
 probes_done:        {probes_done}
 max_probes:         {max_probes}
@@ -131,10 +133,10 @@ def build_generation_prompt(
     target_goal_text: str,
     recent_turns: str,
     participant_latest: str,
-    probe_directions: list[str] | None = None,
+    probe_blocks: list[dict] | None = None,
 ) -> list[dict[str, str]]:
     """Return the OpenAI-compatible chat messages for the generation phase."""
-    directions_str = "; ".join(probe_directions or []) or "(none)"
+    blocks_str = format_blocks_for_prompt(probe_blocks)
     remaining = (
         remaining_followups
         if remaining_followups is not None
@@ -145,7 +147,7 @@ def build_generation_prompt(
         probe_type=decision_probe_type or "null",
         probe_kind=decision_probe_kind or "null",
         dynamic_trigger=decision_dynamic_trigger or "null",
-        probe_directions=directions_str,
+        probe_blocks=blocks_str,
         probe_policy=probe_policy,
         probes_done=probes_done,
         max_probes=max_probes,

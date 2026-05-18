@@ -33,7 +33,8 @@ class InterviewGuide(TimestampedModel):
     is_current = models.BooleanField(default=True)
     language = models.CharField(max_length=8, default="en")
     # Sections: [{id, title, questions: [{id, text, followup_depth, required,
-    # probe_directions, linked_stimulus_ids}]}]
+    # probe_blocks: [{id, type, prompt, trigger, condition, max_rounds, priority}],
+    # linked_stimulus_ids}]}]
     sections = models.JSONField(default=list)
 
     class Meta:

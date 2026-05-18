@@ -24,7 +24,7 @@ def test_build_generation_prompt_includes_probe_context() -> None:
         target_goal_text="",
         recent_turns="Participant: It was okay.",
         participant_latest="It was okay.",
-        probe_directions=["specific examples", "friction"],
+        probe_blocks=[{"id": "pb_0", "type": "example", "prompt": "specific examples", "trigger": "always", "max_rounds": 2, "priority": 1}, {"id": "pb_1", "type": "custom", "prompt": "friction", "trigger": "vague", "max_rounds": 2, "priority": 2}],
     )
 
     system_prompt = str(messages[0]["content"])
@@ -38,4 +38,4 @@ def test_build_generation_prompt_includes_probe_context() -> None:
     assert "remaining:" in user_prompt
     assert "phase:" in user_prompt
     assert "closing_rounds_remaining:" in user_prompt
-    assert "probe_directions:" in user_prompt
+    assert "probe_blocks:" in user_prompt

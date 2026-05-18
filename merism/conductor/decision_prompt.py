@@ -9,6 +9,7 @@ not regurgitating the system instructions.
 """
 
 from __future__ import annotations
+from merism.conductor.probe_blocks import format_blocks_for_prompt
 
 DECISION_SYSTEM_PROMPT = """\
 You are the decision layer of an interview moderator.
@@ -49,9 +50,9 @@ DECISION RULES (non-negotiable — the server enforces these):
    If ANY condition fails, the server will downgrade or force move_on.
 
 DYNAMIC PROBE GUIDANCE:
-- Use probe_kind="preset" for normal probes following probe_directions.
+- Use probe_kind="preset" for normal probes following probe_blocks.
 - Use probe_kind="dynamic" ONLY when the participant reveals something
-  unexpected and valuable that is NOT covered by the preset probe_directions.
+  unexpected and valuable that is NOT covered by the preset probe_blocks.
 - dynamic_trigger options:
   - "new_theme"         (participant introduced a topic not in the guide)
   - "contradiction"     (participant contradicted an earlier statement)
@@ -87,7 +88,8 @@ max_probes:     {max_probes}
 remaining:      {remaining}
 phase:          {phase}
 closing_rounds_remaining: {closing_rounds_remaining}
-probe_directions:        {probe_directions}
+probe_blocks:
+{probe_blocks}
 dynamic_probe_enabled:   {dynamic_probe_enabled}
 dynamic_probe_remaining: {dynamic_probe_remaining}
 dynamic_probe_triggers:  {dynamic_probe_triggers}
@@ -133,7 +135,7 @@ def build_decision_prompt(
     participant_latest: str,
     phase: str = "active",
     closing_rounds_remaining: int = 0,
-    probe_directions: list[str] | None = None,
+    probe_blocks: list[dict] | None = None,
     dynamic_probe_enabled: bool = False,
     dynamic_probe_remaining: int = 0,
     dynamic_probe_triggers: list[str] | None = None,
@@ -142,7 +144,7 @@ def build_decision_prompt(
     """Return the OpenAI-compatible chat messages for the decision phase."""
     remaining = max(0, max_probes - probes_done)
     triggers_str = ", ".join(dynamic_probe_triggers or []) or "(none)"
-    directions_str = "; ".join(probe_directions or []) or "(none — use your judgment)"
+    blocks_str = format_blocks_for_prompt(probe_blocks)
     user_msg = DECISION_USER_TEMPLATE.format(
         research_goal=research_goal.strip() or "(not set)",
         question_id=question_id or "(unset)",
@@ -154,7 +156,7 @@ def build_decision_prompt(
         remaining=remaining,
         phase=phase,
         closing_rounds_remaining=closing_rounds_remaining,
-        probe_directions=directions_str,
+        probe_blocks=blocks_str,
         dynamic_probe_enabled=str(dynamic_probe_enabled).lower(),
         dynamic_probe_remaining=dynamic_probe_remaining,
         dynamic_probe_triggers=triggers_str,

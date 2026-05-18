@@ -58,7 +58,7 @@ def _boot_session() -> InterviewSession:
                         "text": "Tell me.",
                         "probe_policy": "light",
                         "max_probes": 2,
-                        "probe_directions": ["specific example", "workaround"],
+                        "probe_blocks": [{"id": "pb_0", "type": "custom", "prompt": "specific example", "trigger": "always", "max_rounds": 2, "priority": 1}, {"id": "pb_1", "type": "custom", "prompt": "workaround", "trigger": "always", "max_rounds": 2, "priority": 2}],
                         "dynamic_probe": {
                             "enabled": True,
                             "max_extra_rounds": 1,

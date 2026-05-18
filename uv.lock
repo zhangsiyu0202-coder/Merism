@@ -1991,6 +1991,8 @@ dev = [
 [package.dev-dependencies]
 dev = [
     { name = "aiosmtpd" },
+    { name = "pytest" },
+    { name = "pytest-django" },
 ]
 
 [package.metadata]
@@ -2055,7 +2057,11 @@ requires-dist = [
 provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "aiosmtpd", specifier = ">=1.4.6" }]
+dev = [
+    { name = "aiosmtpd", specifier = ">=1.4.6" },
+    { name = "pytest", specifier = ">=8.4.2" },
+    { name = "pytest-django", specifier = ">=4.11.1" },
+]
 
 [[package]]
 name = "mistralai"
