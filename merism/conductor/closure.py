@@ -8,15 +8,18 @@ OR together six independent signals and accept the earliest match.
 Signals
 -------
 A. **close_decision** — the moderator emitted ``next_action == "close"``.
-B. **all_p0_answered_after_min** — every P0 StudyGoal is_answered and
+B. **closing_grace** — once the moderator enters closing phase, keep the
+   session alive for a few extra exchanges so the participant can ask
+   follow-ups and hear a natural wrap-up before hard completion.
+C. **all_p0_answered_after_min** — every P0 StudyGoal is_answered and
    elapsed >= ``study.min_duration_minutes`` (default 5). Prevents
    terminating a warmup-only session.
-C. **leaving_intent** — the last user_turn matches a goodbye regex in
+E. **leaving_intent** — the last user_turn matches a goodbye regex in
    the participant's locale.
-D. **idle_timeout** — no user_turn event for > 120s.
-E. **ws_disconnect** — the WebSocket has been disconnected for > 30s
+F. **idle_timeout** — no user_turn event for > 120s.
+G. **ws_disconnect** — the WebSocket has been disconnected for > 30s
    and the session has at least 4 turns (otherwise just a tyre-kicker).
-F. **max_duration** — elapsed >= ``study.max_duration_minutes`` (default
+H. **max_duration** — elapsed >= ``study.max_duration_minutes`` (default
    45).
 
 Each signal returns a ``ClosureSignal`` if it fires, else ``None``.
@@ -82,11 +85,19 @@ def check_completion(
     now = timezone.now()
     started_at = session.started_at or session.created_at
     elapsed = (now - started_at) if started_at else timedelta(0)
+    moderator_state = session.moderator_state or {}
+    closing_grace_remaining = int(moderator_state.get("closing_rounds_remaining") or 0)
+    in_closing_grace = (
+        moderator_state.get("phase") == "closing" and closing_grace_remaining > 0
+    )
 
     # A. close decision
     last_decision = (session.decision_log or [])[-1] if session.decision_log else {}
-    if last_decision.get("next_action") == "close":
+    if last_decision.get("next_action") == "close" and not in_closing_grace:
         return ClosureSignal("close_decision")
+
+    if moderator_state.get("phase") == "closing" and closing_grace_remaining <= 0:
+        return ClosureSignal("close_decision", "closing grace exhausted")
 
     # Fetch the last user_turn event for signals C / D
     last_user_event = (
@@ -103,7 +114,7 @@ def check_completion(
     # B. P0 goals answered + past min duration
     study = session.study
     min_duration = timedelta(minutes=getattr(study, "min_duration_minutes", 5))
-    if elapsed >= min_duration and _all_p0_goals_answered(study):
+    if not in_closing_grace and elapsed >= min_duration and _all_p0_goals_answered(study):
         return ClosureSignal("all_p0_answered")
 
     # C. leaving intent

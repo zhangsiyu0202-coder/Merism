@@ -65,8 +65,21 @@ export const studiesLogic = kea<studiesLogicType>([
     listeners({
         createStudySuccess: ({ newStudy }) => {
             if (newStudy?.id) {
-                router.actions.push(urls.study(newStudy.id, "settings"))
+                const url = urls.study(newStudy.id, "settings")
+                router.actions.push(url)
+                setTimeout(() => {
+                    if (!window.location.pathname.includes(newStudy.id)) {
+                        window.location.href = url
+                    }
+                }, 300)
             }
+        },
+        createStudyFailure: ({ error }) => {
+            console.error("[studiesLogic] createStudy failed:", error)
+            alert(`创建研究失败: ${error}`)
+        },
+        loadStudiesFailure: ({ error }) => {
+            console.error("[studiesLogic] loadStudies failed:", error)
         },
     }),
 

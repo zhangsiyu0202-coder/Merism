@@ -20,6 +20,7 @@ from merism.voice.frames import (
     CancelFrame,
     EndFrame,
     Frame,
+    ErrorFrame,
     InterruptionFrame,
     LLMFullResponseEndFrame,
     LLMFullResponseStartFrame,
@@ -85,6 +86,7 @@ class LLMProcessor(FrameProcessor):
             {"role": "system", "content": self._system_prompt},
             *self._history[-self._context_window :],
         ]
+        response_id = f"resp_{uuid.uuid4().hex[:12]}"
 
         # Priority: ServiceSettings > sync_get_client > get_llm()
         stream = None
@@ -118,21 +120,31 @@ class LLMProcessor(FrameProcessor):
                 )
             except Exception as exc:
                 logger.warning("voice.llm.create_failed", extra={"error": str(exc)})
+                await self.push_frame(
+                    ErrorFrame(code="llm_create_failed", message=str(exc), fatal=False)
+                )
+                await self.push_frame(LLMFullResponseStartFrame(response_id=response_id))
+                await self.push_frame(LLMFullResponseEndFrame(response_id=response_id))
                 return
 
-        response_id = f"resp_{uuid.uuid4().hex[:12]}"
         self._current_response_id = response_id
         await self.push_frame(LLMFullResponseStartFrame(response_id=response_id))
 
         assistant_reply = ""
-        for chunk in stream:
-            if self._cancelled:
-                break
-            delta = chunk.choices[0].delta.content if chunk.choices else None
-            if not delta:
-                continue
-            assistant_reply += delta
-            await self.push_frame(LLMTextFrame(text=delta, response_id=response_id))
+        try:
+            for chunk in stream:
+                if self._cancelled:
+                    break
+                delta = chunk.choices[0].delta.content if chunk.choices else None
+                if not delta:
+                    continue
+                assistant_reply += delta
+                await self.push_frame(LLMTextFrame(text=delta, response_id=response_id))
+        except Exception as exc:
+            logger.warning("voice.llm.stream_failed", extra={"error": str(exc)})
+            await self.push_frame(
+                ErrorFrame(code="llm_stream_failed", message=str(exc), fatal=False)
+            )
 
         await self.push_frame(LLMFullResponseEndFrame(response_id=response_id))
         self._current_response_id = None

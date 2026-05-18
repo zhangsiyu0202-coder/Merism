@@ -88,24 +88,6 @@ function participantApiPath(pathname: string): string {
   return `${getBackendOrigin()}${pathname}`;
 }
 
-function readErrorCode(value: unknown, fallback = "unknown"): string {
-  if (typeof value !== "object" || value === null) return fallback;
-  const errorObject = value as {
-    body?: { error_code?: unknown };
-    error?: unknown;
-  };
-  if (
-    typeof errorObject.body?.error_code === "string" &&
-    errorObject.body.error_code
-  ) {
-    return errorObject.body.error_code;
-  }
-  if (typeof errorObject.error === "string" && errorObject.error) {
-    return errorObject.error;
-  }
-  return fallback;
-}
-
 export const participantEntryLogic = kea<participantEntryLogicType>([
   path(["features", "participant", "participantEntryLogic"]),
 

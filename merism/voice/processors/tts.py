@@ -26,6 +26,7 @@ from merism.voice.frames import (
     BotStartedSpeakingFrame,
     BotStoppedSpeakingFrame,
     CancelFrame,
+    ErrorFrame,
     EndFrame,
     Frame,
     InterruptionFrame,
@@ -71,6 +72,17 @@ class TTSProcessor(FrameProcessor):
         # Per-response state
         self._current_response_id: str = ""
         self._bytes_emitted: int = 0
+
+    async def start(self) -> None:
+        if self._started:
+            return
+        warmup = getattr(self._client, "warmup", None)
+        if callable(warmup):
+            try:
+                await warmup()
+            except Exception as exc:
+                logger.warning("voice.tts.warmup_failed", extra={"error": str(exc)})
+        await super().start()
 
     async def process_frame(self, frame: Frame, direction: FrameDirection) -> None:
         if isinstance(frame, StartFrame):
@@ -149,13 +161,28 @@ class TTSProcessor(FrameProcessor):
     async def _run_session(
         self, text_in: asyncio.Queue[str], response_id: str
     ) -> None:
+        # Collect first non-empty chunk before starting TTS session
+        first_chunk: str | None = None
+        while True:
+            chunk = await text_in.get()
+            if not chunk:
+                # Sentinel received with no text — skip TTS entirely
+                return
+            if chunk.strip():
+                first_chunk = chunk
+                break
+
         async def text_iter():
+            yield first_chunk
             while True:
                 chunk = await text_in.get()
                 if not chunk:
                     break
-                yield chunk
+                if chunk.strip():
+                    yield chunk
 
+        had_error = False
+        was_cancelled = False
         try:
             async for audio in self._client.stream_tts(text_iter()):
                 if not audio:
@@ -172,10 +199,27 @@ class TTSProcessor(FrameProcessor):
                     )
                 )
         except asyncio.CancelledError:
+            was_cancelled = True
             pass
         except Exception as exc:
+            had_error = True
             logger.warning("voice.tts.session_failed", extra={"error": str(exc)})
+            await self.push_frame(
+                ErrorFrame(
+                    code="tts_session_failed",
+                    message=str(exc),
+                    fatal=False,
+                )
+            )
         finally:
+            if not had_error and not was_cancelled and self._bytes_emitted == 0:
+                await self.push_frame(
+                    ErrorFrame(
+                        code="tts_no_audio",
+                        message="TTS completed without emitting audio.",
+                        fatal=False,
+                    )
+                )
             if self._bot_speaking:
                 self._bot_speaking = False
                 await self.push_frame(BotStoppedSpeakingFrame(response_id=response_id))

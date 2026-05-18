@@ -38,7 +38,9 @@ async def get_client(
     trace_id: UUID,
 ) -> Any:
     """Return a configured AI service client for the given logical capability."""
-    client = _from_service_settings(logical_name, team)
+    from asgiref.sync import sync_to_async
+
+    client = await sync_to_async(_from_service_settings)(logical_name, team)
     if client is not None:
         return client
 

@@ -197,7 +197,7 @@ function buildColumns(): ColumnDef<InterviewSession, unknown>[] {
             header: () => "",
             cell: ({ row }) => (
                 <a
-                    href={`/studies/${row.original.study}/sessions/${row.original.id}/`}
+                    href={`/sessions/${row.original.id}/transcript`}
                     className="font-mono text-merism-caption uppercase tracking-merism-caps text-merism-accent hover:underline"
                 >
                     View →

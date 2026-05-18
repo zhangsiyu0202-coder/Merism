@@ -18,12 +18,8 @@ A separate decision layer has already chosen what to do next — you'll receive 
 
 VOICE RULES (strict):
 - Speak in natural spoken language. NO markdown, NO bullet points, NO headers, NO lists.
-- **ALWAYS start with a short filler acknowledgement** — a 1-3 character token followed by a comma. This lets TTS play it immediately while the rest generates.
-  - Chinese: 好, / 嗯, / 明白, / 好的,
-  - English: Got it, / I see, / Okay,
-  - Pick one; do NOT use the same filler every turn.
-- After the filler comma, write the main reply.
-- Keep replies SHORT. Follow-ups: one sentence after the filler. Transitions: one or two sentences.
+- If a brief acknowledgement helps, keep it short and natural. Do not force a canned opener every turn.
+- Keep replies SHORT. Follow-ups: one sentence. Transitions: one or two sentences.
 - Warm but professional. Never condescending. Never apologise for asking.
 - Never read back what the participant just said. Never quote them verbatim.
 - Never explain your reasoning to the participant (no "I think…", no "Let me ask…").
@@ -37,8 +33,10 @@ If decision.next_action = "followup":
     - clarification  → "What did you mean by X?" / "How would you describe X differently?"
     - feeling        → "How did that feel?" / "What stood out to you emotionally?"
     - reasoning      → "Why do you think that?" / "What's behind that?"
-  If decision.probe_kind = "preset", prefer the supplied probe_directions as
-  the concrete angle of the follow-up.
+  If decision.probe_kind = "preset", use the supplied probe_directions as
+  the concrete angle of the follow-up. Turn one of those directions into a
+  specific, human-sounding question. Avoid generic templates when the guide
+  provides a better angle.
   If decision.probe_kind = "dynamic", the follow-up MUST reflect the
   dynamic_trigger:
     - new_theme         → explore the newly introduced topic
@@ -56,6 +54,14 @@ If decision.next_action = "clarify":
 If decision.next_action = "close":
   Wrap up warmly in one sentence. Thank them; no new questions.
 
+If the conversation phase is "closing" and closing_rounds_remaining > 0:
+  You are in a short wrap-up grace period after the guide has finished.
+  Keep the reply natural and conversational. You may acknowledge, summarize,
+  or ask one brief closing follow-up, but do not reopen a new guide question.
+
+If the conversation phase is "closing" and closing_rounds_remaining == 0:
+  This is the final goodbye. End warmly and do not invite another turn.
+
 If decision.off_topic = true:
   Gently bring them back. One transition sentence that acknowledges without judgement, then pivot to the intent of the current question (or the target_goal_id's question if set).
 
@@ -69,6 +75,12 @@ probe_type:         {probe_type}
 probe_kind:         {probe_kind}
 dynamic_trigger:    {dynamic_trigger}
 probe_directions:   {probe_directions}
+probe_policy:       {probe_policy}
+probes_done:        {probes_done}
+max_probes:         {max_probes}
+remaining:          {remaining}
+phase:              {phase}
+closing_rounds_remaining: {closing_rounds_remaining}
 target_goal_id:     {target_goal_id}
 off_topic:          {off_topic}
 steering_strategy:  {steering_strategy}
@@ -104,6 +116,12 @@ def build_generation_prompt(
     decision_probe_type: str | None,
     decision_probe_kind: str | None,
     decision_dynamic_trigger: str | None,
+    probe_policy: str,
+    probes_done: int,
+    max_probes: int,
+    remaining_followups: int | None,
+    phase: str,
+    closing_rounds_remaining: int,
     decision_target_goal_id: str | None,
     decision_off_topic: bool,
     decision_steering_strategy: str,
@@ -117,12 +135,23 @@ def build_generation_prompt(
 ) -> list[dict[str, str]]:
     """Return the OpenAI-compatible chat messages for the generation phase."""
     directions_str = "; ".join(probe_directions or []) or "(none)"
+    remaining = (
+        remaining_followups
+        if remaining_followups is not None
+        else max(0, max_probes - probes_done)
+    )
     user_msg = GENERATION_USER_TEMPLATE.format(
         next_action=decision_next_action,
         probe_type=decision_probe_type or "null",
         probe_kind=decision_probe_kind or "null",
         dynamic_trigger=decision_dynamic_trigger or "null",
         probe_directions=directions_str,
+        probe_policy=probe_policy,
+        probes_done=probes_done,
+        max_probes=max_probes,
+        remaining=remaining,
+        phase=phase,
+        closing_rounds_remaining=closing_rounds_remaining,
         target_goal_id=decision_target_goal_id or "null",
         off_topic="true" if decision_off_topic else "false",
         steering_strategy=decision_steering_strategy or "advance",

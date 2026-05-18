@@ -1,8 +1,9 @@
 import { render, type RenderOptions, type RenderResult } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { resetContext } from "kea"
 import { type ReactElement, type ReactNode } from "react"
 
+import "~/i18n"
+import { initKea } from "~/initKea"
 import { TooltipProvider } from "~/lib/merism"
 
 /**
@@ -24,10 +25,9 @@ interface MerismRenderResult extends RenderResult {
 }
 
 function Providers({ children }: { children: ReactNode }): ReactElement {
-    // Reset Kea's global context before each render so logic state doesn't
-    // bleed across tests. Equivalent to `resetContext()` in a setupFiles
-    // hook but scoped to actually used tests — cheaper.
-    resetContext({ createStore: true })
+    // Match the real app bootstrap so tests exercise router/forms/loaders
+    // the same way the app does in the browser.
+    initKea()
 
     return <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
 }

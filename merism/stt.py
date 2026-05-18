@@ -20,6 +20,7 @@ import base64
 import json
 import logging
 import uuid
+from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from typing import Any
@@ -88,50 +89,15 @@ class ParaformerClient:
         self, audio_stream: AsyncIterator[bytes]
     ) -> AsyncIterator[STTEvent]:
         """Consume PCM16 audio frames; yield STT events as DashScope emits them."""
-        if not self._api_key:
-            raise RuntimeError(
-                "ParaformerClient requires DASHSCOPE_ASR_API_KEY (or DASHSCOPE_API_KEY). "
-                "For tests, use merism.testing.fakes.FakeParaformer instead."
-            )
         try:
             import websockets
-            from websockets.asyncio.client import connect
         except ImportError as exc:  # pragma: no cover
             raise ImportError(
                 "ParaformerClient requires the 'websockets' package. "
                 "It is listed in pyproject.toml runtime deps; run `uv sync`."
             ) from exc
 
-        url = f"{self._url}?model={self._model}"
-        headers = {
-            "Authorization": f"Bearer {self._api_key}",
-            "OpenAI-Beta": "realtime=v1",
-        }
-
-        async with connect(url, additional_headers=headers) as ws:
-            # Configure the session — input format + VAD mode.
-            session_update = {
-                "event_id": f"evt_{uuid.uuid4().hex[:12]}",
-                "type": "session.update",
-                "session": {
-                    "modalities": ["text"],
-                    "input_audio_format": "pcm",
-                    "sample_rate": self._sample_rate,
-                    "input_audio_transcription": {"language": self._language},
-                    "turn_detection": (
-                        {
-                            "type": "server_vad",
-                            "threshold": 0.0,
-                            "silence_duration_ms": 400,
-                        }
-                        if self._use_server_vad
-                        else None
-                    ),
-                },
-            }
-            await ws.send(json.dumps(session_update))
-
-            # Background audio pump; main coroutine consumes events.
+        async with self._open_session() as ws:
             sender = asyncio.create_task(
                 self._pump_audio(ws, audio_stream, use_server_vad=self._use_server_vad)
             )
@@ -180,6 +146,81 @@ class ParaformerClient:
                     await sender
                 except (asyncio.CancelledError, websockets.exceptions.WebSocketException):
                     pass
+
+    async def warmup(self, timeout_s: float = 3.0) -> None:
+        """Open and configure a Realtime session so the first turn is warm."""
+        try:
+            async with self._open_session() as ws:
+                try:
+                    async with asyncio.timeout(timeout_s):
+                        while True:
+                            raw = await ws.recv()
+                            if isinstance(raw, bytes):
+                                continue
+                            event = _parse(raw)
+                            if event is None:
+                                continue
+                            if event.get("type") in {"session.created", "session.updated"}:
+                                return
+                            if event.get("type") == "error":
+                                _event_to_stt(event)
+                except TimeoutError:
+                    logger.info("stt.warmup.timeout", extra={"seconds": timeout_s})
+        except Exception as exc:
+            logger.warning("stt.warmup.failed", extra={"error": str(exc)})
+
+    def _session_update(self) -> dict[str, Any]:
+        return {
+            "event_id": f"evt_{uuid.uuid4().hex[:12]}",
+            "type": "session.update",
+            "session": {
+                "modalities": ["text"],
+                "input_audio_format": "pcm",
+                "sample_rate": self._sample_rate,
+                "input_audio_transcription": {"language": self._language},
+                "turn_detection": (
+                    {
+                        "type": "server_vad",
+                        "threshold": 0.0,
+                        "silence_duration_ms": 400,
+                    }
+                    if self._use_server_vad
+                    else None
+                ),
+            },
+        }
+
+    @asynccontextmanager
+    async def _open_session(self) -> AsyncIterator[Any]:
+        if not self._api_key:
+            raise RuntimeError(
+                "ParaformerClient requires DASHSCOPE_ASR_API_KEY (or DASHSCOPE_API_KEY). "
+                "For tests, use merism.testing.fakes.FakeParaformer instead."
+            )
+        try:
+            import websockets
+            from websockets.asyncio.client import connect
+        except ImportError as exc:  # pragma: no cover
+            raise ImportError(
+                "ParaformerClient requires the 'websockets' package. "
+                "It is listed in pyproject.toml runtime deps; run `uv sync`."
+            ) from exc
+
+        url = f"{self._url}?model={self._model}"
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "OpenAI-Beta": "realtime=v1",
+        }
+
+        ws = await connect(url, additional_headers=headers)
+        try:
+            await ws.send(json.dumps(self._session_update()))
+            yield ws
+        finally:
+            try:
+                await ws.close()
+            except Exception:  # pragma: no cover - best effort cleanup
+                pass
 
     # ── helpers ───────────────────────────────────────────
 

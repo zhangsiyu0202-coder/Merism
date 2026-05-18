@@ -1,24 +1,29 @@
 /**
  * AudioPlayback — streaming TTS audio queue.
  *
- * Takes compressed audio chunks (CosyVoice ships MP3 frames) and schedules
- * them on a shared AudioContext. Shared context avoids the ~100 ms
- * `AudioContext` init cost and keeps `currentTime` stable across chunks,
- * so sequential frames play back seamlessly.
+ * Takes TTS audio chunks and schedules them on a shared AudioContext.
+ * The live DashScope TTS path currently emits raw PCM16 at 24 kHz, but
+ * the player also keeps a decodeAudioData path for encoded chunks so the
+ * transport can evolve without forcing another frontend rewrite.
  *
- * Barge-in (ADR 0002): when the user's VAD fires, the orchestration layer
- * (a) queries {@link getPlayedMs} to know how much of the current response
- * was actually heard, (b) sends that alongside the Interruption message so
- * the server can truncate conversation history to what was HEARD (the
- * `conversation.item.truncate` semantic from OpenAI's Realtime API). Then
- * the orchestration layer calls {@link interrupt} to kill all scheduled
- * sources for instant silence.
+ * Shared context avoids the ~100 ms `AudioContext` init cost and keeps
+ * `currentTime` stable across chunks, so sequential frames play back
+ * seamlessly.
+ *
+ * Barge-in (ADR 0002): when the user's VAD fires, the orchestration
+ * layer (a) queries {@link getPlayedMs} to know how much of the current
+ * response was actually heard, (b) sends that alongside the
+ * Interruption message so the server can truncate conversation history
+ * to what was HEARD (the `conversation.item.truncate` semantic from
+ * OpenAI's Realtime API). Then the orchestration layer calls
+ * {@link interrupt} to kill all scheduled sources for instant silence.
  */
 export class AudioPlayback {
     private readonly context: AudioContext
     private playheadTime: number
     private sources: AudioBufferSourceNode[] = []
     private readonly ownedContext: boolean
+    private readonly outputSampleRate: number
 
     /**
      * When the first chunk of the CURRENT response starts playing.
@@ -29,7 +34,7 @@ export class AudioPlayback {
     private currentResponseStartTime: number | null = null
 
     /** Pass in an existing context (preferred) or let us allocate one. */
-    constructor(context?: AudioContext) {
+    constructor(context?: AudioContext, outputSampleRate: number = 24000) {
         if (context) {
             this.context = context
             this.ownedContext = false
@@ -37,13 +42,15 @@ export class AudioPlayback {
             this.context = new AudioContext()
             this.ownedContext = true
         }
+        this.outputSampleRate = outputSampleRate
         this.playheadTime = this.context.currentTime
     }
 
-    async enqueue(data: ArrayBuffer): Promise<void> {
-        if (data.byteLength === 0) return
+    async enqueue(data: ArrayBuffer): Promise<boolean> {
+        if (data.byteLength === 0) return false
         try {
-            const audioBuffer = await this.context.decodeAudioData(data.slice(0))
+            const audioBuffer = await this.decodeAudioChunk(data)
+            if (!audioBuffer) return false
             const source = this.context.createBufferSource()
             source.buffer = audioBuffer
             source.connect(this.context.destination)
@@ -61,10 +68,38 @@ export class AudioPlayback {
                 if (i >= 0) this.sources.splice(i, 1)
             }
             this.sources.push(source)
+            return true
         } catch {
             // Frame wasn't decodable (raw PCM, truncated MP3). Swallow
             // because we don't want one bad frame to kill playback.
+            return false
         }
+    }
+
+    private async decodeAudioChunk(data: ArrayBuffer): Promise<AudioBuffer | null> {
+        try {
+            return await this.context.decodeAudioData(data.slice(0))
+        } catch {
+            return this.decodePcm16(data)
+        }
+    }
+
+    private decodePcm16(data: ArrayBuffer): AudioBuffer | null {
+        const usableBytes = data.byteLength - (data.byteLength % 2)
+        if (usableBytes <= 0) return null
+
+        const samples = new Int16Array(data.slice(0, usableBytes))
+        const audioBuffer = this.context.createBuffer(
+            1,
+            samples.length,
+            this.outputSampleRate,
+        )
+        const channel = audioBuffer.getChannelData(0)
+        for (let i = 0; i < samples.length; i += 1) {
+            const sample = samples[i] ?? 0
+            channel[i] = sample < 0 ? sample / 0x8000 : sample / 0x7fff
+        }
+        return audioBuffer
     }
 
     /**

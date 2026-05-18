@@ -215,7 +215,7 @@
             "go_ask": "Go to Ask Merism",
             "go_inbox": "Go to Inbox",
             "go_repository": "Go to Repository",
-            "go_decisions": "Go to Decisions",
+            "go_decisions": "Go to Ask Merism",
             "go_settings": "Go to Settings",
             "new_study": "Create a new study",
             "reload": "Reload studies list",

@@ -38,12 +38,10 @@ import {
     InputHelperText,
     InputLabel,
     Select,
-    SectionLabel,
     Tag,
     Textarea,
     Tooltip,
     cn,
-    functional,
 } from "~/lib/merism"
 
 import { studyLogic } from "~/features/studies/studyLogic"
@@ -58,14 +56,6 @@ import {
     type SectionRandomizationMode,
     type SelectionType,
 } from "./outlineEditorLogic"
-
-const MODULE_TABS = [
-    { value: "overview", label: "Overview" },
-    { value: "guide", label: "Guide" },
-    { value: "screener", label: "Screener" },
-    { value: "recruit", label: "Recruit" },
-    { value: "results", label: "Results" },
-] as const
 
 const QUESTION_TYPE_META: Record<
     GuideQuestionType,
@@ -298,68 +288,8 @@ export default function OutlineTab(): JSX.Element {
         [sections, selectedLocation],
     )
 
-    const topStatus = isSavingGuide
-        ? "Saving..."
-        : guideError
-          ? "Save failed"
-          : isDirty
-            ? "Unsaved changes"
-            : "Saved"
-
     return (
         <div className="flex h-full min-h-0 flex-col">
-            <header className="shrink-0 border-b border-[color:var(--merism-hairline)] px-6 py-4">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                            <SectionLabel>Research Guide Builder</SectionLabel>
-                            <Tag
-                                variant={guideError ? "danger" : isDirty ? "warning" : "success"}
-                                case="normal"
-                            >
-                                {topStatus}
-                            </Tag>
-                        </div>
-                        <h1 className="mt-2 truncate font-display text-[length:var(--text-merism-title)] font-[500] text-merism-text">
-                            {study?.name ?? "Untitled project"}
-                        </h1>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        {study && (
-                            <Tag variant="outline" case="normal">
-                                {study.status}
-                            </Tag>
-                        )}
-                    </div>
-                </div>
-
-                <nav
-                    aria-label="Project modules"
-                    className="mt-4 flex gap-6 overflow-x-auto"
-                >
-                    {MODULE_TABS.map((tab) => {
-                        const active = tab.value === "guide"
-                        return (
-                            <button
-                                key={tab.value}
-                                type="button"
-                                disabled={!active}
-                                className={cn(
-                                    "relative -mb-px border-b-2 px-1 pb-3 text-sm font-medium transition-colors",
-                                    active
-                                        ? "border-current text-merism-text"
-                                        : "border-transparent text-merism-text-muted",
-                                )}
-                                style={active ? { borderBottomColor: functional.quote[500], color: functional.quote[500] } : undefined}
-                                aria-current={active ? "page" : undefined}
-                            >
-                                {tab.label}
-                            </button>
-                        )
-                    })}
-                </nav>
-            </header>
-
             <div className="grid min-h-0 flex-1 lg:grid-cols-[19rem_minmax(0,1fr)_18rem]">
                 <aside className="min-h-0 overflow-y-auto border-r border-[color:var(--merism-hairline)] px-4 py-4">
                     <GuideOutlinePanel

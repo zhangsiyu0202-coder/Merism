@@ -19,6 +19,7 @@ export const sceneImports: SceneImportMap = {
     [Scene.Insights]: () => import("~/features/analysis/InsightsPage"),
     [Scene.Reports]: () => import("~/features/analysis/ReportsPage"),
     [Scene.InterviewRoom]: () => import("~/features/interview/InterviewRoomPage"),
+    [Scene.SessionTranscript]: () => import("~/features/sessions/SessionTranscriptPage"),
     [Scene.ParticipantEntry]: () => import("~/features/participant/ParticipantEntryPage"),
     [Scene.Login]: () => import("~/features/authentication/LoginPage"),
     [Scene.Welcome]: () => import("~/features/welcome/WelcomePage"),
@@ -30,7 +31,7 @@ export const sceneConfigs: SceneConfigMap = {
     [Scene.Ask]: { name: "Ask Merism" },
     [Scene.Inbox]: { name: "Inbox" },
     [Scene.Repository]: { name: "Repository" },
-    [Scene.Decisions]: { name: "Decisions" },
+    [Scene.Decisions]: { name: "Ask Merism" },
     [Scene.Settings]: { name: "Settings" },
     [Scene.Study]: { name: "Study", hideFromNav: true },
     [Scene.Insights]: { name: "Insights" },
@@ -39,6 +40,10 @@ export const sceneConfigs: SceneConfigMap = {
         name: "Interview",
         layout: "participant",
         allowUnauthenticated: true,
+        hideFromNav: true,
+    },
+    [Scene.SessionTranscript]: {
+        name: "Transcript",
         hideFromNav: true,
     },
     [Scene.ParticipantEntry]: {

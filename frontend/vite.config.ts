@@ -25,10 +25,19 @@ export default defineConfig({
         postcss: { plugins: [] },
     },
     server: {
+        host: true,
         port: 5173,
-        strictPort: false,
+        strictPort: true,
         proxy: {
-            "/api": { target: "http://localhost:8000", changeOrigin: true },
+            "/api": {
+                target: "http://localhost:8000",
+                changeOrigin: true,
+                configure: (proxy) => {
+                    proxy.on("error", (err) => {
+                        console.error("\x1b[31m[proxy /api] 后端未就绪:\x1b[0m", err.message)
+                    })
+                },
+            },
             "/accounts": { target: "http://localhost:8000", changeOrigin: true },
             "/i/": {
                 target: "http://localhost:8000",

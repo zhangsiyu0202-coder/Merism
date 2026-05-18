@@ -91,7 +91,7 @@ frontend/
 | `pnpm test` | Vitest unit (jsdom + MSW) |
 | `pnpm test:watch` | Vitest watch mode |
 | `pnpm test:coverage` | v8 coverage; fails under 80% lines/functions/statements |
-| `pnpm test:e2e` · `pnpm test:e2e:ui` | Playwright |
+| `pnpm test:e2e` · `pnpm test:e2e:ui` | Playwright; auto-starts Django + Vite after clearing stale `8000` / `5173` listeners |
 | `pnpm storybook` · `pnpm storybook:build` | Storybook 9 |
 
 ## Conventions — enforced

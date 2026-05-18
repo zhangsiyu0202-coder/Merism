@@ -60,6 +60,17 @@ class STTProcessor(FrameProcessor):
         self._stream_task: asyncio.Task[None] | None = None
         self._user_speaking = False
 
+    async def start(self) -> None:
+        if self._started:
+            return
+        warmup = getattr(self._client, "warmup", None)
+        if callable(warmup):
+            try:
+                await warmup()
+            except Exception as exc:
+                logger.warning("voice.stt.warmup_failed", extra={"error": str(exc)})
+        await super().start()
+
     async def process_frame(self, frame: Frame, direction: FrameDirection) -> None:
         if isinstance(frame, StartFrame):
             self._audio_in = asyncio.Queue()

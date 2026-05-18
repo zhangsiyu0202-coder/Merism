@@ -30,6 +30,7 @@ import base64
 import json
 import logging
 import uuid
+from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Any
@@ -90,25 +91,7 @@ class CosyVoiceClient:
                 "CosyVoiceClient requires the 'websockets' package. Run `uv sync`."
             ) from exc
 
-        url = f"{self._url}?model={self._model}"
-        headers = {"Authorization": f"Bearer {self._api_key}"}
-
-        async with connect(url, additional_headers=headers) as ws:
-            await ws.send(
-                json.dumps(
-                    {
-                        "event_id": _evt_id(),
-                        "type": "session.update",
-                        "session": {
-                            "voice": self.config.voice,
-                            "mode": "commit",
-                            "language_type": self.config.language_type,
-                            "response_format": self.config.response_format,
-                            "sample_rate": self.config.sample_rate,
-                        },
-                    }
-                )
-            )
+        async with self._open_session(connect) as ws:
 
             sender = asyncio.create_task(self._pump_text(ws, text_stream))
             finish_sent = False
@@ -149,6 +132,28 @@ class CosyVoiceClient:
                 except (asyncio.CancelledError, websockets.exceptions.WebSocketException):
                     pass
 
+    async def warmup(self, timeout_s: float = 3.0) -> None:
+        """Open and configure a TTS session so the first turn is warm."""
+        try:
+            async with self._open_session() as ws:
+                try:
+                    async with asyncio.timeout(timeout_s):
+                        while True:
+                            raw = await ws.recv()
+                            if isinstance(raw, bytes):
+                                continue
+                            event = _parse(raw)
+                            if event is None:
+                                continue
+                            if event.get("type") in {"session.created", "session.updated"}:
+                                return
+                            if event.get("type") == "error":
+                                _extract_audio(event)
+                except TimeoutError:
+                    logger.info("tts.warmup.timeout", extra={"seconds": timeout_s})
+        except Exception as exc:
+            logger.warning("tts.warmup.failed", extra={"error": str(exc)})
+
     async def _pump_text(self, ws: Any, text_stream: AsyncIterator[str]) -> None:
         """Feed text chunks then commit once drained.
 
@@ -175,6 +180,46 @@ class CosyVoiceClient:
             )
         except Exception as exc:  # pragma: no cover - network
             logger.warning("tts.text_pipe.failed", extra={"error": str(exc)})
+
+    @asynccontextmanager
+    async def _open_session(self, connect_fn: Any | None = None) -> AsyncIterator[Any]:
+        if not self._api_key:
+            raise RuntimeError(
+                "CosyVoiceClient requires DASHSCOPE_TTS_API_KEY (or DASHSCOPE_API_KEY)."
+            )
+        try:
+            from websockets.asyncio.client import connect
+        except ImportError as exc:  # pragma: no cover
+            raise ImportError(
+                "CosyVoiceClient requires the 'websockets' package. Run `uv sync`."
+            ) from exc
+
+        url = f"{self._url}?model={self._model}"
+        headers = {"Authorization": f"Bearer {self._api_key}"}
+        ws_connect = connect_fn or connect
+        ws = await ws_connect(url, additional_headers=headers)
+        try:
+            await ws.send(
+                json.dumps(
+                    {
+                        "event_id": _evt_id(),
+                        "type": "session.update",
+                        "session": {
+                            "voice": self.config.voice,
+                            "mode": "commit",
+                            "language_type": self.config.language_type,
+                            "response_format": self.config.response_format,
+                            "sample_rate": self.config.sample_rate,
+                        },
+                    }
+                )
+            )
+            yield ws
+        finally:
+            try:
+                await ws.close()
+            except Exception:  # pragma: no cover - best effort cleanup
+                pass
 
 
 def _parse(raw: str) -> dict[str, Any] | None:

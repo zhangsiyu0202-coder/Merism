@@ -32,9 +32,11 @@ seed:  ## Seed the demo org + team + 3 studies
 # ── Runtime ────────────────────────────────────────────────
 
 api:  ## Run the Django dev server on :8000
+	bash bin/clear-dev-ports.sh 8000 5173
 	DJANGO_SETTINGS_MODULE=merism.settings.dev .venv/bin/python manage.py runserver 8000
 
 web:  ## Run the Vite frontend dev server on :5173
+	bash bin/clear-dev-ports.sh 8000 5173
 	cd frontend && pnpm dev
 
 worker:  ## Run one Celery worker
@@ -46,6 +48,8 @@ beat:  ## Run Celery beat scheduler
 # ── Test ──────────────────────────────────────────────────
 
 test: test-backend test-frontend  ## Run all tests
+test-e2e:  ## Run frontend Playwright E2E against Django + Vite
+	cd frontend && pnpm test:e2e
 
 test-backend:  ## Run backend pytest
 	.venv/bin/pytest

@@ -48,6 +48,9 @@ class FakeParaformer:
     def raise_on_next(self, exc: Exception) -> None:
         self._raise_on_next = exc
 
+    async def warmup(self, timeout_s: float = 3.0) -> None:
+        _ = timeout_s
+
     async def stream_stt(self, audio_stream: AsyncIterator[bytes]) -> AsyncIterator[FakeSTTEvent]:
         self.call_count += 1
         async for chunk in audio_stream:

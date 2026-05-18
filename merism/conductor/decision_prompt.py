@@ -58,6 +58,13 @@ DYNAMIC PROBE GUIDANCE:
   - "strong_emotion"    (participant expressed strong feeling worth exploring)
   - "surprise_finding"  (unexpected insight relevant to research_goal)
 
+CLOSING GRACE:
+- If phase="closing" and closing_rounds_remaining > 0, you are in a short
+  wrap-up window after the guide has ended. Do not invent a new guide
+  question. Prefer a gentle close/followup/clarify decision that keeps the
+  conversation natural for a few final exchanges.
+- If phase="closing" and closing_rounds_remaining == 0, choose close.
+
 COVERAGE STEERING:
 - When under-covered goals exist AND the participant opened a door (mentioned something relevant), BIAS toward followup/move_on that hits that goal. Set target_goal_id to the matching goal id.
 - When the participant is clearly off-topic, set off_topic=true. The steering_strategy becomes "redirect_to_goal" (pick a goal they can answer).
@@ -78,6 +85,8 @@ probe_policy:   {probe_policy}
 probes_done:    {probes_done}
 max_probes:     {max_probes}
 remaining:      {remaining}
+phase:          {phase}
+closing_rounds_remaining: {closing_rounds_remaining}
 probe_directions:        {probe_directions}
 dynamic_probe_enabled:   {dynamic_probe_enabled}
 dynamic_probe_remaining: {dynamic_probe_remaining}
@@ -122,6 +131,8 @@ def build_decision_prompt(
     coverage_context: str,
     recent_turns: str,
     participant_latest: str,
+    phase: str = "active",
+    closing_rounds_remaining: int = 0,
     probe_directions: list[str] | None = None,
     dynamic_probe_enabled: bool = False,
     dynamic_probe_remaining: int = 0,
@@ -141,6 +152,8 @@ def build_decision_prompt(
         probes_done=probes_done,
         max_probes=max_probes,
         remaining=remaining,
+        phase=phase,
+        closing_rounds_remaining=closing_rounds_remaining,
         probe_directions=directions_str,
         dynamic_probe_enabled=str(dynamic_probe_enabled).lower(),
         dynamic_probe_remaining=dynamic_probe_remaining,

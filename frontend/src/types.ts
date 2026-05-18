@@ -46,11 +46,8 @@ export enum StudyFormat {
 
 export enum StudyStatus {
     Draft = "draft",
-    Ready = "ready",
-    Recruiting = "recruiting",
-    Active = "active",
+    Live = "live",
     Closed = "closed",
-    Archived = "archived",
 }
 
 export interface Study {

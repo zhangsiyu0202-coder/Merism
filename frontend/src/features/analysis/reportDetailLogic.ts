@@ -1,17 +1,12 @@
-import { kea, path, actions, reducers, listeners, selectors, props, beforeUnmount } from "kea"
+import { kea, path, actions, reducers, listeners, selectors, beforeUnmount } from "kea"
 import { loaders } from "kea-loaders"
 import { api } from "~/lib/api"
 
 import type { reportDetailLogicType } from "./reportDetailLogicType"
 import type { CustomReportData, ReportQuestion, ReportSegment } from "./reportsLogic"
 
-export interface ReportDetailLogicProps {
-    reportId: string
-}
-
 export const reportDetailLogic = kea<reportDetailLogicType>([
     path(["features", "analysis", "reportDetailLogic"]),
-    props({} as ReportDetailLogicProps),
 
     actions({
         setReportId: (reportId: string) => ({ reportId }),

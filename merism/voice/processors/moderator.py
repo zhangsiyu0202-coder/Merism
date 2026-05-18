@@ -33,6 +33,7 @@ from merism.voice.frames import (
     CancelFrame,
     EndFrame,
     Frame,
+    ErrorFrame,
     InterruptionFrame,
     LLMFullResponseEndFrame,
     LLMFullResponseStartFrame,
@@ -117,6 +118,14 @@ class ModeratorLLMProcessor(FrameProcessor):
                 "voice.moderator.stream_failed",
                 extra={"session_id": self._session_id, "response_id": response_id, "error": str(exc)},
             )
+            if not buffer and not self._cancelled:
+                await self.push_frame(
+                    ErrorFrame(
+                        code="moderator_stream_failed",
+                        message=str(exc),
+                        fatal=False,
+                    )
+                )
 
         await self.push_frame(LLMFullResponseEndFrame(response_id=response_id))
         self._current_response_id = None

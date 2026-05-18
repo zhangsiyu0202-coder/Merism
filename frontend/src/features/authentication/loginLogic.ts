@@ -25,7 +25,7 @@ export const loginLogic = kea<loginLogicType>([
 
     connect({ actions: [router, ["push"]] }),
 
-    forms(({ actions }) => ({
+    forms(() => ({
         login: {
             defaults: { email: "", password: "" } as LoginFormValues,
             errors: ({ email, password }) => ({

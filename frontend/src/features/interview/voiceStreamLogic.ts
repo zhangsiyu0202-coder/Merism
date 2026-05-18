@@ -26,6 +26,11 @@ export interface ServerMessage {
     [key: string]: unknown
 }
 
+function cancelBrowserSpeech(): void {
+    if (typeof window === "undefined") return
+    window.speechSynthesis?.cancel()
+}
+
 export const voiceStreamLogic = kea<voiceStreamLogicType>([
     path(["scenes", "interview_room", "voiceStreamLogic"]),
 
@@ -226,6 +231,7 @@ export const voiceStreamLogic = kea<voiceStreamLogicType>([
                 // Beginning a new turn. If the bot is currently speaking,
                 // this is also an interrupt — the same message carries the
                 // played-ms so history truncates precisely.
+                cancelBrowserSpeech()
                 const playedMs = player?.getPlayedMs() ?? 0
                 sendJson({
                     type: "vad_speaking_start",
@@ -284,6 +290,7 @@ export const voiceStreamLogic = kea<voiceStreamLogicType>([
                     case "bot_stopped_speaking":
                         a.setBotSpeaking(false)
                         player?.markResponseBoundary()
+                        agentDeltaBuffer = ""
                         break
                     case "phase_change":
                         a.setPhase((message.phase as SessionStatus) ?? "active")

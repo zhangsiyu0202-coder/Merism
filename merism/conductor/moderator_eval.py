@@ -259,6 +259,8 @@ class ModeratorEvalRunner:
             coverage_context=case.coverage_context,
             recent_turns=_render_recent_turns(case.transcript),
             participant_latest=case.participant_message,
+            phase=context.state.phase,
+            closing_rounds_remaining=context.state.closing_rounds_remaining,
             probe_directions=question_info["probe_directions"],
             dynamic_probe_enabled=bool(dynamic_probe["enabled"]),
             dynamic_probe_remaining=max(0, int(dynamic_probe["max_extra_rounds"]) - dynamic_probes_done),
@@ -297,6 +299,12 @@ class ModeratorEvalRunner:
             decision_probe_type=final_decision.probe_type,
             decision_probe_kind=final_decision.probe_kind,
             decision_dynamic_trigger=final_decision.dynamic_trigger,
+            probe_policy=str(question_info["probe_policy"]),
+            probes_done=context.state.probes_done_for(context.state.current_question_id),
+            max_probes=int(question_info["max_probes"]),
+            remaining_followups=context.state.remaining_followups(context.state.current_question_id),
+            phase=context.state.phase,
+            closing_rounds_remaining=context.state.closing_rounds_remaining,
             decision_target_goal_id=final_decision.target_goal_id,
             decision_off_topic=bool(final_decision.off_topic),
             decision_steering_strategy=final_decision.steering_strategy or "advance",
@@ -830,4 +838,3 @@ def _parse_optional_float(raw: str | None) -> float | None:
     if not text:
         return None
     return float(text)
-

@@ -33,6 +33,9 @@ class FakeCosyVoice:
         self.text_chunks_received: list[str] = []
         self.call_count: int = 0
 
+    async def warmup(self, timeout_s: float = 3.0) -> None:
+        _ = timeout_s
+
     async def stream_tts(self, text_stream: AsyncIterator[str]) -> AsyncIterator[bytes]:
         self.call_count += 1
         async for chunk in text_stream:

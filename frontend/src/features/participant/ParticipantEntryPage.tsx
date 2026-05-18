@@ -1,6 +1,5 @@
 import { useActions, useValues } from "kea"
 import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
 
 import { Button, Illustration, Input } from "~/lib/merism"
 
@@ -10,7 +9,6 @@ import {
 } from "./participantEntryLogic"
 
 export default function ParticipantEntryPage(): JSX.Element {
-    const { t } = useTranslation()
     const slug = useSlugFromPath()
 
     const { setSlug, startSession, submitConsent } = useActions(participantEntryLogic)
@@ -212,7 +210,7 @@ function useSlugFromPath(): string {
     const [slug, setSlug] = useState("")
     useEffect(() => {
         const match = window.location.pathname.match(/^\/i\/([^/]+)/)
-        if (match) setSlug(match[1])
+        if (match) setSlug(match[1] ?? "")
     }, [])
     return slug
 }

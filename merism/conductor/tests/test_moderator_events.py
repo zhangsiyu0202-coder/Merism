@@ -127,6 +127,7 @@ def _append_turn_events(
                     "current_question_id": state.current_question_id,
                     "current_section_id": state.current_section_id,
                     "phase": state.phase,
+                    "closing_rounds_remaining": state.closing_rounds_remaining,
                     "turn_count": state.turn_count,
                     "answered_question_ids": copy.deepcopy(state.answered_question_ids),
                     "followups_used": copy.deepcopy(state.followups_used),
@@ -238,3 +239,55 @@ def test_stream_turn_dynamic_probe_round_trips() -> None:
     rebuilt_state = reconstruct_state(session)
     assert rebuilt_state.dynamic_probes_used.get("q1", {}).get("asked", 0) == 1
     assert rebuilt_state.followups_used.get("q1", {}).get("asked", 0) == 0
+
+
+def test_close_decision_enters_closing_grace() -> None:
+    session = _boot_session()
+    state = ExecutionState.model_validate(session.moderator_state or {})
+
+    decision = ModeratorDecision(next_action="close")
+    qid_at_turn = state.current_question_id
+    _apply_decision_to_state(state, decision, session.guide.sections or [])
+
+    assert state.phase == "closing"
+    assert state.closing_rounds_remaining == 3
+
+    _append_turn_events(
+        session,
+        participant_message="thanks",
+        assistant_text="谢谢你。",
+        decision=decision,
+        state=state,
+        qid_at_turn=qid_at_turn,
+    )
+
+    rebuilt_state = reconstruct_state(session)
+    assert rebuilt_state.phase == "closing"
+    assert rebuilt_state.closing_rounds_remaining == 3
+
+
+def test_closing_grace_counts_down_on_followup_turns() -> None:
+    session = _boot_session()
+    state = ExecutionState.model_validate(session.moderator_state or {})
+    state.phase = "closing"
+    state.closing_rounds_remaining = 2
+
+    decision = ModeratorDecision(next_action="clarify")
+    qid_at_turn = state.current_question_id
+    _apply_decision_to_state(state, decision, session.guide.sections or [])
+
+    assert state.phase == "closing"
+    assert state.closing_rounds_remaining == 1
+
+    _append_turn_events(
+        session,
+        participant_message="one more thing",
+        assistant_text="可以，具体说说。",
+        decision=decision,
+        state=state,
+        qid_at_turn=qid_at_turn,
+    )
+
+    rebuilt_state = reconstruct_state(session)
+    assert rebuilt_state.phase == "closing"
+    assert rebuilt_state.closing_rounds_remaining == 1

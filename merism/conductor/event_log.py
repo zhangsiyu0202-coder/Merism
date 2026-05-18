@@ -164,7 +164,7 @@ def reconstruct_state(session: InterviewSession) -> ExecutionState:
                 if state.current_question_id:
                     state.mark_answered(state.current_question_id)
             elif decision.get("next_action") == "close":
-                state.phase = "ended"
+                state.enter_closing()
         elif ev.kind == SessionEvent.Kind.STATE_TRANSITION:
             for key in (
                 "current_question_id",
@@ -178,6 +178,7 @@ def reconstruct_state(session: InterviewSession) -> ExecutionState:
                 "concept_by_question_id",
                 "concepts_shown",
                 "pending_stimulus_events",
+                "closing_rounds_remaining",
             ):
                 if key in ev.payload:
                     setattr(state, key, ev.payload[key])

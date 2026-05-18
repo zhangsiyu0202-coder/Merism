@@ -215,7 +215,7 @@
             "go_ask": "跳转到问答",
             "go_inbox": "跳转到收件箱",
             "go_repository": "跳转到资料库",
-            "go_decisions": "跳转到决策",
+            "go_decisions": "跳转到 Ask Merism",
             "go_settings": "跳转到设置",
             "new_study": "新建研究",
             "reload": "重新加载研究列表",

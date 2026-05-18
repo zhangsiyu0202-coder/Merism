@@ -14,7 +14,7 @@ import { Button, Card, Dialog, DialogContent, DialogTitle, Input, Tabs, TabsList
 import { AnalysisChart } from "./AnalysisChart"
 import type { ChartSpec } from "./AnalysisChart"
 import { reportDetailLogic } from "./reportDetailLogic"
-import type { ReportQuestion } from "./reportsLogic"
+import type { ReportQuestion, ReportSegment } from "./reportsLogic"
 import { GeneratingState, LoadingState } from "./StateComponents"
 
 export function ReportDetailPage({
@@ -93,7 +93,7 @@ export function ReportDetailPage({
                 <Tabs defaultValue="all" onValueChange={(v) => setActiveSegment(v === "all" ? null : v)}>
                     <TabsList>
                         <TabsTrigger value="all">{t("studies.tabs.all")}</TabsTrigger>
-                        {segments.map((s) => (
+                        {segments.map((s: ReportSegment) => (
                             <TabsTrigger key={s.id} value={s.id}>{s.name}</TabsTrigger>
                         ))}
                     </TabsList>
@@ -148,6 +148,7 @@ export function ReportDetailPage({
 
 function QuestionBlock({ question }: { question: ReportQuestion }): JSX.Element {
     const { t } = useTranslation()
+    const chartSpec = toChartSpec(question.chart_spec)
     const typeLabels: Record<string, string> = {
         open_ended: t("reports.question_types.open_ended"),
         multi_select: t("reports.question_types.multi_select"),
@@ -174,7 +175,7 @@ function QuestionBlock({ question }: { question: ReportQuestion }): JSX.Element 
             {question.status === "ready" && (
                 <div className="flex flex-col gap-5 p-5">
                     {question.ai_summary && <p className="text-merism-body-sm leading-relaxed text-merism-text">{question.ai_summary}</p>}
-                    {question.chart_spec?.type && <AnalysisChart spec={question.chart_spec as ChartSpec} height={240} />}
+                    {chartSpec && <AnalysisChart spec={chartSpec} height={240} />}
                     {question.themes.length > 0 && (
                         <div>
                             <h4 className="mb-2 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">{t("insights.themes")}</h4>
@@ -214,6 +215,17 @@ function QuestionBlock({ question }: { question: ReportQuestion }): JSX.Element 
             )}
         </Card>
     )
+}
+
+function toChartSpec(spec: Record<string, unknown>): ChartSpec | null {
+    if (!isChartType(spec.type) || typeof spec.title !== "string") {
+        return null
+    }
+    return spec as unknown as ChartSpec
+}
+
+function isChartType(value: unknown): value is ChartSpec["type"] {
+    return value === "bar" || value === "pie" || value === "line"
 }
 
 function QuestionStatus({ status }: { status: string }): JSX.Element {

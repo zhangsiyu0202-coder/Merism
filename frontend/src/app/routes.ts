@@ -30,6 +30,7 @@ export enum Scene {
     // participant-facing
     InterviewRoom = "InterviewRoom",
     ParticipantEntry = "ParticipantEntry",
+    SessionTranscript = "SessionTranscript",
 
     // auth
     Login = "Login",
@@ -70,6 +71,7 @@ export const urls = {
     reportDetail: (reportId: string): string => `/reports/${reportId}`,
 
     interviewRoom: (sessionId: string): string => `/interview/${sessionId}`,
+    sessionTranscript: (sessionId: string): string => `/sessions/${sessionId}/transcript`,
     participantEntry: (slug: string): string => `/i/${slug}`,
 
     login: (next?: string): string =>
@@ -100,6 +102,7 @@ export const routes: Record<string, Scene> = {
     "/reports": Scene.Reports,
     "/reports/:reportId": Scene.Reports,
     "/interview/:sessionId": Scene.InterviewRoom,
+    "/sessions/:sessionId/transcript": Scene.SessionTranscript,
     "/i/:slug": Scene.ParticipantEntry,
     "/login": Scene.Login,
     "/welcome": Scene.Welcome,

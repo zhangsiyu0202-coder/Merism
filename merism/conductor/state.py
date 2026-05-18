@@ -31,6 +31,8 @@ class ExecutionState(BaseModel):
     phase: Literal["warmup", "active", "closing", "ended"] = "warmup"
     turn_count: int = 0
     started_at_epoch: float = 0.0
+    # Number of post-guide exchanges still allowed before we hard-close.
+    closing_rounds_remaining: int = 0
 
     # ── progress through the guide ────────────────────────
     current_section_id: str = ""
@@ -106,3 +108,13 @@ class ExecutionState(BaseModel):
     def mark_answered(self, question_id: str) -> None:
         if question_id and question_id not in self.answered_question_ids:
             self.answered_question_ids.append(question_id)
+
+    def enter_closing(self, rounds: int = 3) -> None:
+        """Switch into closing grace and seed the remaining exchange budget."""
+        self.phase = "closing"
+        self.closing_rounds_remaining = max(self.closing_rounds_remaining, rounds)
+
+    def consume_closing_round(self) -> None:
+        """Consume one closing exchange if grace is active."""
+        if self.phase == "closing" and self.closing_rounds_remaining > 0:
+            self.closing_rounds_remaining -= 1

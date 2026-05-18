@@ -25,9 +25,9 @@ type StudiesFilterTab = "all" | "active" | "drafts" | "archived";
  * Shares the ``PageTopBar`` masthead with every other top-level scene,
  * and adds four sub-tabs as local sub-navigation:
  *   - All (default) — everything
- *   - Active       — recruiting / live / ready
- *   - Drafts       — draft status
- *   - Archived     — closed / archived
+ *   - Active       — live
+ *   - Drafts       — draft
+ *   - Archived     — closed
  */
 export default function StudiesPage(): JSX.Element {
   const { t } = useTranslation();
@@ -282,10 +282,10 @@ function StudyRow({ study }: { study: Study }): JSX.Element {
 function StatusTag({ status }: { status: Study["status"] }): JSX.Element {
   const { t } = useTranslation();
   const label = t(`studies.status.${status}`, { defaultValue: status });
-  if (status === "recruiting" || status === "active") {
+  if (status === "live") {
     return <Tag variant="accent">{label}</Tag>;
   }
-  if (status === "draft" || status === "ready") {
+  if (status === "draft") {
     return <Tag variant="neutral">{label}</Tag>;
   }
   return <Tag variant="outline">{label}</Tag>;

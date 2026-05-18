@@ -102,11 +102,12 @@ function FindingRow({ finding, expanded, onToggle }: { finding: InsightFinding; 
 
 function FindingDetail({ finding }: { finding: InsightFinding }): JSX.Element {
     const { t } = useTranslation()
+    const chartSpec = toChartSpec(finding.chart_spec)
     return (
         <div className="border-t border-[color:var(--merism-hairline)] px-5 py-5 flex flex-col gap-6">
-            {finding.chart_spec?.type && (
+            {chartSpec && (
                 <div>
-                    <AnalysisChart spec={finding.chart_spec as ChartSpec} />
+                    <AnalysisChart spec={chartSpec} />
                     {finding.chart_interpretation && <p className="mt-2 text-merism-body-sm text-merism-text-muted">{finding.chart_interpretation}</p>}
                 </div>
             )}
@@ -150,6 +151,17 @@ function FindingDetail({ finding }: { finding: InsightFinding }): JSX.Element {
             )}
         </div>
     )
+}
+
+function toChartSpec(spec: Record<string, unknown>): ChartSpec | null {
+    if (!isChartType(spec.type) || typeof spec.title !== "string") {
+        return null
+    }
+    return spec as unknown as ChartSpec
+}
+
+function isChartType(value: unknown): value is ChartSpec["type"] {
+    return value === "bar" || value === "pie" || value === "line"
 }
 
 export default InsightsPage

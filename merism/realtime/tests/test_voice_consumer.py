@@ -26,8 +26,14 @@ from merism.stt import STTEvent
 class _FakeParaformer:
     """Yields one interim + one final transcript, then drains."""
 
+    warmup_calls = 0
+
     def __init__(self, *_args: Any, **_kwargs: Any) -> None:
         pass
+
+    async def warmup(self, timeout_s: float = 3.0) -> None:
+        _ = timeout_s
+        type(self).warmup_calls += 1
 
     async def stream_stt(self, audio_iter: AsyncIterator[bytes]) -> AsyncIterator[STTEvent]:
         # Consume whatever audio comes in; yield a synthetic transcript
@@ -79,8 +85,14 @@ class _FakeDeepSeekClient:
 class _FakeCosyVoice:
     """Yields a few PCM chunks per text input drain."""
 
+    warmup_calls = 0
+
     def __init__(self, *_args: Any, **_kwargs: Any) -> None:
         pass
+
+    async def warmup(self, timeout_s: float = 3.0) -> None:
+        _ = timeout_s
+        type(self).warmup_calls += 1
 
     async def stream_tts(self, text_iter: AsyncIterator[str]) -> AsyncIterator[bytes]:
         chunks_seen = 0
@@ -98,6 +110,9 @@ class _FakeCosyVoice:
 @pytest.fixture
 def patched_voice_clients():
     """Patch STT / TTS / LLM clients module-wide for the duration of the test."""
+
+    _FakeParaformer.warmup_calls = 0
+    _FakeCosyVoice.warmup_calls = 0
 
     async def _fake_stream_turn(session, *, participant_message, vision_context=""):
         """Minimal stand-in for moderator.stream_turn in voice-pipeline tests.
@@ -197,6 +212,9 @@ async def test_session_ready_on_connect(make_session, patched_voice_clients):
     assert data["type"] == "session_ready"
     assert data["session_id"] == str(session.id)
     assert data["barge_in_enabled"] is False
+    await asyncio.sleep(0.05)
+    assert _FakeParaformer.warmup_calls == 1
+    assert _FakeCosyVoice.warmup_calls == 1
 
     await communicator.disconnect()
 

@@ -3,13 +3,33 @@ import { useEffect, useState } from "react";
 import { api } from "~/lib/api";
 import { Button, Input, Select, SettingsSection, Tag } from "~/lib/merism";
 
-// ── Types (from generated OpenAPI schema) ────────────────
+interface LLMProvider {
+  id: string;
+  display_name: string;
+  protocol: "http" | "ws";
+  base_url: string;
+  model: string;
+  is_active: boolean;
+}
 
-import type { components } from "~/generated/api";
+interface LLMRoute {
+  id: string;
+  logical_name: string;
+  primary_display: string;
+  fallback_display: string | null;
+  temperature: number;
+  max_retries: number;
+}
 
-type LLMProvider = components["schemas"]["LLMProvider"];
-type LLMRoute = components["schemas"]["LLMRoute"];
-type LLMBudget = components["schemas"]["LLMBudget"];
+interface LLMBudget {
+  id: string;
+  period: string;
+  current_spent_usd: number;
+  monthly_cap_usd: number;
+  hard_limit_action: string;
+  is_over_soft_limit: boolean;
+  is_over_hard_limit: boolean;
+}
 
 interface Preset {
   label: string;

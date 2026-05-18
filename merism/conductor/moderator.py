@@ -73,6 +73,18 @@ async def stream_turn(
     Signature + semantics unchanged from the previous single-call
     implementation; internally it's now a 2-step pipeline (decide → generate).
     """
+    # Pre-fetch related objects to avoid sync ORM calls in async context
+    from asgiref.sync import sync_to_async
+
+    @sync_to_async
+    def _prefetch():
+        # Force evaluation of lazy FK fields
+        _ = session.study.team
+        _ = session.study.research_goal
+        _ = session.guide.sections
+
+    await _prefetch()
+
     state, current_question, current_section, effective_sections = await _resolve_state(session)
     probes_done = state.probes_done_for(state.current_question_id)
     current_question_text = (current_question or {}).get("text", "")
@@ -109,6 +121,8 @@ async def stream_turn(
         coverage_context=coverage_context_text,
         recent_turns=recent_turns_text,
         participant_message=participant_message,
+        phase=state.phase,
+        closing_rounds_remaining=state.closing_rounds_remaining,
         probe_directions=qinfo["probe_directions"],
         dynamic_probe_enabled=dp_config["enabled"],
         dynamic_probe_remaining=max(0, dp_config["max_extra_rounds"] - dynamic_probes_done),
@@ -143,12 +157,18 @@ async def stream_turn(
     async for chunk in _generate_node(
         session=session,
         decision=decision,
+        probe_policy=qinfo["probe_policy"],
+        probes_done=probes_done,
+        max_probes=qinfo["max_probes"],
+        remaining_followups=state.remaining_followups(state.current_question_id),
         current_question_text=current_question_text,
         next_question_text=next_q_text,
         target_goal_text=target_goal_text,
         recent_turns=recent_turns_text,
         participant_message=participant_message,
         probe_directions=qinfo["probe_directions"],
+        phase=state.phase,
+        closing_rounds_remaining=state.closing_rounds_remaining,
     ):
         text_buffer += chunk
         yield chunk
@@ -234,6 +254,8 @@ async def _coverage_steer_node(
     coverage_context: str,
     recent_turns: str,
     participant_message: str,
+    phase: str,
+    closing_rounds_remaining: int,
     probe_directions: list[str] | None = None,
     dynamic_probe_enabled: bool = False,
     dynamic_probe_remaining: int = 0,
@@ -254,6 +276,8 @@ async def _coverage_steer_node(
         coverage_context=coverage_context,
         recent_turns=recent_turns,
         participant_latest=participant_message,
+        phase=phase,
+        closing_rounds_remaining=closing_rounds_remaining,
         probe_directions=probe_directions,
         dynamic_probe_enabled=dynamic_probe_enabled,
         dynamic_probe_remaining=dynamic_probe_remaining,
@@ -262,7 +286,9 @@ async def _coverage_steer_node(
     )
     try:
         client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
-        response = await client.complete(
+        from merism.memai.llm import default_model
+        response = await client.chat.completions.create(
+            model=default_model(),
             messages=messages,
             response_format={"type": "json_object"},
             temperature=0.2,
@@ -287,19 +313,25 @@ async def _generate_node(
     *,
     session: InterviewSession,
     decision: ModeratorDecision | None,
+    probe_policy: str,
+    probes_done: int,
+    max_probes: int,
+    remaining_followups: int,
     current_question_text: str,
     next_question_text: str,
     target_goal_text: str,
     recent_turns: str,
     participant_message: str,
     probe_directions: list[str] | None = None,
+    phase: str = "active",
+    closing_rounds_remaining: int = 0,
 ) -> AsyncIterator[str]:
     """Stream the spoken reply, informed by the upstream decision.
 
     Output goes through a :class:`TextChunker` that emits complete
-    phrases to the TTS layer rather than raw tokens. This gives the
-    leading filler (instructed in the generation prompt) its own tiny
-    first chunk, letting TTS start ~50-70% sooner.
+    phrases to the TTS layer rather than raw tokens. This keeps the
+    spoken output natural while still letting TTS start as soon as a
+    complete phrase is available.
     """
     from merism.conductor.text_chunker import TextChunker
 
@@ -314,6 +346,12 @@ async def _generate_node(
         decision_probe_type=decision.probe_type,
         decision_probe_kind=decision.probe_kind,
         decision_dynamic_trigger=decision.dynamic_trigger,
+        probe_policy=probe_policy,
+        probes_done=probes_done,
+        max_probes=max_probes,
+        remaining_followups=remaining_followups,
+        phase=phase,
+        closing_rounds_remaining=closing_rounds_remaining,
         decision_target_goal_id=decision.target_goal_id,
         decision_off_topic=decision.off_topic or False,
         decision_steering_strategy=decision.steering_strategy or "advance",
@@ -333,9 +371,13 @@ async def _generate_node(
 
     try:
         client = await get_client("chat", team=session.study.team, trace_id=session.trace_id)
-        async for raw_chunk in client.stream(
+        from merism.memai.llm import default_model
+        stream = await client.chat.completions.create(
+            model=default_model(),
             messages=messages, temperature=0.5, max_tokens=max_tokens,
-        ):
+            stream=True,
+        )
+        async for raw_chunk in stream:
             choice = raw_chunk.choices[0] if raw_chunk.choices else None
             if choice is None:
                 continue
@@ -467,8 +509,11 @@ def _apply_decision_to_state(
     decision: ModeratorDecision | None,
     sections: list[dict[str, Any]],
 ) -> None:
+    was_closing = state.phase == "closing"
     state.turn_count += 1
     if decision is None:
+        if was_closing:
+            state.consume_closing_round()
         return
     state.last_action = decision.next_action
 
@@ -508,8 +553,16 @@ def _apply_decision_to_state(
                     if concept_id and concept_id not in state.concepts_shown:
                         state.concepts_shown.append(concept_id)
                     state.pending_stimulus_events.append(payload)
+        elif state.phase != "closing":
+            # Reaching the end of the guide opens a short closing grace
+            # window so the participant can ask a few final questions
+            # and hear a natural wrap-up before the session hard-closes.
+            state.enter_closing()
     elif decision.next_action == "close":
-        state.phase = "ended"
+        state.enter_closing()
+
+    if was_closing:
+        state.consume_closing_round()
 
 
 async def _resolve_stimulus_description(
@@ -663,6 +716,7 @@ async def _alog_turn_events(
                 "concept_by_question_id": state.concept_by_question_id,
                 "concepts_shown": state.concepts_shown,
                 "pending_stimulus_events": state.pending_stimulus_events,
+                "closing_rounds_remaining": state.closing_rounds_remaining,
             },
         )
     )

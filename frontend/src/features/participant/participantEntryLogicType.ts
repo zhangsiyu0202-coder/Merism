@@ -12,10 +12,16 @@ export interface participantEntryLogicType extends Logic {
                 slug: string;
             };
         });
-        submitConsent: () => ({
+        submitConsent: (data?: {
+            name?: string;
+            contact?: string;
+        }) => ({
             type: "submit consent (features.participant.participantEntryLogic)";
             payload: {
-                value: true;
+                data?: {
+                    name?: string;
+                    contact?: string;
+                };
             };
         });
         submitScreener: (answers: Record<string, unknown>) => ({
@@ -117,7 +123,10 @@ export interface participantEntryLogicType extends Logic {
     };
     actions: {
         setSlug: (slug: string) => void;
-        submitConsent: () => void;
+        submitConsent: (data?: {
+            name?: string;
+            contact?: string;
+        }) => void;
         submitScreener: (answers: Record<string, unknown>) => void;
         startSession: () => void;
         loadContext: () => void;
@@ -132,7 +141,10 @@ export interface participantEntryLogicType extends Logic {
     };
     asyncActions: {
         setSlug: (slug: string) => Promise<any>;
-        submitConsent: () => Promise<any>;
+        submitConsent: (data?: {
+            name?: string;
+            contact?: string;
+        }) => Promise<any>;
         submitScreener: (answers: Record<string, unknown>) => Promise<any>;
         startSession: () => Promise<any>;
         loadContext: () => Promise<any>;
@@ -175,7 +187,10 @@ export interface participantEntryLogicType extends Logic {
         "submitConsent": ((action: {
             type: "submit consent (features.participant.participantEntryLogic)";
             payload: {
-                value: true;
+                data?: {
+                    name?: string;
+                    contact?: string;
+                };
             };
         }, previousState: any) => void | Promise<void>)[];
         "submitScreener": ((action: {

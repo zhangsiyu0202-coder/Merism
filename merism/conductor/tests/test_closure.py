@@ -52,6 +52,24 @@ def test_close_decision_signal_fires():
     assert signal and signal.reason == "close_decision"
 
 
+def test_close_decision_waits_for_closing_grace_when_active():
+    _, s = _boot()
+    s.decision_log = [{"next_action": "close"}]
+    s.moderator_state = {"phase": "closing", "closing_rounds_remaining": 3}
+    s.save(update_fields=["decision_log", "moderator_state"])
+    signal = check_completion(s)
+    assert signal is None
+
+
+def test_closing_grace_exhaustion_completes_session():
+    _, s = _boot()
+    s.decision_log = [{"next_action": "move_on"}]
+    s.moderator_state = {"phase": "closing", "closing_rounds_remaining": 0}
+    s.save(update_fields=["decision_log", "moderator_state"])
+    signal = check_completion(s)
+    assert signal and signal.reason == "close_decision"
+
+
 def test_leaving_intent_regex_fires():
     _, s = _boot()
     append_event(s, "user_turn", {"text": "Thanks, I think we're done here."})

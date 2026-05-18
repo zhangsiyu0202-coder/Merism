@@ -926,6 +926,184 @@ export interface paths {
         patch: operations["custom_report_queries_partial_update"];
         trace?: never;
     };
+    "/api/custom-reports/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["custom_reports_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["custom_reports_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-reports/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["custom_reports_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["custom_reports_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["custom_reports_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["custom_reports_partial_update"];
+        trace?: never;
+    };
+    "/api/custom-reports/{id}/export_csv/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Export report as CSV. */
+        get: operations["custom_reports_export_csv_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-reports/{id}/export_pdf/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Export report as PDF (simple text-based). */
+        get: operations["custom_reports_export_pdf_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-reports/{id}/generate/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Trigger AI generation for all questions in this report. */
+        post: operations["custom_reports_generate_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-reports/{id}/toggle_public/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Toggle public share link. */
+        post: operations["custom_reports_toggle_public_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/deliveries/": {
         parameters: {
             query?: never;
@@ -1239,15 +1417,12 @@ export interface paths {
         };
         /** @description Researcher inbox — read + mark-read only. No create (written by signals). */
         get: operations["inbox_items_retrieve"];
-        /** @description Researcher inbox — read + mark-read only. No create (written by signals). */
-        put: operations["inbox_items_update"];
+        put?: never;
         post?: never;
-        /** @description Researcher inbox — read + mark-read only. No create (written by signals). */
-        delete: operations["inbox_items_destroy"];
+        delete?: never;
         options?: never;
         head?: never;
-        /** @description Researcher inbox — read + mark-read only. No create (written by signals). */
-        patch: operations["inbox_items_partial_update"];
+        patch?: never;
         trace?: never;
     };
     "/api/inbox-items/{id}/mark-read/": {
@@ -1261,6 +1436,122 @@ export interface paths {
         put?: never;
         /** @description Researcher inbox — read + mark-read only. No create (written by signals). */
         post: operations["inbox_items_mark_read_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/insight-findings/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["insight_findings_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/insight-findings/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["insight_findings_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/insight-highlights/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["insight_highlights_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/insight-highlights/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["insight_highlights_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1380,209 +1671,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/llm/budgets/": {
+    "/api/link-clicks/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        get: operations["llm_budgets_list"];
-        put?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        post: operations["llm_budgets_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/llm/budgets/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        get: operations["llm_budgets_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        patch: operations["llm_budgets_partial_update"];
-        trace?: never;
-    };
-    "/api/llm/providers/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        get: operations["llm_providers_list"];
-        put?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        post: operations["llm_providers_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/llm/providers/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        get: operations["llm_providers_retrieve"];
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        put: operations["llm_providers_update"];
-        post?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        delete: operations["llm_providers_destroy"];
-        options?: never;
-        head?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        patch: operations["llm_providers_partial_update"];
-        trace?: never;
-    };
-    "/api/llm/providers/presets/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description List available provider presets for quick setup. */
-        get: operations["llm_providers_presets_retrieve"];
+        /** @description Read-only viewset for link click events. */
+        get: operations["link_clicks_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1591,114 +1688,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/llm/routes/": {
+    "/api/link-clicks/{id}/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        get: operations["llm_routes_list"];
+        /** @description Read-only viewset for link click events. */
+        get: operations["link_clicks_retrieve"];
         put?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        post: operations["llm_routes_create"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/llm/routes/{id}/": {
+    "/api/link-clicks/chain/{participation_id}/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        get: operations["llm_routes_retrieve"];
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        put: operations["llm_routes_update"];
+        /** @description GET /api/link-clicks/chain/<participation_id>/ — upstream/downstream chain. */
+        get: operations["link_clicks_chain_retrieve"];
+        put?: never;
         post?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        delete: operations["llm_routes_destroy"];
+        delete?: never;
         options?: never;
         head?: never;
-        /**
-         * @description Model viewset that filters queryset by the caller's current team.
-         *
-         *     Usage::
-         *
-         *         class StudyViewSet(TeamScopedModelViewSet):
-         *             queryset = Study.objects.all()
-         *             serializer_class = StudySerializer
-         *
-         *     Override ``get_queryset()`` to further filter; the default implementation
-         *     already restricts rows to ``team=self.get_team()`` if the model has a
-         *     ``team`` FK.
-         */
-        patch: operations["llm_routes_partial_update"];
+        patch?: never;
+        trace?: never;
+    };
+    "/api/link-clicks/funnel/{study_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET /api/link-clicks/funnel/<study_id>/ — study-level funnel. */
+        get: operations["link_clicks_funnel_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/link-clicks/stats/{link_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description GET /api/link-clicks/stats/<link_id>/ — aggregate click stats. */
+        get: operations["link_clicks_stats_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/link-share-events/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Read-only viewset for link share events. */
+        get: operations["link_share_events_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/link-share-events/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Read-only viewset for link share events. */
+        get: operations["link_share_events_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/memories/": {
@@ -2029,6 +2118,226 @@ export interface paths {
          *     ``team`` FK.
          */
         patch: operations["participations_partial_update"];
+        trace?: never;
+    };
+    "/api/report-questions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["report_questions_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["report_questions_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-questions/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["report_questions_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["report_questions_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["report_questions_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["report_questions_partial_update"];
+        trace?: never;
+    };
+    "/api/report-segments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["report_segments_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["report_segments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/report-segments/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["report_segments_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["report_segments_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["report_segments_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["report_segments_partial_update"];
         trace?: never;
     };
     "/api/reports/": {
@@ -2423,6 +2732,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/shared/report/{token}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Public read-only view of a shared report. */
+        get: operations["shared_report_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stimuli/": {
         parameters: {
             query?: never;
@@ -2689,6 +3015,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/studies/{id}/launch-recruitment/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["studies_launch_recruitment_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/studies/{id}/launch/": {
         parameters: {
             query?: never;
@@ -2860,6 +3215,133 @@ export interface paths {
          *     ``team`` FK.
          */
         patch: operations["study_goals_partial_update"];
+        trace?: never;
+    };
+    "/api/study-insights/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["study_insights_list"];
+        put?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        post: operations["study_insights_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/study-insights/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        get: operations["study_insights_retrieve"];
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        put: operations["study_insights_update"];
+        post?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        delete: operations["study_insights_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description Model viewset that filters queryset by the caller's current team.
+         *
+         *     Usage::
+         *
+         *         class StudyViewSet(TeamScopedModelViewSet):
+         *             queryset = Study.objects.all()
+         *             serializer_class = StudySerializer
+         *
+         *     Override ``get_queryset()`` to further filter; the default implementation
+         *     already restricts rows to ``team=self.get_team()`` if the model has a
+         *     ``team`` FK.
+         */
+        patch: operations["study_insights_partial_update"];
+        trace?: never;
+    };
+    "/api/study-insights/{id}/rerun/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Trigger re-generation of insights for this study. */
+        post: operations["study_insights_rerun_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/study-links/": {
@@ -3318,6 +3800,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description * `copy` - Copy
+         *     * `share_api` - Share Api
+         *     * `forward` - Forward
+         * @enum {string}
+         */
+        ActionEnum: ActionEnum;
         AgentMemory: {
             content: string;
             /** Format: date-time */
@@ -3399,7 +3888,6 @@ export interface components {
             label: string;
             /** @description Research brief injected into the AI moderator prompt. */
             notes?: string;
-            /** Format: int64 */
             rank: number;
             /** Format: uuid */
             stimulus: string;
@@ -3456,6 +3944,27 @@ export interface components {
             /** Format: uuid */
             readonly study: string;
         };
+        CustomReport: {
+            readonly ai_synthesis: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly error_message: string;
+            /** Format: date-time */
+            readonly generated_at: string | null;
+            /** Format: uuid */
+            readonly id: string;
+            is_public?: boolean;
+            readonly questions_count: number;
+            readonly segments_count: number;
+            readonly share_token: string;
+            readonly share_url: string;
+            readonly status: components["schemas"]["StatusC42Enum"];
+            /** Format: uuid */
+            study: string;
+            title: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
         CustomReportQuery: {
             readonly answer_markdown: string;
             readonly chart_spec: unknown;
@@ -3508,13 +4017,6 @@ export interface components {
             /** @description List of known misrecognitions, e.g. ["米瑞姆", "merism"] */
             variants?: unknown;
         };
-        /**
-         * @description * `alert_only` - Alert only (don't block)
-         *     * `degrade` - Downgrade to cheapest model
-         *     * `block` - Block new requests
-         * @enum {string}
-         */
-        HardLimitActionEnum: HardLimitActionEnum;
         /** @description Read-only list serializer for researcher inbox. */
         InboxItem: {
             body?: string;
@@ -3539,6 +4041,37 @@ export interface components {
          * @enum {string}
          */
         InboxItemKindEnum: InboxItemKindEnum;
+        InsightFinding: {
+            readonly chart_interpretation: string;
+            readonly chart_spec: unknown;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly display_order: number;
+            /** Format: uuid */
+            readonly id: string;
+            readonly insight_nuggets: unknown;
+            /** Format: uuid */
+            readonly insights: string;
+            readonly subthemes: unknown;
+            readonly summary: string;
+            readonly supporting_evidence: unknown;
+            readonly themes: unknown;
+            readonly title: string;
+        };
+        InsightHighlight: {
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly display_order: number;
+            readonly headline: string;
+            readonly icon: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly insights: string;
+            /** Format: uuid */
+            readonly linked_finding: string | null;
+            readonly summary: string;
+        };
         InterviewGuide: {
             /** Format: date-time */
             readonly created_at: string;
@@ -3617,7 +4150,6 @@ export interface components {
             readonly updated_at: string;
         };
         KnowledgeChunk: {
-            /** Format: int64 */
             chunk_index: number;
             content: string;
             /** Format: date-time */
@@ -3654,91 +4186,47 @@ export interface components {
          * @enum {string}
          */
         KnowledgeDocumentStatusEnum: KnowledgeDocumentStatusEnum;
-        LLMBudget: {
+        LinkClick: {
+            readonly browser: string;
+            readonly country: string;
             /** Format: date-time */
             readonly created_at: string;
-            /**
-             * Format: decimal
-             * @description Periodically reconciled from Langfuse. Not real-time authoritative.
-             */
-            readonly current_spent_usd: string;
-            hard_limit_action?: components["schemas"]["HardLimitActionEnum"];
+            readonly device_type: string;
             /** Format: uuid */
             readonly id: string;
-            readonly is_over_hard_limit: boolean;
-            readonly is_over_soft_limit: boolean;
-            /** Format: decimal */
-            monthly_cap_usd: string;
-            /** @description YYYY-MM format, e.g. '2026-05' */
-            period: string;
-            /**
-             * Format: int64
-             * @description Percentage of cap at which a warning is sent.
-             */
-            soft_limit_pct?: number;
-            /** Format: date-time */
-            readonly updated_at: string;
-        };
-        /** @description Provider serializer. Credentials are write-only (never returned). */
-        LLMProvider: {
-            /**
-             * Format: uri
-             * @description e.g. https://api.deepseek.com or wss://dashscope...
-             */
-            base_url: string;
-            /** Format: date-time */
-            readonly created_at: string;
-            credentials?: {
-                [key: string]: unknown;
-            };
-            /** @description Human label, e.g. 'DeepSeek 生产账号' */
-            display_name: string;
-            /** @description Optional headers (e.g. OpenAI-Beta for realtime). */
-            extra_headers?: unknown;
-            readonly has_credentials: boolean;
+            readonly identity_hash: string;
+            /** @description First click from this identity_hash on this link. */
+            readonly is_unique: boolean;
+            readonly os: string;
             /** Format: uuid */
-            readonly id: string;
-            is_active?: boolean;
-            /** @description Model identifier sent to the provider. */
-            model: string;
-            protocol: components["schemas"]["ProtocolEnum"];
-            /** Format: date-time */
-            readonly updated_at: string;
+            readonly participation_id: string | null;
+            readonly referer: string;
+            /** Format: uri */
+            readonly referer_url: string;
+            /** Format: uuid */
+            readonly referrer_participation_id: string;
+            /** Format: uuid */
+            readonly study_link_id: string;
+            /** Format: uuid */
+            readonly trace_id: string;
+            readonly trigger: components["schemas"]["TriggerEnum"];
+            readonly utm_campaign: string;
+            readonly utm_medium: string;
+            readonly utm_source: string;
         };
-        LLMRoute: {
+        LinkShareEvent: {
+            readonly action: components["schemas"]["ActionEnum"];
             /** Format: date-time */
             readonly created_at: string;
             /** Format: uuid */
-            fallback?: string | null;
-            readonly fallback_display: string;
-            /** Format: uuid */
             readonly id: string;
-            logical_name: components["schemas"]["LogicalNameEnum"];
-            /** Format: int64 */
-            max_output_tokens?: number | null;
-            /** Format: int64 */
-            max_retries?: number;
             /** Format: uuid */
-            primary: string;
-            readonly primary_display: string;
-            /** Format: double */
-            temperature?: number;
-            /** Format: int64 */
-            timeout_seconds?: number;
-            /** Format: date-time */
-            readonly updated_at: string;
+            readonly sharer_participation_id: string | null;
+            /** Format: uuid */
+            readonly study_link_id: string;
+            /** Format: uuid */
+            readonly trace_id: string;
         };
-        /**
-         * @description * `chat` - Chat
-         *     * `reasoner` - Reasoner
-         *     * `embedding` - Embedding
-         *     * `vision` - Vision
-         *     * `asr_realtime` - ASR Realtime
-         *     * `tts_realtime` - TTS Realtime
-         *     * `omni_realtime` - Omni Realtime
-         * @enum {string}
-         */
-        LogicalNameEnum: LogicalNameEnum;
         MessageTemplate: {
             channel_type: components["schemas"]["ChannelTypeEnum"];
             content: string;
@@ -3863,6 +4351,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["CoverageSnapshot"][];
         };
+        PaginatedCustomReportList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["CustomReport"][];
+        };
         PaginatedCustomReportQueryList: {
             /** @example 123 */
             count: number;
@@ -3922,6 +4425,36 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["InboxItem"][];
+        };
+        PaginatedInsightFindingList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["InsightFinding"][];
+        };
+        PaginatedInsightHighlightList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["InsightHighlight"][];
         };
         PaginatedInterviewGuideList: {
             /** @example 123 */
@@ -3983,7 +4516,7 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["KnowledgeDocument"][];
         };
-        PaginatedLLMBudgetList: {
+        PaginatedLinkClickList: {
             /** @example 123 */
             count: number;
             /**
@@ -3996,9 +4529,9 @@ export interface components {
              * @example http://api.example.org/accounts/?offset=200&limit=100
              */
             previous?: string | null;
-            results: components["schemas"]["LLMBudget"][];
+            results: components["schemas"]["LinkClick"][];
         };
-        PaginatedLLMProviderList: {
+        PaginatedLinkShareEventList: {
             /** @example 123 */
             count: number;
             /**
@@ -4011,22 +4544,7 @@ export interface components {
              * @example http://api.example.org/accounts/?offset=200&limit=100
              */
             previous?: string | null;
-            results: components["schemas"]["LLMProvider"][];
-        };
-        PaginatedLLMRouteList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?offset=400&limit=100
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?offset=200&limit=100
-             */
-            previous?: string | null;
-            results: components["schemas"]["LLMRoute"][];
+            results: components["schemas"]["LinkShareEvent"][];
         };
         PaginatedMessageTemplateList: {
             /** @example 123 */
@@ -4088,6 +4606,36 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["RecruitmentBroadcast"][];
         };
+        PaginatedReportQuestionList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["ReportQuestion"][];
+        };
+        PaginatedReportSegmentList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["ReportSegment"][];
+        };
         PaginatedScreenerList: {
             /** @example 123 */
             count: number;
@@ -4147,6 +4695,21 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["StudyGoal"][];
+        };
+        PaginatedStudyInsightsList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=400&limit=100
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?offset=200&limit=100
+             */
+            previous?: string | null;
+            results: components["schemas"]["StudyInsights"][];
         };
         PaginatedStudyLinkList: {
             /** @example 123 */
@@ -4329,7 +4892,6 @@ export interface components {
             label?: string;
             /** @description Research brief injected into the AI moderator prompt. */
             notes?: string;
-            /** Format: int64 */
             rank?: number;
             /** Format: uuid */
             stimulus?: string;
@@ -4365,6 +4927,27 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        PatchedCustomReport: {
+            readonly ai_synthesis?: string;
+            /** Format: date-time */
+            readonly created_at?: string;
+            readonly error_message?: string;
+            /** Format: date-time */
+            readonly generated_at?: string | null;
+            /** Format: uuid */
+            readonly id?: string;
+            is_public?: boolean;
+            readonly questions_count?: number;
+            readonly segments_count?: number;
+            readonly share_token?: string;
+            readonly share_url?: string;
+            readonly status?: components["schemas"]["StatusC42Enum"];
+            /** Format: uuid */
+            study?: string;
+            title?: string;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
         PatchedCustomReportQuery: {
             readonly answer_markdown?: string;
             readonly chart_spec?: unknown;
@@ -4392,22 +4975,6 @@ export interface components {
             readonly updated_at?: string;
             /** @description List of known misrecognitions, e.g. ["米瑞姆", "merism"] */
             variants?: unknown;
-        };
-        /** @description Read-only list serializer for researcher inbox. */
-        PatchedInboxItem: {
-            body?: string;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: uuid */
-            readonly id?: string;
-            kind?: components["schemas"]["InboxItemKindEnum"];
-            payload?: unknown;
-            read_by?: unknown;
-            ref_id?: string;
-            ref_kind?: string;
-            title?: string;
-            /** Format: uuid */
-            trace_id?: string | null;
         };
         PatchedInterviewGuide: {
             /** Format: date-time */
@@ -4446,80 +5013,6 @@ export interface components {
             readonly updated_at?: string;
             readonly video_s3_key?: string;
             readonly vision_frames?: unknown;
-        };
-        PatchedLLMBudget: {
-            /** Format: date-time */
-            readonly created_at?: string;
-            /**
-             * Format: decimal
-             * @description Periodically reconciled from Langfuse. Not real-time authoritative.
-             */
-            readonly current_spent_usd?: string;
-            hard_limit_action?: components["schemas"]["HardLimitActionEnum"];
-            /** Format: uuid */
-            readonly id?: string;
-            readonly is_over_hard_limit?: boolean;
-            readonly is_over_soft_limit?: boolean;
-            /** Format: decimal */
-            monthly_cap_usd?: string;
-            /** @description YYYY-MM format, e.g. '2026-05' */
-            period?: string;
-            /**
-             * Format: int64
-             * @description Percentage of cap at which a warning is sent.
-             */
-            soft_limit_pct?: number;
-            /** Format: date-time */
-            readonly updated_at?: string;
-        };
-        /** @description Provider serializer. Credentials are write-only (never returned). */
-        PatchedLLMProvider: {
-            /**
-             * Format: uri
-             * @description e.g. https://api.deepseek.com or wss://dashscope...
-             */
-            base_url?: string;
-            /** Format: date-time */
-            readonly created_at?: string;
-            credentials?: {
-                [key: string]: unknown;
-            };
-            /** @description Human label, e.g. 'DeepSeek 生产账号' */
-            display_name?: string;
-            /** @description Optional headers (e.g. OpenAI-Beta for realtime). */
-            extra_headers?: unknown;
-            readonly has_credentials?: boolean;
-            /** Format: uuid */
-            readonly id?: string;
-            is_active?: boolean;
-            /** @description Model identifier sent to the provider. */
-            model?: string;
-            protocol?: components["schemas"]["ProtocolEnum"];
-            /** Format: date-time */
-            readonly updated_at?: string;
-        };
-        PatchedLLMRoute: {
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: uuid */
-            fallback?: string | null;
-            readonly fallback_display?: string;
-            /** Format: uuid */
-            readonly id?: string;
-            logical_name?: components["schemas"]["LogicalNameEnum"];
-            /** Format: int64 */
-            max_output_tokens?: number | null;
-            /** Format: int64 */
-            max_retries?: number;
-            /** Format: uuid */
-            primary?: string;
-            readonly primary_display?: string;
-            /** Format: double */
-            temperature?: number;
-            /** Format: int64 */
-            timeout_seconds?: number;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         PatchedMessageTemplate: {
             channel_type?: components["schemas"]["ChannelTypeEnum"];
@@ -4562,6 +5055,7 @@ export interface components {
             approved_snapshot?: unknown;
             /** Format: uuid */
             channel?: string;
+            readonly channel_name?: string;
             readonly counters?: unknown;
             /** Format: date-time */
             readonly created_at?: string;
@@ -4575,6 +5069,39 @@ export interface components {
             study_link?: string | null;
             /** Format: uuid */
             template?: string;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
+        PatchedReportQuestion: {
+            readonly ai_summary?: string;
+            readonly chart_spec?: unknown;
+            /** Format: date-time */
+            readonly created_at?: string;
+            /** Format: uuid */
+            readonly id?: string;
+            question_number?: number;
+            question_type?: components["schemas"]["QuestionTypeEnum"];
+            readonly quotes?: unknown;
+            /** Format: uuid */
+            report?: string;
+            /** Format: uuid */
+            segment?: string | null;
+            readonly status?: components["schemas"]["StatusC0eEnum"];
+            readonly themes?: unknown;
+            title?: string;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
+        PatchedReportSegment: {
+            /** Format: date-time */
+            readonly created_at?: string;
+            /** Format: uuid */
+            readonly id?: string;
+            name?: string;
+            readonly participation_ids?: unknown;
+            /** Format: uuid */
+            report?: string;
+            selector?: unknown;
             /** Format: date-time */
             readonly updated_at?: string;
         };
@@ -4607,7 +5134,6 @@ export interface components {
             codebook?: unknown;
             /** Format: date-time */
             readonly created_at?: string;
-            /** Format: int64 */
             estimated_minutes?: number;
             hypothesis?: string;
             /** Format: uuid */
@@ -4624,7 +5150,6 @@ export interface components {
             status?: components["schemas"]["StudyStatusEnum"];
             success_metrics?: unknown;
             target_audience?: string;
-            /** Format: int64 */
             target_completed_count?: number;
             /** Format: date-time */
             readonly updated_at?: string;
@@ -4634,7 +5159,6 @@ export interface components {
             readonly coverage?: number;
             /** Format: date-time */
             readonly created_at?: string;
-            /** Format: int64 */
             display_order?: number;
             /** Format: uuid */
             readonly id?: string;
@@ -4644,6 +5168,27 @@ export interface components {
             study?: string;
             /** @description The research question as a natural-language prompt. */
             text?: string;
+            /** Format: date-time */
+            readonly updated_at?: string;
+        };
+        PatchedStudyInsights: {
+            /** Format: double */
+            readonly avg_session_minutes?: number;
+            readonly completed_interviews?: number;
+            /** Format: date-time */
+            readonly created_at?: string;
+            readonly error_message?: string;
+            readonly executive_summary?: string;
+            readonly findings_count?: number;
+            /** Format: date-time */
+            readonly generated_at?: string | null;
+            readonly highlights_count?: number;
+            /** Format: uuid */
+            readonly id?: string;
+            readonly interview_topics?: unknown;
+            readonly status?: components["schemas"]["StatusC0eEnum"];
+            /** Format: uuid */
+            study?: string;
             /** Format: date-time */
             readonly updated_at?: string;
         };
@@ -4666,7 +5211,7 @@ export interface components {
             generated_by?: string;
             /** Format: uuid */
             readonly id?: string;
-            status?: components["schemas"]["StudyReportStatusEnum"];
+            status?: components["schemas"]["StatusC42Enum"];
             /** Format: uuid */
             study?: string;
         };
@@ -4709,15 +5254,19 @@ export interface components {
          */
         PriorityEnum: PriorityEnum;
         /**
-         * @description * `http` - HTTP (OpenAI-compatible via LiteLLM)
-         *     * `ws` - WebSocket Realtime (OpenAI Realtime protocol)
+         * @description * `open_ended` - Open-ended question
+         *     * `multi_select` - Multi-select question
+         *     * `single_select` - Single-select question
+         *     * `rating` - Rating question
+         *     * `ranking` - Ranking question
          * @enum {string}
          */
-        ProtocolEnum: ProtocolEnum;
+        QuestionTypeEnum: QuestionTypeEnum;
         RecruitmentBroadcast: {
             approved_snapshot?: unknown;
             /** Format: uuid */
             channel: string;
+            readonly channel_name: string;
             readonly counters: unknown;
             /** Format: date-time */
             readonly created_at: string;
@@ -4744,6 +5293,39 @@ export interface components {
          * @enum {string}
          */
         RecruitmentBroadcastStatusEnum: RecruitmentBroadcastStatusEnum;
+        ReportQuestion: {
+            readonly ai_summary: string;
+            readonly chart_spec: unknown;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: uuid */
+            readonly id: string;
+            question_number?: number;
+            question_type?: components["schemas"]["QuestionTypeEnum"];
+            readonly quotes: unknown;
+            /** Format: uuid */
+            report: string;
+            /** Format: uuid */
+            segment?: string | null;
+            readonly status: components["schemas"]["StatusC0eEnum"];
+            readonly themes: unknown;
+            title: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        ReportSegment: {
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: uuid */
+            readonly id: string;
+            name: string;
+            readonly participation_ids: unknown;
+            /** Format: uuid */
+            report: string;
+            selector?: unknown;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
         /**
          * @description * `fixed` - Fixed order (A → B → C)
          *     * `random_per_session` - Random per session
@@ -4797,6 +5379,22 @@ export interface components {
          * @enum {string}
          */
         StatusB83Enum: StatusB83Enum;
+        /**
+         * @description * `pending` - Pending
+         *     * `generating` - Generating
+         *     * `ready` - Ready
+         *     * `failed` - Failed
+         * @enum {string}
+         */
+        StatusC0eEnum: StatusC0eEnum;
+        /**
+         * @description * `draft` - Draft
+         *     * `generating` - Generating
+         *     * `ready` - Ready
+         *     * `failed` - Failed
+         * @enum {string}
+         */
+        StatusC42Enum: StatusC42Enum;
         Stimulus: {
             content?: unknown;
             /** Format: date-time */
@@ -4825,7 +5423,6 @@ export interface components {
             codebook?: unknown;
             /** Format: date-time */
             readonly created_at: string;
-            /** Format: int64 */
             estimated_minutes?: number;
             hypothesis?: string;
             /** Format: uuid */
@@ -4842,7 +5439,6 @@ export interface components {
             status?: components["schemas"]["StudyStatusEnum"];
             success_metrics?: unknown;
             target_audience?: string;
-            /** Format: int64 */
             target_completed_count?: number;
             /** Format: date-time */
             readonly updated_at: string;
@@ -4852,7 +5448,6 @@ export interface components {
             readonly coverage: number;
             /** Format: date-time */
             readonly created_at: string;
-            /** Format: int64 */
             display_order?: number;
             /** Format: uuid */
             readonly id: string;
@@ -4862,6 +5457,27 @@ export interface components {
             study: string;
             /** @description The research question as a natural-language prompt. */
             text: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        StudyInsights: {
+            /** Format: double */
+            readonly avg_session_minutes: number;
+            readonly completed_interviews: number;
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly error_message: string;
+            readonly executive_summary: string;
+            readonly findings_count: number;
+            /** Format: date-time */
+            readonly generated_at: string | null;
+            readonly highlights_count: number;
+            /** Format: uuid */
+            readonly id: string;
+            readonly interview_topics: unknown;
+            readonly status: components["schemas"]["StatusC0eEnum"];
+            /** Format: uuid */
+            study: string;
             /** Format: date-time */
             readonly updated_at: string;
         };
@@ -4884,25 +5500,14 @@ export interface components {
             generated_by?: string;
             /** Format: uuid */
             readonly id: string;
-            status?: components["schemas"]["StudyReportStatusEnum"];
+            status?: components["schemas"]["StatusC42Enum"];
             /** Format: uuid */
             study: string;
         };
         /**
          * @description * `draft` - Draft
-         *     * `generating` - Generating
-         *     * `ready` - Ready
-         *     * `failed` - Failed
-         * @enum {string}
-         */
-        StudyReportStatusEnum: StudyReportStatusEnum;
-        /**
-         * @description * `draft` - Draft
-         *     * `ready` - Ready
-         *     * `recruiting` - Recruiting
-         *     * `active` - Active
+         *     * `live` - Live
          *     * `closed` - Closed
-         *     * `archived` - Archived
          * @enum {string}
          */
         StudyStatusEnum: StudyStatusEnum;
@@ -4956,6 +5561,13 @@ export interface components {
          * @enum {string}
          */
         ThemeStatusEnum: ThemeStatusEnum;
+        /**
+         * @description * `link` - Link
+         *     * `qr` - Qr
+         *     * `deeplink` - Deeplink
+         * @enum {string}
+         */
+        TriggerEnum: TriggerEnum;
     };
     responses: never;
     parameters: never;
@@ -4968,9 +5580,9 @@ export interface operations {
     broadcasts_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -5019,7 +5631,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this recruitment broadcast. */
+                /** @description 标识此 招募广播 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5041,7 +5653,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this recruitment broadcast. */
+                /** @description 标识此 招募广播 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5069,7 +5681,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this recruitment broadcast. */
+                /** @description 标识此 招募广播 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5090,7 +5702,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this recruitment broadcast. */
+                /** @description 标识此 招募广播 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5118,7 +5730,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this recruitment broadcast. */
+                /** @description 标识此 招募广播 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5146,7 +5758,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this recruitment broadcast. */
+                /** @description 标识此 招募广播 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5172,9 +5784,9 @@ export interface operations {
     channels_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -5223,7 +5835,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this channel config. */
+                /** @description 标识此 渠道配置 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5245,7 +5857,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this channel config. */
+                /** @description 标识此 渠道配置 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5273,7 +5885,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this channel config. */
+                /** @description 标识此 渠道配置 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5294,7 +5906,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this channel config. */
+                /** @description 标识此 渠道配置 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5322,7 +5934,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this channel config. */
+                /** @description 标识此 渠道配置 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5348,9 +5960,9 @@ export interface operations {
     cohort_segments_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -5399,7 +6011,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this cohort segment. */
+                /** @description 标识此 群组分段 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5421,7 +6033,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this cohort segment. */
+                /** @description 标识此 群组分段 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5449,7 +6061,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this cohort segment. */
+                /** @description 标识此 群组分段 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5470,7 +6082,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this cohort segment. */
+                /** @description 标识此 群组分段 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5496,9 +6108,9 @@ export interface operations {
     concept_blocks_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -5547,7 +6159,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept block. */
+                /** @description 标识此 概念组 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5569,7 +6181,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept block. */
+                /** @description 标识此 概念组 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5597,7 +6209,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept block. */
+                /** @description 标识此 概念组 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5618,7 +6230,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept block. */
+                /** @description 标识此 概念组 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5646,7 +6258,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept block. */
+                /** @description 标识此 概念组 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5666,9 +6278,9 @@ export interface operations {
     concepts_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -5717,7 +6329,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept. */
+                /** @description 标识此 概念 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5739,7 +6351,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept. */
+                /** @description 标识此 概念 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5767,7 +6379,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept. */
+                /** @description 标识此 概念 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5788,7 +6400,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this concept. */
+                /** @description 标识此 概念 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5814,9 +6426,9 @@ export interface operations {
     conversations_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -5865,7 +6477,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this conversation. */
+                /** @description 标识此 conversation 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5887,7 +6499,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this conversation. */
+                /** @description 标识此 conversation 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5915,7 +6527,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this conversation. */
+                /** @description 标识此 conversation 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5936,7 +6548,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this conversation. */
+                /** @description 标识此 conversation 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -5962,9 +6574,9 @@ export interface operations {
     coverage_snapshots_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -5988,7 +6600,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this coverage snapshot. */
+                /** @description 标识此 覆盖快照 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6008,9 +6620,9 @@ export interface operations {
     custom_report_queries_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6059,7 +6671,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this custom report query. */
+                /** @description 标识此 自定义报告查询 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6081,7 +6693,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this custom report query. */
+                /** @description 标识此 自定义报告查询 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6109,7 +6721,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this custom report query. */
+                /** @description 标识此 自定义报告查询 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6130,7 +6742,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this custom report query. */
+                /** @description 标识此 自定义报告查询 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6153,12 +6765,260 @@ export interface operations {
             };
         };
     };
+    custom_reports_list: {
+        parameters: {
+            query?: {
+                /** @description 每页返回的结果数量。 */
+                limit?: number;
+                /** @description 返回结果的起始索引位置。 */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedCustomReportList"];
+                };
+            };
+        };
+    };
+    custom_reports_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReport"];
+                "application/x-www-form-urlencoded": components["schemas"]["CustomReport"];
+                "multipart/form-data": components["schemas"]["CustomReport"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
+    custom_reports_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
+    custom_reports_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReport"];
+                "application/x-www-form-urlencoded": components["schemas"]["CustomReport"];
+                "multipart/form-data": components["schemas"]["CustomReport"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
+    custom_reports_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    custom_reports_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedCustomReport"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCustomReport"];
+                "multipart/form-data": components["schemas"]["PatchedCustomReport"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
+    custom_reports_export_csv_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
+    custom_reports_export_pdf_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
+    custom_reports_generate_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReport"];
+                "application/x-www-form-urlencoded": components["schemas"]["CustomReport"];
+                "multipart/form-data": components["schemas"]["CustomReport"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
+    custom_reports_toggle_public_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 自定义报告 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReport"];
+                "application/x-www-form-urlencoded": components["schemas"]["CustomReport"];
+                "multipart/form-data": components["schemas"]["CustomReport"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+        };
+    };
     deliveries_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6182,7 +7042,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this delivery record. */
+                /** @description 标识此 投递记录 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6202,9 +7062,9 @@ export interface operations {
     glossaries_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6253,7 +7113,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this glossary. */
+                /** @description 标识此 术语表 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6275,7 +7135,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this glossary. */
+                /** @description 标识此 术语表 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6303,7 +7163,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this glossary. */
+                /** @description 标识此 术语表 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6324,7 +7184,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this glossary. */
+                /** @description 标识此 术语表 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6350,9 +7210,9 @@ export interface operations {
     guides_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6401,7 +7261,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview guide. */
+                /** @description 标识此 访谈大纲 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6423,7 +7283,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview guide. */
+                /** @description 标识此 访谈大纲 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6451,7 +7311,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview guide. */
+                /** @description 标识此 访谈大纲 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6472,7 +7332,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview guide. */
+                /** @description 标识此 访谈大纲 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6500,7 +7360,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview guide. */
+                /** @description 标识此 访谈大纲 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6544,9 +7404,9 @@ export interface operations {
     inbox_items_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6595,89 +7455,12 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this inbox item. */
+                /** @description 标识此 收件箱消息 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InboxItem"];
-                };
-            };
-        };
-    };
-    inbox_items_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this inbox item. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["InboxItem"];
-                "application/x-www-form-urlencoded": components["schemas"]["InboxItem"];
-                "multipart/form-data": components["schemas"]["InboxItem"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InboxItem"];
-                };
-            };
-        };
-    };
-    inbox_items_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this inbox item. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    inbox_items_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this inbox item. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedInboxItem"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedInboxItem"];
-                "multipart/form-data": components["schemas"]["PatchedInboxItem"];
-            };
-        };
         responses: {
             200: {
                 headers: {
@@ -6694,7 +7477,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this inbox item. */
+                /** @description 标识此 收件箱消息 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6717,12 +7500,104 @@ export interface operations {
             };
         };
     };
+    insight_findings_list: {
+        parameters: {
+            query?: {
+                /** @description 每页返回的结果数量。 */
+                limit?: number;
+                /** @description 返回结果的起始索引位置。 */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedInsightFindingList"];
+                };
+            };
+        };
+    };
+    insight_findings_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 洞察发现 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightFinding"];
+                };
+            };
+        };
+    };
+    insight_highlights_list: {
+        parameters: {
+            query?: {
+                /** @description 每页返回的结果数量。 */
+                limit?: number;
+                /** @description 返回结果的起始索引位置。 */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedInsightHighlightList"];
+                };
+            };
+        };
+    };
+    insight_highlights_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 洞察亮点 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightHighlight"];
+                };
+            };
+        };
+    };
     insights_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6746,7 +7621,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this session insight. */
+                /** @description 标识此 会话洞察 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6766,9 +7641,9 @@ export interface operations {
     knowledge_chunks_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6792,7 +7667,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this knowledge chunk. */
+                /** @description 标识此 知识片段 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6837,9 +7712,9 @@ export interface operations {
     knowledge_documents_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6863,7 +7738,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this knowledge document. */
+                /** @description 标识此 知识文档 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6880,12 +7755,12 @@ export interface operations {
             };
         };
     };
-    llm_budgets_list: {
+    link_clicks_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6899,42 +7774,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedLLMBudgetList"];
+                    "application/json": components["schemas"]["PaginatedLinkClickList"];
                 };
             };
         };
     };
-    llm_budgets_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LLMBudget"];
-                "application/x-www-form-urlencoded": components["schemas"]["LLMBudget"];
-                "multipart/form-data": components["schemas"]["LLMBudget"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMBudget"];
-                };
-            };
-        };
-    };
-    llm_budgets_retrieve: {
+    link_clicks_retrieve: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this llm budget. */
+                /** @description 标识此 链接点击 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -6946,45 +7796,80 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LLMBudget"];
+                    "application/json": components["schemas"]["LinkClick"];
                 };
             };
         };
     };
-    llm_budgets_partial_update: {
+    link_clicks_chain_retrieve: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this llm budget. */
-                id: string;
+                participation_id: string;
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedLLMBudget"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedLLMBudget"];
-                "multipart/form-data": components["schemas"]["PatchedLLMBudget"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LLMBudget"];
+                    "application/json": components["schemas"]["LinkClick"];
                 };
             };
         };
     };
-    llm_providers_list: {
+    link_clicks_funnel_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                study_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkClick"];
+                };
+            };
+        };
+    };
+    link_clicks_stats_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkClick"];
+                };
+            };
+        };
+    };
+    link_share_events_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -6998,42 +7883,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedLLMProviderList"];
+                    "application/json": components["schemas"]["PaginatedLinkShareEventList"];
                 };
             };
         };
     };
-    llm_providers_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LLMProvider"];
-                "application/x-www-form-urlencoded": components["schemas"]["LLMProvider"];
-                "multipart/form-data": components["schemas"]["LLMProvider"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMProvider"];
-                };
-            };
-        };
-    };
-    llm_providers_retrieve: {
+    link_share_events_retrieve: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this llm provider. */
+                /** @description 标识此 链接分享 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7045,251 +7905,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LLMProvider"];
-                };
-            };
-        };
-    };
-    llm_providers_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this llm provider. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LLMProvider"];
-                "application/x-www-form-urlencoded": components["schemas"]["LLMProvider"];
-                "multipart/form-data": components["schemas"]["LLMProvider"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMProvider"];
-                };
-            };
-        };
-    };
-    llm_providers_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this llm provider. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    llm_providers_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this llm provider. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedLLMProvider"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedLLMProvider"];
-                "multipart/form-data": components["schemas"]["PatchedLLMProvider"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMProvider"];
-                };
-            };
-        };
-    };
-    llm_providers_presets_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMProvider"];
-                };
-            };
-        };
-    };
-    llm_routes_list: {
-        parameters: {
-            query?: {
-                /** @description Number of results to return per page. */
-                limit?: number;
-                /** @description The initial index from which to return the results. */
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedLLMRouteList"];
-                };
-            };
-        };
-    };
-    llm_routes_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LLMRoute"];
-                "application/x-www-form-urlencoded": components["schemas"]["LLMRoute"];
-                "multipart/form-data": components["schemas"]["LLMRoute"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMRoute"];
-                };
-            };
-        };
-    };
-    llm_routes_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this llm route. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMRoute"];
-                };
-            };
-        };
-    };
-    llm_routes_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this llm route. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LLMRoute"];
-                "application/x-www-form-urlencoded": components["schemas"]["LLMRoute"];
-                "multipart/form-data": components["schemas"]["LLMRoute"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMRoute"];
-                };
-            };
-        };
-    };
-    llm_routes_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this llm route. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    llm_routes_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this llm route. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedLLMRoute"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedLLMRoute"];
-                "multipart/form-data": components["schemas"]["PatchedLLMRoute"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LLMRoute"];
+                    "application/json": components["schemas"]["LinkShareEvent"];
                 };
             };
         };
@@ -7297,9 +7913,9 @@ export interface operations {
     memories_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -7348,7 +7964,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this agent memory. */
+                /** @description 标识此 agent memory 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7370,7 +7986,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this agent memory. */
+                /** @description 标识此 agent memory 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7398,7 +8014,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this agent memory. */
+                /** @description 标识此 agent memory 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7419,7 +8035,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this agent memory. */
+                /** @description 标识此 agent memory 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7445,9 +8061,9 @@ export interface operations {
     participants_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -7496,7 +8112,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participant. */
+                /** @description 标识此 参与者 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7518,7 +8134,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participant. */
+                /** @description 标识此 参与者 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7546,7 +8162,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participant. */
+                /** @description 标识此 参与者 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7567,7 +8183,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participant. */
+                /** @description 标识此 参与者 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7593,9 +8209,9 @@ export interface operations {
     participations_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -7644,7 +8260,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participation. */
+                /** @description 标识此 参与记录 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7666,7 +8282,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participation. */
+                /** @description 标识此 参与记录 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7694,7 +8310,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participation. */
+                /** @description 标识此 参与记录 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7715,7 +8331,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this participation. */
+                /** @description 标识此 参与记录 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7738,12 +8354,308 @@ export interface operations {
             };
         };
     };
+    report_questions_list: {
+        parameters: {
+            query?: {
+                /** @description 每页返回的结果数量。 */
+                limit?: number;
+                /** @description 返回结果的起始索引位置。 */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedReportQuestionList"];
+                };
+            };
+        };
+    };
+    report_questions_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportQuestion"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReportQuestion"];
+                "multipart/form-data": components["schemas"]["ReportQuestion"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportQuestion"];
+                };
+            };
+        };
+    };
+    report_questions_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告问题 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportQuestion"];
+                };
+            };
+        };
+    };
+    report_questions_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告问题 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportQuestion"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReportQuestion"];
+                "multipart/form-data": components["schemas"]["ReportQuestion"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportQuestion"];
+                };
+            };
+        };
+    };
+    report_questions_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告问题 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    report_questions_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告问题 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedReportQuestion"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedReportQuestion"];
+                "multipart/form-data": components["schemas"]["PatchedReportQuestion"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportQuestion"];
+                };
+            };
+        };
+    };
+    report_segments_list: {
+        parameters: {
+            query?: {
+                /** @description 每页返回的结果数量。 */
+                limit?: number;
+                /** @description 返回结果的起始索引位置。 */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedReportSegmentList"];
+                };
+            };
+        };
+    };
+    report_segments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportSegment"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReportSegment"];
+                "multipart/form-data": components["schemas"]["ReportSegment"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSegment"];
+                };
+            };
+        };
+    };
+    report_segments_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告段落 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSegment"];
+                };
+            };
+        };
+    };
+    report_segments_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告段落 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportSegment"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReportSegment"];
+                "multipart/form-data": components["schemas"]["ReportSegment"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSegment"];
+                };
+            };
+        };
+    };
+    report_segments_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告段落 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    report_segments_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 报告段落 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedReportSegment"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedReportSegment"];
+                "multipart/form-data": components["schemas"]["PatchedReportSegment"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSegment"];
+                };
+            };
+        };
+    };
     reports_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -7792,7 +8704,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study report. */
+                /** @description 标识此 研究报告 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7814,7 +8726,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study report. */
+                /** @description 标识此 研究报告 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7842,7 +8754,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study report. */
+                /** @description 标识此 研究报告 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7863,7 +8775,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study report. */
+                /** @description 标识此 研究报告 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7891,7 +8803,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study report. */
+                /** @description 标识此 研究报告 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7917,9 +8829,9 @@ export interface operations {
     screeners_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -7968,7 +8880,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this screener. */
+                /** @description 标识此 筛选问卷 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -7990,7 +8902,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this screener. */
+                /** @description 标识此 筛选问卷 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8018,7 +8930,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this screener. */
+                /** @description 标识此 筛选问卷 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8039,7 +8951,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this screener. */
+                /** @description 标识此 筛选问卷 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8065,9 +8977,9 @@ export interface operations {
     sessions_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -8116,7 +9028,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview session. */
+                /** @description 标识此 访谈会话 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8138,7 +9050,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview session. */
+                /** @description 标识此 访谈会话 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8166,7 +9078,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview session. */
+                /** @description 标识此 访谈会话 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8187,7 +9099,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview session. */
+                /** @description 标识此 访谈会话 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8215,7 +9127,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview session. */
+                /** @description 标识此 访谈会话 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8237,7 +9149,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this interview session. */
+                /** @description 标识此 访谈会话 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8254,12 +9166,32 @@ export interface operations {
             };
         };
     };
+    shared_report_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     stimuli_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -8308,7 +9240,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this stimulus. */
+                /** @description 标识此 刺激物 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8330,7 +9262,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this stimulus. */
+                /** @description 标识此 刺激物 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8358,7 +9290,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this stimulus. */
+                /** @description 标识此 刺激物 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8379,7 +9311,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this stimulus. */
+                /** @description 标识此 刺激物 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8405,9 +9337,9 @@ export interface operations {
     studies_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -8456,7 +9388,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8478,7 +9410,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8506,7 +9438,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8527,7 +9459,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8555,7 +9487,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8577,7 +9509,35 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Study"];
+                "application/x-www-form-urlencoded": components["schemas"]["Study"];
+                "multipart/form-data": components["schemas"]["Study"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Study"];
+                };
+            };
+        };
+    };
+    studies_launch_recruitment_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8605,7 +9565,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8633,7 +9593,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8661,7 +9621,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study. */
+                /** @description 标识此 研究项目 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8687,9 +9647,9 @@ export interface operations {
     study_goals_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -8738,7 +9698,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study goal. */
+                /** @description 标识此 研究目标 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8760,7 +9720,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study goal. */
+                /** @description 标识此 研究目标 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8788,7 +9748,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study goal. */
+                /** @description 标识此 研究目标 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8809,7 +9769,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study goal. */
+                /** @description 标识此 研究目标 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8832,12 +9792,188 @@ export interface operations {
             };
         };
     };
+    study_insights_list: {
+        parameters: {
+            query?: {
+                /** @description 每页返回的结果数量。 */
+                limit?: number;
+                /** @description 返回结果的起始索引位置。 */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedStudyInsightsList"];
+                };
+            };
+        };
+    };
+    study_insights_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyInsights"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudyInsights"];
+                "multipart/form-data": components["schemas"]["StudyInsights"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyInsights"];
+                };
+            };
+        };
+    };
+    study_insights_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 研究洞察 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyInsights"];
+                };
+            };
+        };
+    };
+    study_insights_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 研究洞察 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyInsights"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudyInsights"];
+                "multipart/form-data": components["schemas"]["StudyInsights"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyInsights"];
+                };
+            };
+        };
+    };
+    study_insights_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 研究洞察 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    study_insights_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 研究洞察 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedStudyInsights"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedStudyInsights"];
+                "multipart/form-data": components["schemas"]["PatchedStudyInsights"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyInsights"];
+                };
+            };
+        };
+    };
+    study_insights_rerun_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 标识此 研究洞察 的 UUID 字符串。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyInsights"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudyInsights"];
+                "multipart/form-data": components["schemas"]["StudyInsights"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyInsights"];
+                };
+            };
+        };
+    };
     study_links_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -8886,7 +10022,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study link. */
+                /** @description 标识此 研究链接 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8908,7 +10044,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study link. */
+                /** @description 标识此 研究链接 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8936,7 +10072,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study link. */
+                /** @description 标识此 研究链接 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8957,7 +10093,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study link. */
+                /** @description 标识此 研究链接 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -8983,9 +10119,9 @@ export interface operations {
     study_templates_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -9009,7 +10145,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study template. */
+                /** @description 标识此 研究模板 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9029,9 +10165,9 @@ export interface operations {
     study_triggers_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -9080,7 +10216,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study trigger. */
+                /** @description 标识此 研究触发器 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9102,7 +10238,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study trigger. */
+                /** @description 标识此 研究触发器 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9130,7 +10266,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study trigger. */
+                /** @description 标识此 研究触发器 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9151,7 +10287,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this study trigger. */
+                /** @description 标识此 研究触发器 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9177,9 +10313,9 @@ export interface operations {
     templates_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -9228,7 +10364,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this message template. */
+                /** @description 标识此 消息模板 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9250,7 +10386,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this message template. */
+                /** @description 标识此 消息模板 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9278,7 +10414,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this message template. */
+                /** @description 标识此 消息模板 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9299,7 +10435,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this message template. */
+                /** @description 标识此 消息模板 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9325,9 +10461,9 @@ export interface operations {
     themes_list: {
         parameters: {
             query?: {
-                /** @description Number of results to return per page. */
+                /** @description 每页返回的结果数量。 */
                 limit?: number;
-                /** @description The initial index from which to return the results. */
+                /** @description 返回结果的起始索引位置。 */
                 offset?: number;
             };
             header?: never;
@@ -9351,7 +10487,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this theme. */
+                /** @description 标识此 主题 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9373,7 +10509,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A UUID string identifying this theme. */
+                /** @description 标识此 主题 的 UUID 字符串。 */
                 id: string;
             };
             cookie?: never;
@@ -9415,6 +10551,11 @@ export interface operations {
         };
     };
 }
+export enum ActionEnum {
+    copy = "copy",
+    share_api = "share_api",
+    forward = "forward"
+}
 export enum CategoryEnum {
     pricing = "pricing",
     onboarding = "onboarding",
@@ -9447,11 +10588,6 @@ export enum DeliveryRecordStatusEnum {
     delivered = "delivered",
     failed = "failed"
 }
-export enum HardLimitActionEnum {
-    alert_only = "alert_only",
-    degrade = "degrade",
-    block = "block"
-}
 export enum InboxItemKindEnum {
     session_completed = "session_completed",
     insight_ready = "insight_ready",
@@ -9469,15 +10605,6 @@ export enum KnowledgeDocumentStatusEnum {
     indexing = "indexing",
     indexed = "indexed",
     failed = "failed"
-}
-export enum LogicalNameEnum {
-    chat = "chat",
-    reasoner = "reasoner",
-    embedding = "embedding",
-    vision = "vision",
-    asr_realtime = "asr_realtime",
-    tts_realtime = "tts_realtime",
-    omni_realtime = "omni_realtime"
 }
 export enum ModeEnum {
     voice = "voice",
@@ -9499,9 +10626,12 @@ export enum PriorityEnum {
     P1 = "P1",
     P2 = "P2"
 }
-export enum ProtocolEnum {
-    http = "http",
-    ws = "ws"
+export enum QuestionTypeEnum {
+    open_ended = "open_ended",
+    multi_select = "multi_select",
+    single_select = "single_select",
+    rating = "rating",
+    ranking = "ranking"
 }
 export enum RecruitmentBroadcastStatusEnum {
     draft = "draft",
@@ -9534,6 +10664,18 @@ export enum StatusB83Enum {
     completed = "completed",
     failed = "failed"
 }
+export enum StatusC0eEnum {
+    pending = "pending",
+    generating = "generating",
+    ready = "ready",
+    failed = "failed"
+}
+export enum StatusC42Enum {
+    draft = "draft",
+    generating = "generating",
+    ready = "ready",
+    failed = "failed"
+}
 export enum StimulusKindEnum {
     image = "image",
     video = "video",
@@ -9541,22 +10683,18 @@ export enum StimulusKindEnum {
     pdf = "pdf",
     link = "link"
 }
-export enum StudyReportStatusEnum {
-    draft = "draft",
-    generating = "generating",
-    ready = "ready",
-    failed = "failed"
-}
 export enum StudyStatusEnum {
     draft = "draft",
-    ready = "ready",
-    recruiting = "recruiting",
-    active = "active",
-    closed = "closed",
-    archived = "archived"
+    live = "live",
+    closed = "closed"
 }
 export enum ThemeStatusEnum {
     draft = "draft",
     confirmed = "confirmed",
     archived = "archived"
+}
+export enum TriggerEnum {
+    link = "link",
+    qr = "qr",
+    deeplink = "deeplink"
 }
