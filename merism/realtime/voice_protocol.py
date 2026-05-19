@@ -44,8 +44,8 @@ class SessionStartMessage(BaseModel):
     client_prefers_barge_in: bool = False
 
 
-class VadSpeakingStartMessage(BaseModel):
-    """Client-side VAD detected participant speech start.
+class PttSpeakingStartMessage(BaseModel):
+    """Client-side push-to-talk speech start.
 
     ``audio_played_ms`` is the amount of the current bot response the
     user has actually heard, measured from the browser's AudioContext
@@ -56,7 +56,7 @@ class VadSpeakingStartMessage(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    type: Literal["vad_speaking_start"]
+    type: Literal["ptt_speaking_start"] = "ptt_speaking_start"
     ts: float = Field(..., description="Client-side timestamp (seconds since session start).")
     audio_played_ms: int = Field(
         0,
@@ -65,18 +65,18 @@ class VadSpeakingStartMessage(BaseModel):
     )
 
 
-class VadSpeakingEndMessage(BaseModel):
+class PttSpeakingEndMessage(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    type: Literal["vad_speaking_end"]
+    type: Literal["ptt_speaking_end"] = "ptt_speaking_end"
     ts: float
 
 
 class InterruptionMessage(BaseModel):
     """Explicit user-initiated barge-in (e.g. tapping a "cancel" button).
 
-    Distinct from VAD auto-barge-in because it's deterministic — user
-    clicked Cancel, not a threshold. Carries the same
+    Distinct from push-to-talk barge-in because it's deterministic —
+    user clicked Cancel, not a threshold. Carries the same
     ``audio_played_ms`` semantics so truncation is precise.
     """
 
@@ -116,8 +116,8 @@ class PingMessage(BaseModel):
 ClientMessage = Annotated[
     Union[
         SessionStartMessage,
-        VadSpeakingStartMessage,
-        VadSpeakingEndMessage,
+        PttSpeakingStartMessage,
+        PttSpeakingEndMessage,
         TextInputMessage,
         AttachmentUploadedMessage,
         InterruptionMessage,
@@ -276,8 +276,8 @@ __all__ = [
     # client
     "ClientMessage",
     "SessionStartMessage",
-    "VadSpeakingStartMessage",
-    "VadSpeakingEndMessage",
+    "PttSpeakingStartMessage",
+    "PttSpeakingEndMessage",
     "TextInputMessage",
     "AttachmentUploadedMessage",
     "InterruptionMessage",

@@ -92,4 +92,27 @@ describe("AudioPlayback", () => {
         expect(channel[4]).toBeCloseTo(-1, 6)
         expect(source.startAt).toBe(context.currentTime)
     })
+
+    it("carries odd PCM tail bytes across chunks", async () => {
+        const context = new FakeAudioContext()
+        const playback = new AudioPlayback(context as unknown as AudioContext, 24000)
+        const bytes = new Uint8Array(
+            new Int16Array([256, 512, 1024]).buffer.slice(0),
+        )
+
+        const first = await playback.enqueue(bytes.slice(0, 3).buffer)
+        const second = await playback.enqueue(bytes.slice(3).buffer)
+
+        expect(first).toBe(true)
+        expect(second).toBe(true)
+        expect(context.buffers).toHaveLength(2)
+
+        const firstChannel = context.buffers[0]?.getChannelData(0)
+        const secondChannel = context.buffers[1]?.getChannelData(0)
+        expect(firstChannel).toHaveLength(1)
+        expect(secondChannel).toHaveLength(2)
+        expect(firstChannel?.[0]).toBeCloseTo(256 / 0x7fff, 4)
+        expect(secondChannel?.[0]).toBeCloseTo(512 / 0x7fff, 4)
+        expect(secondChannel?.[1]).toBeCloseTo(1024 / 0x7fff, 4)
+    })
 })

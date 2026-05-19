@@ -98,21 +98,21 @@ class TextChunker:
     # ── Internal ─────────────────────────────────────────────
 
     def _extract_phrase(self) -> str | None:
-        if len(self._buf) < self.min_chars:
-            return None
-
-        best = self._find_best_break(self._buf)
-        if best is None:
-            forced = self._forced_split_pos(self._buf)
-            if forced is None:
+        while True:
+            if len(self._buf) < self.min_chars:
                 return None
-            best = _Break(pos=forced, priority=0)
 
-        phrase = self._buf[: best.pos].strip()
-        self._buf = self._buf[best.pos :]
-        if not phrase:
-            return self._extract_phrase()
-        return phrase
+            best = self._find_best_break(self._buf)
+            if best is None:
+                forced = self._forced_split_pos(self._buf)
+                if forced is None:
+                    return None
+                best = _Break(pos=forced, priority=0)
+
+            phrase = self._buf[: best.pos].strip()
+            self._buf = self._buf[best.pos :]
+            if phrase:
+                return phrase
 
     def _find_best_break(self, buf: str) -> _Break | None:
         for priority in (5, 4, 3, 2):

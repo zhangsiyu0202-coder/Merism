@@ -10,12 +10,13 @@
  * `currentTime` stable across chunks, so sequential frames play back
  * seamlessly.
  *
- * Barge-in (ADR 0002): when the user's VAD fires, the orchestration
- * layer (a) queries {@link getPlayedMs} to know how much of the current
- * response was actually heard, (b) sends that alongside the
- * Interruption message so the server can truncate conversation history
- * to what was HEARD (the `conversation.item.truncate` semantic from
- * OpenAI's Realtime API). Then the orchestration layer calls
+ * Barge-in (ADR 0002): when the user signals an interrupt / PTT start,
+ * the orchestration layer (a) queries {@link getPlayedMs} to know how
+ * much of the current response was actually heard, (b) sends that
+ * alongside the Interruption message so the server can truncate
+ * conversation history to what was HEARD (the
+ * `conversation.item.truncate` semantic from OpenAI's Realtime API).
+ * Then the orchestration layer calls
  * {@link interrupt} to kill all scheduled sources for instant silence.
  */
 export class AudioPlayback {
@@ -24,6 +25,7 @@ export class AudioPlayback {
     private sources: AudioBufferSourceNode[] = []
     private readonly ownedContext: boolean
     private readonly outputSampleRate: number
+    private pcmCarry: Uint8Array | null = null
 
     /**
      * When the first chunk of the CURRENT response starts playing.
@@ -85,10 +87,24 @@ export class AudioPlayback {
     }
 
     private decodePcm16(data: ArrayBuffer): AudioBuffer | null {
-        const usableBytes = data.byteLength - (data.byteLength % 2)
+        const incoming = new Uint8Array(data)
+        const combined =
+            this.pcmCarry && this.pcmCarry.byteLength > 0
+                ? concatUint8(this.pcmCarry, incoming)
+                : incoming
+        const usableBytes = combined.byteLength - (combined.byteLength % 2)
         if (usableBytes <= 0) return null
+        this.pcmCarry =
+            usableBytes === combined.byteLength
+                ? null
+                : combined.slice(usableBytes)
 
-        const samples = new Int16Array(data.slice(0, usableBytes))
+        const samples = new Int16Array(
+            combined.buffer.slice(
+                combined.byteOffset,
+                combined.byteOffset + usableBytes,
+            ),
+        )
         const audioBuffer = this.context.createBuffer(
             1,
             samples.length,
@@ -137,6 +153,7 @@ export class AudioPlayback {
         this.sources = []
         this.playheadTime = this.context.currentTime
         this.currentResponseStartTime = null
+        this.pcmCarry = null
     }
 
     stop(): void {
@@ -145,4 +162,11 @@ export class AudioPlayback {
             void this.context.close()
         }
     }
+}
+
+function concatUint8(a: Uint8Array, b: Uint8Array): Uint8Array {
+    const out = new Uint8Array(a.byteLength + b.byteLength)
+    out.set(a, 0)
+    out.set(b, a.byteLength)
+    return out
 }

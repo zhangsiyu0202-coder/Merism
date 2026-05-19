@@ -289,7 +289,7 @@ async def test_text_input_produces_agent_deltas_and_done(
 @pytest.mark.asyncio
 @pytest.mark.django_db
 async def test_barge_in_accepted_when_enabled(make_session, patched_voice_clients):
-    """VAD speaking-start → pipeline → BargeInAccepted when study flag is on."""
+    """PTT speaking-start → pipeline → BargeInAccepted when study flag is on."""
     session = await asyncio.to_thread(make_session, barge_in_enabled=True)
     communicator = WebsocketCommunicator(
         application, f"/ws/sessions/{session.id}/voice/"
@@ -301,9 +301,9 @@ async def test_barge_in_accepted_when_enabled(make_session, patched_voice_client
     await communicator.send_to(
         text_data=json.dumps({"type": "text_input", "text": "讲讲你的工作吧"})
     )
-    # Immediately send a VAD start
+    # Immediately send a PTT start.
     await communicator.send_to(
-        text_data=json.dumps({"type": "vad_speaking_start", "ts": 0.0})
+        text_data=json.dumps({"type": "ptt_speaking_start", "ts": 0.0})
     )
 
     saw_barge_in = False
@@ -325,13 +325,10 @@ async def test_barge_in_accepted_when_enabled(make_session, patched_voice_client
 
 @pytest.mark.asyncio
 @pytest.mark.django_db
-async def test_vad_start_always_accepted_in_ptt_mode(
+async def test_ptt_start_ignored_when_barge_in_disabled(
     make_session, patched_voice_clients
 ):
-    """PTT mode: every vad_speaking_start is user-deliberate → always accepted.
-
-    The legacy ``barge_in_enabled`` flag is vestigial in PTT UX.
-    """
+    """Default-off studies should not interrupt the active TTS stream."""
     session = await asyncio.to_thread(make_session, barge_in_enabled=False)
     communicator = WebsocketCommunicator(
         application, f"/ws/sessions/{session.id}/voice/"
@@ -339,10 +336,10 @@ async def test_vad_start_always_accepted_in_ptt_mode(
     await communicator.connect()
     await communicator.receive_from(timeout=3)    # session_ready
 
-    # Fire VAD start directly; with PTT semantics the server always respects it.
+    # Fire PTT start directly; with PTT semantics the server always respects it.
     await communicator.send_to(
         text_data=json.dumps(
-            {"type": "vad_speaking_start", "ts": 0.0, "audio_played_ms": 0}
+            {"type": "ptt_speaking_start", "ts": 0.0, "audio_played_ms": 0}
         )
     )
 
@@ -359,9 +356,43 @@ async def test_vad_start_always_accepted_in_ptt_mode(
             saw_barge_in = True
             break
 
-    assert saw_barge_in, (
-        "PTT mode: vad_speaking_start must always be respected (flag is vestigial)"
+    assert not saw_barge_in, "default-off studies must ignore ptt_speaking_start"
+    await communicator.disconnect()
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db
+async def test_ptt_start_accepted_when_barge_in_enabled(
+    make_session, patched_voice_clients
+):
+    """Enabled studies still support barge-in from the PTT start event."""
+    session = await asyncio.to_thread(make_session, barge_in_enabled=True)
+    communicator = WebsocketCommunicator(
+        application, f"/ws/sessions/{session.id}/voice/"
     )
+    await communicator.connect()
+    await communicator.receive_from(timeout=3)    # session_ready
+
+    await communicator.send_to(
+        text_data=json.dumps(
+            {"type": "ptt_speaking_start", "ts": 0.0, "audio_played_ms": 0}
+        )
+    )
+
+    saw_barge_in = False
+    for _ in range(30):
+        try:
+            frame = await communicator.receive_output(timeout=2)
+        except Exception:
+            break
+        if "text" not in frame or not frame["text"]:
+            continue
+        data = json.loads(frame["text"])
+        if data.get("type") == "barge_in_accepted":
+            saw_barge_in = True
+            break
+
+    assert saw_barge_in, "expected a barge_in_accepted message when enabled"
     await communicator.disconnect()
 
 

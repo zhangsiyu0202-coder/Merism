@@ -9,16 +9,17 @@ import type { voiceStreamLogicType } from "./voiceStreamLogicType"
  *
  * User interaction model (PTT):
  *   1. Press button once → start recording (AudioCapture gate opens),
- *      server receives a ``vad_speaking_start`` carrying the current
+ *      server receives a ``ptt_speaking_start`` carrying the current
  *      ``audio_played_ms`` so any in-flight bot response gets truncated
  *      at the exact hear-point.
  *   2. Press again → stop recording (gate closes), server receives a
- *      ``vad_speaking_end``. The accumulated transcript ends the turn.
+ *      ``ptt_speaking_end``. The accumulated transcript ends the turn.
  *   3. Press while bot is speaking → acts as an interrupt + start (same
  *      as #1). Server truncates bot history to what was actually heard.
  *
- * Silero VAD still runs, but purely for UI affordances (level meter,
- * probability glow). It no longer drives state transitions.
+ * Silero voice activity detection still runs, but purely for UI
+ * affordances (level meter, probability glow). It no longer drives
+ * state transitions.
  */
 
 export interface ServerMessage {
@@ -221,20 +222,24 @@ export const voiceStreamLogic = kea<voiceStreamLogicType>([
                     // Releasing the turn.
                     capture.setGate(false)
                     sendJson({
-                        type: "vad_speaking_end",
+                        type: "ptt_speaking_end",
                         ts: performance.now() / 1000,
                     })
                     a.setPttActive(false)
                     return
                 }
 
-                // Beginning a new turn. If the bot is currently speaking,
-                // this is also an interrupt — the same message carries the
-                // played-ms so history truncates precisely.
+                if (values.botSpeaking && !values.bargeInEnabled) {
+                    return
+                }
+
+                // Beginning a new turn. If the study allows barge-in and the
+                // bot is currently speaking, the same message doubles as an
+                // interrupt so history truncates precisely.
                 cancelBrowserSpeech()
                 const playedMs = player?.getPlayedMs() ?? 0
                 sendJson({
-                    type: "vad_speaking_start",
+                    type: "ptt_speaking_start",
                     ts: performance.now() / 1000,
                     audio_played_ms: playedMs,
                 })

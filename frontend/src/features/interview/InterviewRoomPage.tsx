@@ -259,7 +259,7 @@ function LiveRoom({
     onConnectNeeded,
     onSendText,
 }: LiveRoomProps) {
-    const { pttActive, botSpeaking, micLevel } = useValues(voiceStreamLogic)
+    const { pttActive, botSpeaking, micLevel, bargeInEnabled } = useValues(voiceStreamLogic)
     const { pttPress } = useActions(voiceStreamLogic)
     const { activeStimulus, attachments } = useValues(interviewRoomLogic)
     const { hideStimulus, attachFile, removeAttachment } = useActions(interviewRoomLogic)
@@ -300,6 +300,7 @@ function LiveRoom({
                     micLevel={micLevel}
                     pttActive={pttActive}
                     botSpeaking={botSpeaking}
+                    bargeInEnabled={bargeInEnabled}
                     activeStimulus={activeStimulus}
                     onPttPress={pttPress}
                     onCloseStimulus={hideStimulus}
@@ -341,6 +342,7 @@ interface LeftColumnProps {
     micLevel: number
     pttActive: boolean
     botSpeaking: boolean
+    bargeInEnabled: boolean
     activeStimulus: Stimulus | null
     onPttPress: () => void
     onCloseStimulus: () => void
@@ -352,6 +354,7 @@ function LeftColumn({
     micLevel,
     pttActive,
     botSpeaking,
+    bargeInEnabled,
     activeStimulus,
     onPttPress,
     onCloseStimulus,
@@ -374,6 +377,7 @@ function LeftColumn({
                 <PTTButton
                     pttActive={pttActive}
                     botSpeaking={botSpeaking}
+                    bargeInEnabled={bargeInEnabled}
                     onPress={onPttPress}
                 />
             </div>
@@ -393,32 +397,40 @@ function LeftColumn({
 interface PTTButtonProps {
     pttActive: boolean
     botSpeaking: boolean
+    bargeInEnabled: boolean
     onPress: () => void
 }
 
-function PTTButton({ pttActive, botSpeaking, onPress }: PTTButtonProps) {
+function PTTButton({ pttActive, botSpeaking, bargeInEnabled, onPress }: PTTButtonProps) {
+    const blocked = botSpeaking && !bargeInEnabled && !pttActive
     const label = pttActive
         ? "结束回答"
-        : botSpeaking
+        : blocked
+          ? "等待 AI 结束"
+          : botSpeaking
           ? "打断并回答"
           : "Begin response"
 
-    const Icon = pttActive ? Square : botSpeaking ? MicOff : Mic
+    const Icon = pttActive ? Square : blocked ? MicOff : botSpeaking ? MicOff : Mic
 
     // Coral for default / interrupt; danger-red while recording.
     const bg = pttActive
         ? "bg-[oklch(0.62_0.20_25)] text-white"
-        : "bg-merism-accent text-white hover:brightness-[1.05]"
+        : blocked
+          ? "bg-merism-bg-subtle text-merism-text-muted cursor-not-allowed"
+          : "bg-merism-accent text-white hover:brightness-[1.05]"
 
     return (
         <button
             type="button"
             onClick={onPress}
+            disabled={blocked}
+            aria-disabled={blocked}
             aria-label={label}
             className={
                 "inline-flex items-center gap-2 rounded-merism-full px-7 py-3 " +
                 "font-merism-display text-base font-medium shadow-merism-md " +
-                "transition-transform hover:scale-[1.02] active:scale-[0.99] " +
+                "transition-transform hover:scale-[1.02] active:scale-[0.99] disabled:hover:scale-100 " +
                 bg +
                 (pttActive ? " animate-pulse" : "")
             }

@@ -1,4 +1,4 @@
-"""End-to-end truncation plumbing: client VAD → InterruptionFrame → history trim.
+"""End-to-end truncation plumbing: client PTT → InterruptionFrame → history trim.
 
 This is the critical OpenAI-Realtime-semantic test — the client claims
 ``audio_played_ms=400``, so the server should trim its conversation
@@ -22,13 +22,13 @@ from .test_voice_consumer import make_session, patched_voice_clients  # noqa: F4
 
 @pytest.mark.asyncio
 @pytest.mark.django_db
-async def test_vad_audio_played_ms_feeds_truncation(
+async def test_ptt_audio_played_ms_feeds_truncation(
     make_session, patched_voice_clients
 ):
     """audio_played_ms arrives → pipeline truncates → session.moderator_state reflects it.
 
     Integration: we feed text, let the fake LLM + fake TTS generate output,
-    then send a VAD-start with a specific played_ms. On disconnect, the
+    then send a PTT-start with a specific played_ms. On disconnect, the
     session row should have a moderator_state.conversation entry whose
     assistant text is TRUNCATED (``truncated: true``).
     """
@@ -57,12 +57,12 @@ async def test_vad_audio_played_ms_feeds_truncation(
         msg = json.loads(frame["text"])
         if msg.get("type") == "agent_text_delta":
             seen_any_delta = True
-            # Send VAD start right after the first delta so the response
+            # Send PTT start right after the first delta so the response
             # is still in flight.
             await communicator.send_to(
                 text_data=json.dumps(
                     {
-                        "type": "vad_speaking_start",
+                        "type": "ptt_speaking_start",
                         "ts": 0.1,
                         "audio_played_ms": 200,
                     }

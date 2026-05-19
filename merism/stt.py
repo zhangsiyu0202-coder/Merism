@@ -17,9 +17,11 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import os
 import json
 import logging
 import uuid
+import unicodedata
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
@@ -38,6 +40,40 @@ class STTEvent:
     is_final: bool = True
     confidence: float = 1.0
     extra: dict[str, Any] = field(default_factory=dict)
+
+
+_FILLER_TRANSCRIPTS = {
+    "嗯",
+    "啊",
+    "呃",
+    "额",
+    "哦",
+    "唔",
+    "诶",
+    "欸",
+}
+
+
+def should_ignore_transcript(text: str) -> bool:
+    """Return ``True`` for standalone filler/noise transcripts.
+
+    The realtime ASR sometimes emits single-character hesitation tokens
+    like ``嗯`` or ``啊`` as a separate final transcript when the user
+    pauses or the turn closes on trailing silence. Those are low-value
+    in interview transcripts, so we suppress them here rather than
+    showing them as standalone messages.
+    """
+
+    cleaned = "".join(
+        ch for ch in text.strip() if unicodedata.category(ch)[0] not in {"P", "S", "Z"}
+    )
+    if not cleaned:
+        return True
+    if cleaned in _FILLER_TRANSCRIPTS:
+        return True
+    if len(cleaned) <= 2 and len(set(cleaned)) == 1 and cleaned[0] in _FILLER_TRANSCRIPTS:
+        return True
+    return False
 
 
 class ParaformerClient:
@@ -170,6 +206,12 @@ class ParaformerClient:
             logger.warning("stt.warmup.failed", extra={"error": str(exc)})
 
     def _session_update(self) -> dict[str, Any]:
+        vad_threshold = float(
+            getattr(settings, "DASHSCOPE_STT_VAD_THRESHOLD", os.environ.get("DASHSCOPE_STT_VAD_THRESHOLD", "0.5"))
+        )
+        vad_silence_ms = int(
+            getattr(settings, "DASHSCOPE_STT_VAD_SILENCE_MS", os.environ.get("DASHSCOPE_STT_VAD_SILENCE_MS", "600"))
+        )
         return {
             "event_id": f"evt_{uuid.uuid4().hex[:12]}",
             "type": "session.update",
@@ -181,8 +223,8 @@ class ParaformerClient:
                 "turn_detection": (
                     {
                         "type": "server_vad",
-                        "threshold": 0.0,
-                        "silence_duration_ms": 400,
+                        "threshold": vad_threshold,
+                        "silence_duration_ms": vad_silence_ms,
                     }
                     if self._use_server_vad
                     else None

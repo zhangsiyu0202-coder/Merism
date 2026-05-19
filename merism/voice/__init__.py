@@ -1,10 +1,101 @@
-"""Merism voice pipeline.
+"""Frame-based voice pipeline — pipecat-inspired surgical port.
 
-v1: Hand-rolled pipeline (merism.voice.pipeline / frames / processors)
-v2: pipecat-ai 1.2 based (merism.voice.services / transport / interview_pipeline)
+Public surface kept tight. Everything interesting imports from here::
+
+    from merism.voice import (
+        Pipeline, PipelineTask, PipelineRunner,
+        FrameProcessor, FrameDirection,
+        TranscriptionFrame, LLMTextFrame, TTSAudioRawFrame,
+        MetricsObserver, TranscriptRecorder,
+    )
 """
 
-# v1 exports — all frames + pipeline + observer classes
-from merism.voice.frames import *  # noqa: F401, F403
-from merism.voice.observer import CompositeObserver, MetricsObserver, Observer, TranscriptRecorder  # noqa: F401
-from merism.voice.pipeline import FrameDirection, FrameProcessor, Pipeline, PipelineRunner, PipelineTask  # noqa: F401
+from __future__ import annotations
+
+from .frames import (
+    BotStartedSpeakingFrame,
+    BotStoppedSpeakingFrame,
+    CancelFrame,
+    ControlFrame,
+    DataFrame,
+    EndFrame,
+    ErrorFrame,
+    Frame,
+    FunctionCallFrame,
+    FunctionCallResultFrame,
+    InputAudioRawFrame,
+    InterimTranscriptionFrame,
+    InterruptionFrame,
+    LLMFullResponseEndFrame,
+    LLMFullResponseStartFrame,
+    LLMTextFrame,
+    MetricsFrame,
+    OutputAudioRawFrame,
+    StartFrame,
+    StimulusShowFrame,
+    SystemFrame,
+    TTSAudioRawFrame,
+    TTSStartedFrame,
+    TTSStoppedFrame,
+    TTSTextFrame,
+    TranscriptionFrame,
+    TruncatedFrame,
+    UserStartedSpeakingFrame,
+    UserStoppedSpeakingFrame,
+)
+from .observer import (
+    CompositeObserver,
+    MetricsObserver,
+    Observer,
+    StructlogObserver,
+    TranscriptRecorder,
+)
+from .pipeline import (
+    FrameDirection,
+    FrameProcessor,
+    Pipeline,
+    PipelineRunner,
+    PipelineTask,
+)
+
+__all__ = [
+    "BotStartedSpeakingFrame",
+    "BotStoppedSpeakingFrame",
+    "CancelFrame",
+    "ControlFrame",
+    "DataFrame",
+    "EndFrame",
+    "ErrorFrame",
+    "Frame",
+    "FunctionCallFrame",
+    "FunctionCallResultFrame",
+    "InputAudioRawFrame",
+    "InterimTranscriptionFrame",
+    "InterruptionFrame",
+    "LLMFullResponseEndFrame",
+    "LLMFullResponseStartFrame",
+    "LLMTextFrame",
+    "MetricsFrame",
+    "OutputAudioRawFrame",
+    "StartFrame",
+    "StimulusShowFrame",
+    "SystemFrame",
+    "TTSAudioRawFrame",
+    "TTSStartedFrame",
+    "TTSStoppedFrame",
+    "TTSTextFrame",
+    "TranscriptionFrame",
+    "TruncatedFrame",
+    "UserStartedSpeakingFrame",
+    "UserStoppedSpeakingFrame",
+    "CompositeObserver",
+    "MetricsObserver",
+    "Observer",
+    "StructlogObserver",
+    "TranscriptRecorder",
+    "FrameDirection",
+    "FrameProcessor",
+    "Pipeline",
+    "PipelineRunner",
+    "PipelineTask",
+]

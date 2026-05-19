@@ -17,7 +17,7 @@ from pipecat.frames.frames import (
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.frames.frames import AudioRawFrame
 
-from merism.stt import ParaformerClient
+from merism.stt import ParaformerClient, should_ignore_transcript
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class QwenSTTService(FrameProcessor):
             async for result in self._client.stream(self._audio_iter()):
                 if result.is_final:
                     text = result.text.strip()
-                    if text:
+                    if text and not should_ignore_transcript(text):
                         await self.push_frame(TranscriptionFrame(
                             text=text,
                             user_id="participant",
@@ -86,7 +86,7 @@ class QwenSTTService(FrameProcessor):
                         ))
                 else:
                     text = result.text.strip()
-                    if text:
+                    if text and not should_ignore_transcript(text):
                         await self.push_frame(InterimTranscriptionFrame(
                             text=text,
                             user_id="participant",

@@ -47,6 +47,14 @@ class FailingTTSClient:
         raise RuntimeError("tts backend unavailable")
 
 
+class EmptyTTSClient:
+    async def stream_tts(self, text_iter: AsyncIterator[str]) -> AsyncIterator[bytes]:
+        async for _ in text_iter:
+            pass
+        if False:
+            yield b""
+
+
 @pytest.mark.asyncio
 async def test_tts_processor_warms_up_before_first_turn() -> None:
     class WarmupTTSClient:
@@ -94,4 +102,26 @@ async def test_tts_errors_are_reported_instead_of_silenced() -> None:
     assert any(isinstance(frame, ErrorFrame) for frame in recorder.seen)
     error = next(frame for frame in recorder.seen if isinstance(frame, ErrorFrame))
     assert error.code == "tts_session_failed"
+    assert any(isinstance(frame, TTSStoppedFrame) for frame in recorder.seen)
+
+
+@pytest.mark.asyncio
+async def test_tts_no_audio_is_not_fatal() -> None:
+    processor = TTSProcessor(client=EmptyTTSClient())
+    recorder = RecordingObserver()
+    task = PipelineTask(Pipeline([processor]), observer=recorder)
+
+    await task.start()
+    await task.queue_frame(LLMFullResponseStartFrame(response_id="resp_1"))
+    await task.queue_frame(LLMTextFrame(text="你好", response_id="resp_1"))
+    await task.queue_frame(LLMFullResponseEndFrame(response_id="resp_1"))
+    await asyncio.sleep(0.1)
+    await task.queue_frame(EndFrame())
+    await asyncio.sleep(0.05)
+    await task.stop()
+
+    assert not any(
+        isinstance(frame, ErrorFrame) and getattr(frame, "code", "") == "tts_no_audio"
+        for frame in recorder.seen
+    )
     assert any(isinstance(frame, TTSStoppedFrame) for frame in recorder.seen)

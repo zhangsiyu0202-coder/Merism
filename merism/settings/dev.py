@@ -17,6 +17,15 @@ from merism.settings.base import *  # noqa: F401, F403, E402
 DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
+
+def _dev_origin(host: str, port: str) -> str:
+    return f"http://{host}:{port}"
+
+
+vite_port = os.environ.get("MERISM_VITE_PORT", "5175")
+dev_hosts = ("localhost", "127.0.0.1")
+dev_ports = ("5173", "5174", vite_port)
+
 # Default to the docker-compose postgres (port 5542 to avoid clash with any
 # parallel Postgres on 5432). Override via POSTGRES_PORT env var.
 DATABASES = {
@@ -34,21 +43,17 @@ DATABASES = {
 # the session cookie flows. Production uses the tight list in base.py.
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
+    _dev_origin(host, port)
+    for host in dev_hosts
+    for port in dev_ports
 ]
 
 # Enable CSRF trust for the Vite origin so /accounts/login/ accepts POSTs
 # forwarded through the Vite proxy or made cross-origin.
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:8000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "http://127.0.0.1:8000",
+    _dev_origin(host, port)
+    for host in dev_hosts
+    for port in dev_ports
 ]
 
 # Skip email verification in dev — no SMTP configured locally.

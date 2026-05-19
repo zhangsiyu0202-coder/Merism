@@ -91,12 +91,12 @@ class ErrorFrame(SystemFrame):
 
 @dataclass
 class UserStartedSpeakingFrame(SystemFrame):
-    """VAD (client or server) detected speech start."""
+    """PTT start / speech start detected by the client or server."""
 
 
 @dataclass
 class UserStoppedSpeakingFrame(SystemFrame):
-    """VAD detected speech end."""
+    """PTT end / speech end detected by the client or server."""
 
 
 @dataclass

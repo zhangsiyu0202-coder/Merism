@@ -1,40 +1,99 @@
-"""VoiceConsumer v2 — pipecat-ai 1.2 based.
+"""WebSocket voice consumer — pipeline-driven orchestration.
 
-Drop-in replacement for voice.py. Uses pipecat's Pipeline/PipelineTask
-instead of the hand-rolled version. Same WebSocket protocol, same
-moderator logic, just a cleaner pipeline backbone.
+Architecture (ADR 0005):
 
-Route: ws://host/ws/sessions/<session_id>/voice/v2
+    ┌───── client mic (PCM16) ──────┐
+    │  binary frames                 │
+    └────────────────────────────────┘
+                │
+                ▼
+    ┌─── VoiceConsumer (WS handler) ───┐
+    │   Parse → push frames into       │
+    │   ``PipelineTask``               │
+    └──────────────────────────────────┘
+                │
+                ▼
+    Pipeline([
+        STTProcessor,        # → TranscriptionFrame / InterimTranscriptionFrame
+        LLMProcessor,        # → LLMTextFrame (with response_id)
+        TTSProcessor,        # → TTSAudioRawFrame
+        ConversationState,   # → truncation-aware history (OpenAI-Realtime-style)
+        UserIdleDetector,    # → inject synthetic turns on long silence
+    ])
+                │
+                ▼
+    Observers fire on every frame push. At end-of-pipe
+    (``dst is None``) the ``WebSocketEgressObserver`` serialises
+    selected frames to the wire. ``MetricsObserver`` tracks per-turn
+    latency. ``TranscriptRecorder`` accumulates the conversation for
+    persistence on disconnect.
+
+Barge-in (ADR 0002 + OpenAI Realtime ``conversation.item.truncate``):
+    PTT start from the client produces an ``InterruptionFrame``
+    carrying ``audio_played_ms`` (client-estimated). TTSProcessor
+    converts the played-ms into a ``TruncatedFrame`` which
+    ``ConversationState`` uses to trim the stored assistant turn — so
+    the LLM's next context reflects what the user actually HEARD.
 """
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
+from typing import Any
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-
-from pipecat.pipeline.pipeline import Pipeline
-from pipecat.pipeline.task import PipelineParams, PipelineTask
-from pipecat.pipeline.base_task import PipelineTaskParams
+from pydantic import ValidationError
 
 from merism.models import InterviewSession
-from merism.voice.services.moderator_processor import ModeratorProcessor
-from merism.voice.services.qwen_stt import QwenSTTService
-from merism.voice.services.qwen_tts import QwenTTSService
-from merism.voice.transport import WebSocketInputTransport, WebSocketOutputTransport
+from merism.realtime.recording_observer import RecordingObserver
+from merism.realtime.voice_egress import WebSocketEgressObserver
+from merism.realtime.voice_protocol import (
+    ClientMessage,
+    ErrorMessage,
+    InterruptionMessage,
+    PongMessage,
+    ServerMessage,
+    SessionReadyMessage,
+    TextInputMessage,
+    PttSpeakingStartMessage,
+    parse_client_message,
+)
+from merism.voice import (
+    CompositeObserver,
+    EndFrame,
+    InputAudioRawFrame,
+    InterruptionFrame,
+    MetricsObserver,
+    Pipeline,
+    PipelineTask,
+    TranscriptRecorder,
+    TranscriptionFrame,
+    UserStartedSpeakingFrame,
+    UserStoppedSpeakingFrame,
+)
+from merism.voice.processors import (
+    ConversationState,
+    LLMProcessor,
+    STTProcessor,
+    TTSProcessor,
+    UserIdleDetector,
+)
+from merism.voice.processors.moderator import ModeratorLLMProcessor
+from merism.stt import ParaformerClient
 
 logger = logging.getLogger(__name__)
 
+_DEFAULT_SYSTEM_PROMPT = (
+    "You are Merism, a professional qualitative-research interviewer. "
+    "Ask one open-ended question at a time, acknowledge answers briefly "
+    "before probing, and keep responses under two short sentences."
+)
 
-class VoiceConsumerV2(AsyncWebsocketConsumer):
-    """Pipecat-powered voice consumer.
 
-    Pipeline:
-        WSInput → QwenSTT → Moderator → QwenTTS → WSOutput
-    """
+class VoiceConsumer(AsyncWebsocketConsumer):
+    """Channels consumer at ``ws://host/ws/sessions/<session_id>/voice``."""
 
     async def connect(self) -> None:
         session_id = self.scope["url_route"]["kwargs"]["session_id"]
@@ -44,63 +103,262 @@ class VoiceConsumerV2(AsyncWebsocketConsumer):
             await self.close(code=4404)
             return
 
-        await self.accept()
+        self.barge_in_enabled: bool = await database_sync_to_async(
+            lambda: self.session.study.barge_in_enabled
+        )()
 
-        # Build pipecat pipeline
-        ws_input = WebSocketInputTransport(self, sample_rate=16000)
-        self._ws_input = ws_input
-        stt = QwenSTTService(sample_rate=16000, language="zh")
-        moderator = ModeratorProcessor(session=self.session)
-        tts = QwenTTSService(voice="Cherry", sample_rate=24000)
-        ws_output = WebSocketOutputTransport(self)
-
-        pipeline = Pipeline([ws_input, stt, moderator, tts, ws_output])
-
-        self._task = PipelineTask(
-            pipeline,
-            params=PipelineParams(
-                audio_in_sample_rate=16000,
-                audio_out_sample_rate=24000,
-            ),
+        self._metrics = MetricsObserver()
+        self._recorder = TranscriptRecorder()
+        self._egress = WebSocketEgressObserver(self)
+        self._audio_recorder = RecordingObserver(session_id=self.session_id)
+        composite = CompositeObserver(
+            self._metrics,
+            self._recorder,
+            self._egress,
+            self._audio_recorder,
         )
-        asyncio.create_task(self._task.run(PipelineTaskParams(asyncio.get_running_loop())))
 
-        # Send ready message
-        await self.send(text_data=json.dumps({
-            "type": "session.ready",
-            "session_id": self.session_id,
-        }))
+        self._conversation_state = ConversationState()
+        stt_client = ParaformerClient(language="zh", use_server_vad=False)
+        llm_processor = (
+            ModeratorLLMProcessor(session_id=self.session_id)
+            if self.session.guide_id is not None
+            else LLMProcessor(system_prompt=_DEFAULT_SYSTEM_PROMPT)
+        )
+        pipeline = Pipeline(
+            [
+                STTProcessor(client=stt_client),
+                llm_processor,
+                TTSProcessor(),
+                self._conversation_state,
+                UserIdleDetector(idle_seconds=12.0),
+            ]
+        )
+        self._task = PipelineTask(pipeline, observer=composite, sample_rate=16000)
 
-        logger.info("voice_v2.session.start", extra={"session_id": self.session_id})
+        self._ptt_signals = 0
+        self._barge_in_fires = 0
+
+        await self.accept()
+        await self._send(
+            SessionReadyMessage(
+                session_id=self.session_id,
+                barge_in_enabled=self.barge_in_enabled,
+            )
+        )
+        await self._task.start()
+
+        logger.info(
+            "voice.session.start",
+            extra={
+                "session_id": self.session_id,
+                "barge_in_enabled": self.barge_in_enabled,
+            },
+        )
 
     async def disconnect(self, code: int) -> None:
+        sid = getattr(self, "session_id", "")
+        logger.info(
+            "voice.session.end",
+            extra={
+                "session_id": sid,
+                "ptt_signals": getattr(self, "_ptt_signals", 0),
+                "barge_in_fires": getattr(self, "_barge_in_fires", 0),
+                "close_code": code,
+            },
+        )
         task = getattr(self, "_task", None)
-        if task:
-            await task.cancel()
-        # Persist final session state
-        session = getattr(self, "session", None)
-        if session:
-            await database_sync_to_async(session.save)()
-        logger.info("voice_v2.session.end", extra={"session_id": self.session_id, "code": code})
-
-    async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
-        """Handle incoming WebSocket messages."""
-        if bytes_data:
-            # Feed audio to the input transport's queue
-            if hasattr(self, "_ws_input"):
-                self._ws_input.push_audio(bytes_data)
-        elif text_data:
+        if task is not None:
             try:
-                msg = json.loads(text_data)
-                msg_type = msg.get("type", "")
-                if msg_type == "ping":
-                    await self.send(text_data=json.dumps({"type": "pong"}))
-            except json.JSONDecodeError:
-                pass
+                await task.queue_frame(EndFrame())
+                await task.stop()
+            except Exception as exc:
+                logger.warning("voice.session.stop_failed", extra={"error": str(exc)})
+
+        await self._persist_session_artifacts()
+
+    async def receive(
+        self, text_data: str | None = None, bytes_data: bytes | None = None
+    ) -> None:
+        if bytes_data is not None:
+            await self._task.queue_frame(
+                InputAudioRawFrame(audio=bytes_data, sample_rate=16000)
+            )
+            return
+
+        if text_data is None:
+            return
+
+        try:
+            raw = json.loads(text_data)
+            message: ClientMessage = parse_client_message(raw)
+        except (json.JSONDecodeError, ValidationError) as exc:
+            await self._send(ErrorMessage(code="malformed_message", message=str(exc)[:200]))
+            return
+
+        await self._dispatch_client_message(message)
+
+    async def _dispatch_client_message(self, message: ClientMessage) -> None:
+        msg_type = message.type
+
+        if msg_type == "ping":
+            await self._send(PongMessage())
+            return
+
+        if msg_type == "ptt_speaking_start":
+            await self._handle_ptt_start(message)
+            return
+
+        if msg_type == "interrupt":
+            await self._handle_explicit_interrupt(message)
+            return
+
+        if msg_type == "ptt_speaking_end":
+            await self._commit_ptt_turn()
+            return
+
+        if msg_type == "text_input":
+            await self._handle_text_input(message)
+            return
+
+        if msg_type == "attachment_uploaded":
+            return
+
+        if msg_type == "session_start":
+            return
+
+    async def _handle_ptt_start(self, message: PttSpeakingStartMessage) -> None:
+        self._ptt_signals += 1
+        await self._task.queue_frame(UserStartedSpeakingFrame())
+        if not self.barge_in_enabled:
+            logger.info(
+                "voice.barge_in.ignored",
+                extra={
+                    "session_id": self.session_id,
+                    "trigger": "ptt",
+                    "audio_played_ms": int(getattr(message, "audio_played_ms", 0) or 0),
+                    "total_ptt_signals": self._ptt_signals,
+                },
+            )
+            return
+        self._barge_in_fires += 1
+        played_ms = int(getattr(message, "audio_played_ms", 0) or 0)
+        await self._task.queue_frame(InterruptionFrame(audio_played_ms=played_ms))
+        logger.info(
+            "voice.barge_in.accepted",
+            extra={
+                "session_id": self.session_id,
+                "trigger": "ptt",
+                "audio_played_ms": played_ms,
+                "total_ptt_signals": self._ptt_signals,
+                "total_barge_ins": self._barge_in_fires,
+            },
+        )
+
+    async def _handle_explicit_interrupt(self, message: InterruptionMessage) -> None:
+        self._barge_in_fires += 1
+        played_ms = int(message.audio_played_ms or 0)
+        await self._task.queue_frame(InterruptionFrame(audio_played_ms=played_ms))
+        logger.info(
+            "voice.barge_in.accepted",
+            extra={
+                "session_id": self.session_id,
+                "trigger": "explicit",
+                "audio_played_ms": played_ms,
+                "total_barge_ins": self._barge_in_fires,
+            },
+        )
+
+    async def _handle_text_input(self, message: TextInputMessage) -> None:
+        await self._task.queue_frame(TranscriptionFrame(text=message.text))
+
+    async def _commit_ptt_turn(self) -> None:
+        await self._task.queue_frame(UserStoppedSpeakingFrame())
+
+    async def _send(self, message: ServerMessage) -> None:
+        try:
+            await self.send(text_data=message.model_dump_json())
+        except Exception as exc:
+            logger.warning("voice.send_failed", extra={"error": str(exc)})
 
     @database_sync_to_async
     def _load_session(self, session_id: str) -> InterviewSession | None:
         try:
-            return InterviewSession.objects.select_related("study", "guide").get(id=session_id)
+            return (
+                InterviewSession.objects.select_related("study", "guide", "participation")
+                .get(id=session_id)
+            )
         except InterviewSession.DoesNotExist:
             return None
+
+    async def _persist_session_artifacts(self) -> None:
+        session = getattr(self, "session", None)
+        if session is None:
+            return
+
+        metrics = getattr(self, "_metrics", None)
+        recorder = getattr(self, "_recorder", None)
+        convo = getattr(self, "_conversation_state", None)
+        audio_recorder = getattr(self, "_audio_recorder", None)
+
+        updates: dict[str, Any] = {}
+        if metrics is not None:
+            updates["metrics"] = metrics.summary()
+        if convo is not None:
+            snapshot = convo.snapshot()
+            updates["conversation"] = [
+                {
+                    "id": it.id,
+                    "role": it.role,
+                    "text": it.text,
+                    "truncated": it.truncated,
+                }
+                for it in snapshot.items
+            ]
+
+        transcript_additions = recorder.drain() if recorder is not None else []
+
+        audio_keys: dict[str, str] = {}
+        if audio_recorder is not None:
+            try:
+                audio_keys = await database_sync_to_async(audio_recorder.finalize)()
+            except Exception as exc:
+                logger.warning(
+                    "voice.recording.finalize_failed",
+                    extra={"error": str(exc), "session_id": self.session_id},
+                )
+
+        try:
+            await self._write_session(
+                session.id, updates, transcript_additions, audio_keys
+            )
+        except Exception as exc:
+            logger.warning(
+                "voice.session.persist_failed",
+                extra={"error": str(exc), "session_id": self.session_id},
+            )
+
+    @database_sync_to_async
+    def _write_session(
+        self,
+        session_id: str,
+        moderator_state_updates: dict[str, Any],
+        transcript_additions: list[dict[str, str]],
+        audio_keys: dict[str, str],
+    ) -> None:
+        if not moderator_state_updates and not transcript_additions and not audio_keys:
+            return
+        s = InterviewSession.objects.get(id=session_id)
+        state = s.moderator_state or {}
+        state.update(moderator_state_updates)
+        s.moderator_state = state
+        if transcript_additions:
+            s.transcript = (s.transcript or []) + transcript_additions
+        update_fields = ["moderator_state", "transcript", "updated_at"]
+        if audio_keys.get("mic"):
+            s.audio_s3_key = audio_keys["mic"]
+            update_fields.append("audio_s3_key")
+        if audio_keys.get("tts"):
+            state["tts_audio_s3_key"] = audio_keys["tts"]
+            s.moderator_state = state
+        s.save(update_fields=update_fields)
