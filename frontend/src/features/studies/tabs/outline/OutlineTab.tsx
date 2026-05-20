@@ -387,7 +387,7 @@ function GuideOutlinePanel({
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col">
                     {sections.length === 0 ? (
                         <div className="rounded-merism-md border border-dashed border-[color:var(--merism-hairline-strong)] p-4 text-sm text-merism-text-muted">
                             No sections yet. Add one to start.
@@ -464,8 +464,8 @@ function SectionBlock({
     return (
         <section
             className={cn(
-                "rounded-merism-md border border-[color:var(--merism-hairline)] p-3",
-                selectedSectionId === section.id && "border-[color:var(--merism-accent-outline)] bg-merism-bg-subtle",
+                "py-5",
+                sectionIndex > 0 && "border-t border-[color:var(--merism-hairline)]",
             )}
         >
             <div className="flex items-start gap-3">
@@ -589,10 +589,10 @@ function SortableQuestionRow({
                     }
                 }}
                 className={cn(
-                    "group flex items-start gap-3 rounded-merism-md border px-3 py-2 text-left transition-colors",
+                    "group flex items-start gap-3 rounded-merism-md px-3 py-3 text-left transition-colors",
                     selected
-                        ? "border-[color:var(--merism-status-success)] bg-[color:var(--merism-status-success-bg)]"
-                        : "border-transparent bg-transparent hover:border-[color:var(--merism-hairline)] hover:bg-merism-bg-subtle",
+                        ? "bg-merism-bg-subtle"
+                        : "hover:bg-merism-bg-subtle",
                 )}
             >
                 <button

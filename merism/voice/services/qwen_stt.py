@@ -42,6 +42,7 @@ class QwenSTTService(FrameProcessor):
         self._client = ParaformerClient(
             sample_rate=self._sample_rate,
             language=self._language,
+            use_server_vad=False,
         )
         self._task = asyncio.create_task(self._recognition_loop())
 
