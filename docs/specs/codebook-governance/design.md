@@ -284,7 +284,7 @@ On deploy, create version 1 for each study that already has a non-empty
 |----------|-----------|
 | Immutable version snapshots | Audit trail; can always reconstruct state at any point |
 | Study.codebook remains the "live" field | Backward compat with existing QuoteTagger/Seeder |
-| Single LLM call per agent | AGENTS.md Rule 4; no multi-turn loops |
+| Single LLM call per codebook agent | Keep agents structurally simple; no ReAct loops, no multi-turn dialogues. (Distinct from the moderator's 2-node decide→generate pipeline; both follow the "minimal-structure" principle in different ways.) |
 | RAG check in InductiveCodeSuggester | GATOS paper shows this prevents redundant code creation |
 | Saturation = 3 sessions with 0 new codes | De Paoli 2024 ITS metric; configurable via study settings |
 | Auto-approve default OFF | Researcher control; can enable per-study |

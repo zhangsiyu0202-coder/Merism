@@ -21,8 +21,6 @@ export default function ParticipantEntryPage(): JSX.Element {
     if (!slug) return <FullscreenMessage title="链接无效" body="链接格式不正确。" />
     if (contextLoading && !context) return <FullscreenMessage title="加载中…" illustration="loading-time" />
 
-    const linkMode = (context as any)?.link_mode || "anonymous"
-
     return (
         <main className="min-h-screen bg-merism-bg px-6 py-10">
             <div className="mx-auto max-w-lg">
@@ -35,7 +33,6 @@ export default function ParticipantEntryPage(): JSX.Element {
 
                 <StepView
                     step={nextStep}
-                    linkMode={linkMode}
                     errorCode={errorCode}
                     context={context}
                     onConsent={submitConsent}
@@ -48,14 +45,12 @@ export default function ParticipantEntryPage(): JSX.Element {
 
 function StepView({
     step,
-    linkMode,
     errorCode,
     context,
     onConsent,
     onStart,
 }: {
     step: ParticipantStep
-    linkMode: string
     errorCode: string | null
     context: any
     onConsent: (data?: any) => void
@@ -68,14 +63,10 @@ function StepView({
     if (step === "thanks") return <FullscreenMessage title="感谢参与" body="你的回答已保存，可以关闭此页面。" illustration="peace" />
     if (step === "dropped") return <FullscreenMessage title="感谢你的关注" body="本研究需要不同的参与者画像，感谢你的时间。" illustration="chill-time" />
 
-    // Named mode: show info form
-    if (step === "consent" && linkMode === "named") {
-        return <NamedInfoForm context={context} onSubmit={onConsent} />
-    }
-
-    // Consent step for anonymous (shouldn't normally reach here since backend auto-consents)
+    // Always collect basic info before starting (per 2026-05-20
+    // simplification — every primary link is "named" by default).
     if (step === "consent") {
-        return <ReadyToStart context={context} onStart={() => onConsent()} />
+        return <NamedInfoForm onSubmit={onConsent} />
     }
 
     // Session step: ready to begin
@@ -83,10 +74,8 @@ function StepView({
 }
 
 function NamedInfoForm({
-    context,
     onSubmit,
 }: {
-    context: any
     onSubmit: (data?: any) => void
 }): JSX.Element {
     const [name, setName] = useState("")
@@ -94,12 +83,9 @@ function NamedInfoForm({
 
     return (
         <article className="rounded-merism-lg bg-merism-surface p-8 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">
-            <h1 className="mb-2 font-display text-merism-headline font-[500] text-merism-text">
+            <h1 className="mb-6 font-display text-merism-headline font-[500] text-merism-text">
                 参与访谈
             </h1>
-            <p className="mb-6 text-merism-body text-merism-text-muted">
-                {context?.study?.research_goal || "请填写以下信息以开始访谈。"}
-            </p>
             <form
                 className="flex flex-col gap-4"
                 onSubmit={(e) => {
@@ -121,16 +107,13 @@ function NamedInfoForm({
                 </div>
                 <div className="flex flex-col gap-1">
                     <label className="font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">
-                        联系方式（可选）
+                        联系方式
                     </label>
                     <Input
                         value={contact}
                         onChange={(e) => setContact(e.target.value)}
-                        placeholder="手机号或邮箱"
+                        placeholder="手机号或邮箱（可选）"
                     />
-                </div>
-                <div className="mt-2 rounded-merism-md bg-merism-bg-subtle p-3 text-merism-caption text-merism-text-muted">
-                    预计时长约 {context?.study?.estimated_minutes ?? 20} 分钟 · 回答仅用于研究 · 随时可退出
                 </div>
                 <Button type="submit" size="lg" className="mt-2 w-full">
                     开始访谈

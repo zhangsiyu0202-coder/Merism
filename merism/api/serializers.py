@@ -62,6 +62,9 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class StudySerializer(serializers.ModelSerializer):
+    share_url = serializers.SerializerMethodField()
+    primary_link = serializers.SerializerMethodField()
+
     class Meta:
         model = Study
         fields = [
@@ -81,10 +84,28 @@ class StudySerializer(serializers.ModelSerializer):
             "recruitment_quotas",
             "codebook",
             "slug",
+            "share_url",
+            "primary_link",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "slug", "created_at", "updated_at"]
+        read_only_fields = ["id", "slug", "share_url", "primary_link", "created_at", "updated_at"]
+
+    def get_share_url(self, obj: Study) -> str | None:
+        link = obj.primary_link
+        return link.full_url if link else None
+
+    def get_primary_link(self, obj: Study) -> dict | None:
+        link = obj.primary_link
+        if link is None:
+            return None
+        return {
+            "id": str(link.id),
+            "slug": link.slug,
+            "is_active": link.is_active,
+            "url_path": link.url_path,
+            "full_url": link.full_url,
+        }
 
     def validate_research_goal(self, value: str) -> str:
         value = value.strip()
@@ -253,12 +274,14 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
     Transcripts + vision_frames + decision_log can be very large
     (>1 MB per session for long interviews). The list endpoint omits
     them — callers that need the full payload hit ``retrieve``.
-    Derived fields (``turn_count``, ``duration_seconds``) give the
-    list UI enough to render per-row chips without paying the cost.
+    Derived fields (``turn_count``, ``duration_seconds``,
+    ``participant_name``) give the list UI enough to render per-row
+    chips without paying the cost.
     """
 
     turn_count = serializers.SerializerMethodField()
     duration_seconds = serializers.SerializerMethodField()
+    participant_name = serializers.SerializerMethodField()
 
     class Meta:
         model = InterviewSession
@@ -269,24 +292,43 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
             "guide",
             "mode",
             "status",
+            "interview_number",
             "started_at",
             "ended_at",
             "turn_count",
             "duration_seconds",
+            "participant_name",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = fields
 
     def get_turn_count(self, obj: InterviewSession) -> int:
         transcript = obj.transcript or []
-        return len(transcript) if isinstance(transcript, list) else 0
+        return len(transcript)
 
     def get_duration_seconds(self, obj: InterviewSession) -> int | None:
-        if obj.started_at and obj.ended_at:
-            delta = (obj.ended_at - obj.started_at).total_seconds()
-            return int(delta) if delta >= 0 else 0
-        return None
+        if not obj.started_at:
+            return None
+        end = obj.ended_at or obj.updated_at
+        if not end:
+            return None
+        delta = end - obj.started_at
+        return int(delta.total_seconds())
+
+    def get_participant_name(self, obj: InterviewSession) -> str:
+        """Return the participant's name, or "" for anonymous.
+
+        Looks at ``participation.participant.name`` (the named-link
+        intake form populates this). Falls back to "" so the frontend
+        can render a stable "匿名受访者" placeholder.
+        """
+        participation = getattr(obj, "participation", None)
+        if participation is None:
+            return ""
+        participant = getattr(participation, "participant", None)
+        if participant is None:
+            return ""
+        return participant.name or ""
 
 
 # ── Knowledge domain ───────────────────────────────────────

@@ -48,16 +48,15 @@ def _bootstrap(
     # Every study needs a current guide for /start to succeed.
     InterviewGuide.objects.create(team=team, study=study, is_current=True)
 
-    link = StudyLink.objects.create(
-        study=study,
-        team=team,
-        is_active=link_active,
-        expires_at=(
-            timezone.now() - timezone.timedelta(days=1)
-            if link_expired
-            else None
-        ) if link_expired else None,
-    )
+    # As of 2026-05-20, Study creation auto-spawns a primary StudyLink
+    # via merism.signals.study_primary_link. We use that one and just
+    # adjust its lifecycle fields per the test parameters.
+    link = study.primary_link
+    assert link is not None, "post_save signal should have created a primary link"
+    link.is_active = link_active
+    if link_expired:
+        link.expires_at = timezone.now() - timezone.timedelta(days=1)
+    link.save()
 
     screener = None
     if with_screener:

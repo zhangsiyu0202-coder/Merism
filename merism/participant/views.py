@@ -20,7 +20,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from django.db import transaction
+from django.db import models, transaction
 from django.http import HttpRequest, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -508,14 +508,25 @@ def start_session(request: HttpRequest, slug: str) -> JsonResponse:
         )
 
     with transaction.atomic():
+        # Allocate the next per-Study interview_number atomically.
+        # Lock the Study row so concurrent /start/ calls serialise here.
+        study = Study.objects.select_for_update().get(id=link.study_id)
+        next_number = (
+            InterviewSession.objects.filter(study=study)
+            .aggregate(max_n=models.Max("interview_number"))
+            .get("max_n")
+            or 0
+        ) + 1
+
         session = InterviewSession.objects.create(
             team=link.team,
-            study=link.study,
+            study=study,
             participation=participation,
             guide=guide,
-            mode=link.study.interview_mode,
+            mode=study.interview_mode,
             status=InterviewSession.Status.PENDING,
             trace_id=participation.trace_id,
+            interview_number=next_number,
         )
         participation.status = Participation.Status.INTERVIEWING
         participation.save(update_fields=["status", "updated_at"])

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { urls, type StudyTab } from "~/app/routes"
 import { PageHeading, TabRail, Tag, type TabRailItem } from "~/lib/merism"
 
+import SharePanel from "./SharePanel"
 import { studyLogic } from "./studyLogic"
 
 /**
@@ -80,6 +81,12 @@ export default function StudyPage(): JSX.Element {
                     )
                 }
             />
+
+            {study?.share_url && (
+                <div className="mt-4">
+                    <SharePanel shareUrl={study.share_url} />
+                </div>
+            )}
 
             <div className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
                 <TabRail

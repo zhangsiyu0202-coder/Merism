@@ -1,7 +1,7 @@
 # Implementation Plan
 
 > 说明：依赖关系见末尾的 Task Dependency Graph。任务号带 `_` 前缀的是子任务。
-> 所有任务默认遵守 AGENTS.md 约束：`merism_` 前缀 db_table / `team_id` 隔离 / `~/lib/merism` primitives / Celery 里用 `ph_scoped_capture` / LLM 走 `posthoganalytics.ai.openai`。
+> 所有任务默认遵守 AGENTS.md 约束：`merism_` 前缀 db_table / `team_id` 隔离 / `~/lib/merism` primitives / Celery 里用 `merism.memai.capture.scoped_capture` / LLM 走 `merism.llm_gateway.client.get_client`。
 > 每个任务完成后跑对应 pytest 入口（轻量 or ORM）+ ruff + pnpm typescript:check。
 
 ## Phase A：基础设施 + 数据模型
@@ -9,11 +9,11 @@
 ### A1. LLM / TTS / STT / Vision 客户端统一包装
 
 - 在 `products/studies/backend/` 新增 `llm.py`, `tts.py`, `stt.py`, `vision.py`
-- `llm.get_llm(model)` 返回 `posthoganalytics.ai.openai.OpenAI` 实例，`base_url=https://api.deepseek.com/v1`
+- `llm.get_llm(model)` 返回 `merism.llm_gateway.client.get_client.OpenAI` 实例，`base_url=https://api.deepseek.com/v1`
 - `tts.CosyVoiceClient.stream_tts(text_stream)` 返回 OGG/Opus 字节流
 - `stt.ParaformerClient.stream_stt(audio_stream)` 返回 `STTEvent(partial|final, text, ts)`
 - `vision.describe_frame(jpeg_bytes, context)` 返回 80–120 字描述
-- `posthog/settings/web.py` 的 MERISM annotated block 里加：`MERISM_DEEPSEEK_API_KEY`, `MERISM_QWEN_API_KEY`, `MERISM_QWEN_TTS_MODEL`, `MERISM_QWEN_STT_MODEL`, `MERISM_QWEN_VL_MODEL`, `MERISM_REPORT_SESSION_THRESHOLD`, `MERISM_SESSION_COST_ALERT_CENTS`, `MERISM_VIDEO_FRAME_INTERVAL_SEC`
+- `merism/settings/base.py` 的 MERISM annotated block 里加：`MERISM_DEEPSEEK_API_KEY`, `MERISM_QWEN_API_KEY`, `MERISM_QWEN_TTS_MODEL`, `MERISM_QWEN_STT_MODEL`, `MERISM_QWEN_VL_MODEL`, `MERISM_REPORT_SESSION_THRESHOLD`, `MERISM_SESSION_COST_ALERT_CENTS`, `MERISM_VIDEO_FRAME_INTERVAL_SEC`
 - 轻量单测：mock httpx，断言 base_url / headers / 请求体
 - _参考：Req 20, Req 23_
 
@@ -101,7 +101,7 @@ _B3.3 Apply 逻辑_
 
 - `GET/PUT /studies/:id/screener/`：单 screener（如不存在则 PUT 创建）
 - `POST /studies/:id/screener/generate/`：自然语言 → LLM → 结构化 questions + pass_logic 草稿
-- `GET/POST /studies/:id/stimuli/` 列表/上传；上传走 `posthog.storage.object_storage`，key = `merism/stimuli/{study_id}/{filename}`
+- `GET/POST /studies/:id/stimuli/` 列表/上传；上传走 `merism.services.storage`，key = `merism/stimuli/{study_id}/{filename}`
 - `PATCH/DELETE /studies/:id/stimuli/:sid/`
 - 大小/MIME 校验：图 10MB / 视频 100MB / PDF 20MB
 - ORM 测试：`pass_logic` DSL 正确返回 pass/fail
@@ -175,7 +175,7 @@ _C2.2 Moderator Service_
 - 跳过 `participation.is_preview=True`
 - 调 LLM（`deepseek-reasoner`）with function `emit_session_insight`
 - 输出写 `SessionInsight`（update_or_create）
-- 所有埋点用 `ph_scoped_capture`（`insight_generated` 事件带 team_id / study_id / session_id）
+- 所有埋点用 `merism.memai.capture.scoped_capture`（`insight_generated` 事件带 team_id / study_id / session_id）
 - Max retries 3，失败通知 study owner
 - 参数化测试：transcript 长度 / mode / research_goal 类型变化下维度推导合理
 - _参考：Req 16, Req 23, Req 27_
@@ -221,7 +221,7 @@ _D3.3 Service + endpoint_
 ### D5. 成本记账 + 告警
 
 - 每次 LLM/TTS/STT/Vision 调用返回后，把估算成本累加到 `InterviewSession.cost_cents`（简单按 token × rate 或 duration × rate）
-- Celery beat `check_session_cost_alerts`：扫描 `cost_cents > MERISM_SESSION_COST_ALERT_CENTS` 的 session，通过 PostHog notification 提示 owner
+- Celery beat `check_session_cost_alerts`：扫描 `cost_cents > MERISM_SESSION_COST_ALERT_CENTS` 的 session，写一条 InboxItem.kind=cost_alert 给 owner
 - 复用 `/sending-notifications` skill 集成通知
 - _参考：Req 23_
 
@@ -356,7 +356,7 @@ _F4.2 AI 审查抽屉_
 
 ### I1. 埋点
 
-- 所有关键事件通过 `posthoganalytics.capture`（web 路径）或 `ph_scoped_capture`（Celery 路径）
+- 所有关键事件通过 `structlog` + Langfuse（web 路径）或 `merism.memai.capture.scoped_capture`（Celery 路径）
 - 事件列表：`study_created`, `outline_finalized`, `recruit_link_generated`, `participation_started`, `session_completed`, `insight_generated`, `study_report_generated`, `custom_report_query_submitted`
 - 每个事件必带 `team_id`；涉及 study 的带 `study_id`；涉及用户的带 `user_id`
 - _参考：Req 27_

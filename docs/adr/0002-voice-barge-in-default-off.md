@@ -28,10 +28,11 @@ support it.** Researchers enable it per-study via `Study.barge_in_enabled`.
    interrupt the AI reactively, which produces shallow, choppy answers —
    exactly what Merism is built NOT to collect.
 2. **Moderator contract.** PRODUCT.md §5.2 makes the moderator a
-   single-call-per-turn function. A "turn" is the participant's complete
-   answer followed by the AI's complete next question. Barge-in breaks
-   this — the LLM has to decide what to do with a half-delivered
-   question, which complicates `next_action` logic and `remaining_followups`
+   2-node (decide → generate) per-turn pipeline. A "turn" is the
+   participant's complete answer followed by the AI's complete next
+   question. Barge-in breaks this — the LLM has to decide what to do
+   with a half-delivered question, which complicates `next_action` logic
+   and `remaining_followups`
    accounting.
 3. **Participant mental model.** Turn-taking gives participants a clear
    contract: "the AI finishes, then I speak." It reduces freezing (people

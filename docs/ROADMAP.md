@@ -1,833 +1,384 @@
 # Merism rebuild roadmap
 
-This doc tracks every task for the clean-slate rebuild under `merism-app/`.
-Each section is "done" / "next" / "later".
+最后更新：**2026-05-20**。本文档记录 `merism-app/` 重建工作每一轮的内容、状态与下一步。
 
-## ✅ Done (R1-R4, R6, R7, R8 skeleton, R10)
+格式：每个里程碑（R*）独立小节，开头标 ✅ / ⏳ / 🔭，越靠下越近期完成。文末列出"下一阶段候选"。
 
-### R1 — Bootstrap files
-- `pyproject.toml` — Python 3.12.12 pin, Django 5.2.13, DRF, pgvector,
-  pydantic v2, cryptography, openai (DeepSeek-compat), langchain-core, structlog
-- `README.md`, `AGENTS.md` (trimmed, Merism-only, 8 non-negotiable rules)
-- `docker-compose.yml` — postgres (pgvector) + redis + minio. No ClickHouse /
-  Kafka / Temporal.
-- `bin/setup-dev.sh` + `bin/postgres-init.sql` — one-command idempotent setup
-- `manage.py`, `.gitignore`, `.env.example`, `pytest.ini`, `conftest.py`
+---
 
-### R2 — Django project skeleton
+## 当前状态速览（2026-05-20）
+
+| 维度 | 数值 |
+|---|---|
+| Django 模型 | 56 |
+| 迁移文件 | 32 |
+| 后端测试 | 295（test collection），test_boundary 5/5 全过 |
+| 前端测试 | 39 vitest + 0 oxlint + 0 typescript 错误 |
+| 前端 Scenes | 14 |
+| Study sub-tabs | 9 |
+| 后端 ViewSets | 35+ |
+| 招募 channel adapters | 6（feishu / wecom / wecom_bot / qq_group / qq_guild / email）|
+
+主流功能链路（invite → consent → 访谈 → 闭包 → 分析 → 报告 → Inbox）端到端可走通，含语音 / 文本两路。
+
+---
+
+## ✅ R1-R10 — Bootstrap & 骨架（已完成）
+
+### R1 — 项目脚手架
+- `pyproject.toml`（Python 3.12.12 / Django 5.2 / DRF / pgvector / Pydantic v2 / cryptography / openai / langchain-core / structlog）
+- `README.md`、`AGENTS.md`、`docker-compose.yml`（pg + redis + minio）
+- `bin/setup-dev.sh`、`bin/postgres-init.sql`
+- `manage.py`、`.gitignore`、`.env.example`、`pytest.ini`、`conftest.py`
+
+### R2 — Django 项目骨架
 - `merism/{__init__,apps}.py`
-- `merism/settings/{__init__,base,dev,test,prod}.py` (prod asserts required
-  env vars via `ImproperlyConfigured`)
+- `merism/settings/{__init__,base,dev,test,prod}.py`（prod 强校验环境变量）
 - `merism/{urls,wsgi,asgi}.py`
 
-### R3 — Test harness
-- `merism/testing/` — 24 files ported verbatim from the old repo
-  (factories, fakes, assertions, fixtures, freezetime, pytest_plugin)
-- `merism/tests/test_boundary.py` — new boundary tests asserting
-  `DJANGO_SETTINGS_MODULE=merism.settings.test`, no `posthog` package
-  importable, no `posthog.*` in `sys.modules`, `INSTALLED_APPS` is
-  Merism-only
+### R3 — 测试 harness
+- `merism/testing/`（24 文件：factories / fakes / assertions / fixtures / freezetime / pytest_plugin）
+- `merism/tests/test_boundary.py` —— `DJANGO_SETTINGS_MODULE`、零 PostHog、INSTALLED_APPS 白名单
 
-### R4 — Core models (27 models across 8 files)
-- `merism/models/team.py`        — `Organization`, `OrganizationMembership`,
-  `Team`, `TimestampedModel`, `UUIDModel`, `team_id_field`
-- `merism/models/study.py`       — `Study` (with `research_goal: TextField`
-  single value per spec), `StudyLink`, `StudyTemplate`, `StudyTrigger`
-- `merism/models/stimulus.py`    — `Screener`, `Stimulus`
-- `merism/models/interview.py`   — `InterviewGuide`, `Participant`,
-  `Participation` (includes `is_preview`), `InterviewSession` (voice/video
-  modes per spec Req 12), `InterviewRecording`
-- `merism/models/knowledge.py`   — `TeamResearchKnowledgeBase` (L1),
-  `StudyKnowledgeBase` (L2), `KnowledgeDocument`, `KnowledgeChunk`
-  (pgvector `VectorField` + sqlite JSONField fallback, `EMBEDDING_DIM=1536`)
-- `merism/models/recruitment.py` — `ChannelConfig` (Fernet-encrypted creds),
-  `MessageTemplate`, `RecruitmentBroadcast`, `DeliveryRecord`,
-  `ChannelHealthCheck`
-- `merism/models/report.py`      — `SessionInsight`, `AggregateSynthesis`,
-  `StudyReport`, `CustomReportQuery`
-- `merism/models/memory.py`      — `Conversation`, `AgentMemory`,
-  `CoreMemory`
-- `merism/models/__init__.py`    — flat re-export
+### R4 — 核心模型 27 张（已扩展到 56 张，见 R14+）
+最初拉起 27 张表的 5 个域模型 + 测试 fixture。后续 R14-R16 大幅扩张到 56 张。
 
-Conventions enforced:
-- every model has `db_table = "merism_<noun>"`
-- every tenant-data model has `team` FK to `merism.Team`
-- `StudyGoal` multi-goal flat list is deliberately **not** created (spec Req
-  21.3/21.4 mandates a single `Study.research_goal` TextField)
-
-### R6 — IMChannel port (done)
-Ported from `products/studies/backend/recruitment/` with
-`products.studies.backend.recruitment.channels.*` imports rewritten to
-`merism.recruitment.adapters.*`:
-
+### R6 — IM 渠道移植
 - `merism/recruitment/adapters/{base,feishu_adapter,wecom_bot_adapter,qq_group_adapter,qq_guild_adapter,factory}.py`
-- `merism/recruitment/crypto.py` — Fernet encrypt/decrypt (now prefers
-  `MERISM_CHANNEL_ENCRYPTION_KEY` env, falls back to PBKDF2-on-SECRET_KEY)
-- `merism/recruitment/renderer.py` — placeholder rendering + per-channel payload shaping
-- `merism/recruitment/rate_limit.py` — 100msg/channel/hour cap
-- `merism/recruitment/builtin_templates.py` — system-owned template seeds
-- `merism/recruitment/__init__.py` — public barrel
-- `merism/recruitment/README.md` — ported vs TODO tasks
+- `merism/recruitment/crypto.py`（Fernet, 优先 `MERISM_CHANNEL_ENCRYPTION_KEY`，回退 PBKDF2）
+- `merism/recruitment/renderer.py` / `rate_limit.py`（100 msg/channel/h）/ `builtin_templates.py`
 
-Verified zero `posthog.*` / `products.*` imports remain.
+### R7 — 报告 Block Schema
+- `merism/reports/schema.py` —— Pydantic v2：TextBlock / QuoteBlock / MetricBlock / ChartBlock / BlocksDocument / StudyReportContent（4-panel）/ ChartSpec / Citation / CustomReportAnswer
+- 18 测试覆盖 atom / discriminator / panel rejects
 
-### R7 — Report block schema (done)
-- `merism/reports/schema.py` — Pydantic v2 models:
-  - block atoms: `TextBlock` / `QuoteBlock` / `MetricBlock` / `ChartBlock`
-  - flat doc: `BlocksDocument` + `validate_blocks_list()`
-  - 4-panel (per PRODUCT.md §4): `StudyReportContent` +
-    `validate_study_report_content()`
-  - `ChartSpec` / `Citation` / `CustomReportAnswer` — Custom Report
-    function-calling output shape
-- `merism/reports/tests/test_schema.py` — 18 tests covering atoms,
-  discriminator, panel rejects (quant_panel rejects quote blocks;
-  qual_panel rejects metric blocks), empty-default roundtrips
-- `merism/reports/__init__.py` — public exports
-
-### R8 — Domain skeletons (done)
-
-All domain packages now have their runners or interfaces in place.
-
-| Package | Done |
+### R8 — 各域骨架
+| 包 | 完成 |
 |---|---|
-| `merism/api/` | **R12**: full DRF layer — `base.py` (TeamScopedModelViewSet + get_team()), `serializers.py` (22 serializers), `views.py` (17 viewsets + 10 @actions like launch/close/finalize/search/test/send/retry), `urls.py` mounting all at `/api/` |
-| `merism/conductor/` | `state.py` (ExecutionState), `prompts.py` (ModeratorDecision + build_system_prompt), **R12**: `moderator.py` (single-call streaming runner per PRODUCT.md §5.2), `guide_cursor.py` (pure traversal helpers) |
-| `merism/memai/` | `tool.py` (MemTool abstract base), **R12**: `llm.py` v2 with Langfuse auto-instrumentation (no-op when keys absent) |
-| `merism/knowledge/` | `citations.py`, **R12**: `search.py` (pgvector cosine + Postgres ts_rank_cd BM25 + RRF k=60 fusion), `embeddings.py` (DeepSeek client with auto-fallback) |
-| `merism/realtime/` | SSE: `sse_interview.py` (Redis Streams + Last-Event-ID replay + 15s heartbeat + 5000-event maxlen), **R13**: WebSocket: `voice_protocol.py` (strict Pydantic messages) + `voice.py` (Channels consumer with STT↔moderator↔TTS orchestration + ADR-0002 barge-in) + `routing.py` |
-| `merism/recruitment/` | **R12**: `tasks.py` (dispatch_recruitment_delivery with rate limit + per-delivery outcome / retry_failed_deliveries / health_check_channels beat every 30min) |
-| `merism/reports/` | `schema.py` (block atoms + StudyReportContent 4-panel + ChartSpec + Citation + CustomReportAnswer) with 18 tests |
-| `merism/stt.py` / `tts.py` / `vision.py` | Client skeletons — raise without API key to force fake substitution in tests |
-Ported from `products/studies/backend/recruitment/` with
-`products.studies.backend.recruitment.channels.*` imports rewritten to
-`merism.recruitment.adapters.*`:
+| `merism/api/` | `base.py`（TeamScopedModelViewSet）+ 22 serializer + 17 viewset + 10 @actions |
+| `merism/conductor/` | `state.py` / `prompts.py` / `moderator.py`（最初的单调用版本）/ `guide_cursor.py` |
+| `merism/memai/` | `tool.py` + `llm.py`（Langfuse 自动注入，无 key 时 noop） |
+| `merism/knowledge/` | `citations.py` / `search.py`（pgvector + ts_rank_cd + RRF k=60）/ `embeddings.py` |
+| `merism/realtime/` | SSE + WebSocket 雏形 |
+| `merism/recruitment/tasks.py` | dispatch / retry / health_check 三个 Celery 任务 |
 
-- `merism/recruitment/adapters/{base,feishu_adapter,wecom_bot_adapter,qq_group_adapter,qq_guild_adapter,factory}.py`
-- `merism/recruitment/crypto.py` — Fernet encrypt/decrypt (now prefers
-  `MERISM_CHANNEL_ENCRYPTION_KEY` env, falls back to PBKDF2-on-SECRET_KEY)
-- `merism/recruitment/renderer.py` — placeholder rendering + per-channel payload shaping
-- `merism/recruitment/rate_limit.py` — 100msg/channel/hour cap
-- `merism/recruitment/builtin_templates.py` — system-owned template seeds
-- `merism/recruitment/__init__.py` — public barrel
-- `merism/recruitment/README.md` — ported vs TODO tasks
+### R9 — 前端 bootstrap + design system
+- React + Vite + TS + Kea
+- `frontend/src/lib/merism/` —— tokens / primitives / patterns（详见 R14）
+- 14 个 Scene + 7 个 study tab 雏形
 
-Verified zero `posthog.*` / `products.*` imports remain.
-
-### R10 partial — docs
-- `docs/PRODUCT.md` — copied from `standalone/PRODUCT.md`
-- `docs/specs/cowagent-im-recruitment/` — full copy of `.kiro/specs/`
-- `docs/specs/merism-design-system/` — full copy
-- `docs/specs/merism-platform/` — full copy
-- `docs/ROADMAP.md` — this file
-- `docs/MIGRATION.md` — see below
+### R10 — docs 拉起
+- `docs/PRODUCT.md` / `docs/ROADMAP.md` / `docs/MIGRATION.md` / `docs/RUNTIME.md`
+- `docs/specs/{cowagent-im-recruitment,merism-design-system,merism-platform}/`
+- `docs/adr/`（ADR 0001+）
 
 ---
 
-## ⏳ Next (R5, R7, R8, R9, R11)
+## ✅ R11 — 验证与 CI（已完成）
 
-### R5 — Initial Django migration
-```bash
-source .venv/bin/activate
-python manage.py makemigrations merism
-python manage.py migrate
 ```
-Expected output: one initial migration creating all 27 tables + pgvector
-extension enable (via `pgvector.django.VectorExtension`).
-
-Gotcha: the `VectorField` import in `merism/models/knowledge.py` falls back
-to `JSONField` when `pgvector` can't be imported. In test env this is fine
-(sqlite doesn't support vector anyway). For prod you MUST have
-`CREATE EXTENSION vector;` run — `bin/postgres-init.sql` does this on first
-container start, but if you already have a database without it, run:
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-```
-
-### R7 — Report block schema
-Port `products/studies/backend/reports/schema.py` (Pydantic v2) to
-`merism/reports/schema.py`:
-
-- `BlocksDocument` (the outer doc shape)
-- Inner block types: `TextBlock`, `MetricBlock`, `QuoteBlock`, `ChartBlock`
-- `validate_blocks_list(data)`
-- Tests at `merism/reports/tests/test_schema.py`
-
-Also add:
-- `StudyReportContent` — the **4-panel structured shape** per
-  PRODUCT.md §4 and merism-platform Req 17:
-  ```python
-  class StudyReportContent(BaseModel):
-      exec_summary: str
-      quant_panel: list[ChartBlock | MetricBlock]
-      qual_panel: list[QuoteBlock | TextBlock]
-      insight_nuggets: list[MetricBlock]
-  ```
-- `ChartSpec` — the shape charts render from (`{type, title, x, y, unit, ...}`)
-
-~2 hours work (models + validator + tests).
-
-### R8 — Remaining domain skeletons
-
-Each gets an `__init__.py`, a `README.md` with task list, and the minimum
-necessary files.
-
-#### Port-don't-rewrite (PRODUCT.md §7 — Phase 0 reusables)
-
-These exist in the old repo and PRODUCT.md explicitly says reuse them
-unchanged, just de-PostHog'd:
-
-| Source (old repo) | Destination (merism-app) |
-|---|---|
-| `products/studies/backend/guide_generator.py` | `merism/studies/guide_generator.py` |
-| `products/studies/backend/analysis.py`        | `merism/studies/analysis.py`        |
-| `products/studies/backend/api.py` (StudyViewSet + actions) | `merism/api/studies.py` |
-
-Port pattern: `cp` → rewrite `from posthog.*` / `from products.studies.*`
-imports → replace ``posthog.Team`` FK refs with `merism.Team` / the new
-models — same pattern we used for IMChannel in R6.
-
-#### `merism/conductor/` — single-call interview moderator
-- `state.py` — Pydantic v2 `InterviewState` (copy/adapt
-  `merism/conductor/state.py` from old repo)
-- `moderator.py` — **single LLM call** returning `(text, next_action)` per
-  platform Req 14. Do NOT implement macro/meso/micro layers. Do NOT
-  implement policies.
-- `prompts.py` — moderator system prompt builder
-- `tests/`
-- Drop: `merism/conductor/macro.py`'s LangGraph multi-node graph — the spec
-  explicitly forbids this split.
-
-#### `merism/knowledge/` — RAG, no HogQL
-- `indexer.py` — chunk + embed pipeline (called async after session ends)
-- `search.py` — hybrid BM25 + pgvector cosine (`SELECT ... ORDER BY embedding <=> %s`)
-- `citations.py` — port from `products/studies/backend/knowledge_citations.py`
-- `tests/`
-- Drop anything that references `posthog.hogql`.
-
-#### `merism/memai/` — Merism-native AI tools (NOT PostHog's hogai)
-Complete redesign. Only keep the tool *base class* pattern from the old
-repo. Throw out every PostHog-product-specific tool.
-
-- `tool.py` — thin `MemTool` abstract base (LangChain `BaseTool` compatible)
-- `llm.py` — `get_llm()` wrapping `openai.OpenAI` with `base_url` pointed at
-  DeepSeek (or Anthropic if flag set)
-- `tools/search_research.py` — semantic search over the team's studies
-- `tools/compare_personas.py` — cross-persona analysis
-- `tools/analyze_interviews.py` — ad-hoc multi-session analysis
-- `tools/recruitment_plan.py` / `recruitment_draft_copy.py` /
-  `recruitment_preview.py` / `recruitment_send.py` / `recruitment_status.py`
-  — the 5 recruitment tools already reserved in the spec
-- `agents/ask_merism.py` — Ask Merism chat runner (single agent, no mode
-  switching)
-- `rag/` — borrow index/retrieval from `merism.knowledge`
-
-#### `merism/realtime/` — SSE + WebSocket
-- `sse_interview.py` — SSE stream producer for interview replay
-- `ws_voice_protocol.py` — WebSocket voice protocol (participant audio in,
-  AI audio out)
-- Redis Streams for replay backbone
-
-#### `merism/stt.py / tts.py / vision.py`
-Port `products/studies/backend/stt.py` / `tts.py` / `vision.py` with the
-PostHog-specific imports removed. These are thin HTTP clients against
-DashScope (Paraformer + CosyVoice + Qwen-VL).
-
-### R9 — Frontend bootstrap + design system
-
-Full scope is in `docs/specs/merism-design-system/`. For skeleton:
-
-- `frontend/package.json` — pnpm workspace
-- `frontend/vite.config.ts` — Vite + React + TS
-- `frontend/tsconfig.json`
-- `frontend/index.html`
-- `frontend/src/main.tsx` — root app
-- `frontend/src/design_system/tokens/{colors,typography,spacing,shadows,radii,breakpoints}.ts` — ports from `frontend/src/lib/merism/tokens/` in old repo
-- `frontend/src/design_system/primitives/{Button,Card,Input,Tag,StatusDot,Tooltip,Dialog,Tabs}.tsx`
-- `frontend/src/design_system/patterns/{PageShell,TabBar,StudyCard,SessionRow,ChatPanel}.tsx`
-- `frontend/src/design_system/fonts/` — Inter, Geist eager; Plex Mono lazy
-- `frontend/src/app/` — auth shell, top-level routes
-- `frontend/tailwind.config.js` — `merism-*` namespace
-
-Storybook scaffolding deferred to later — not a blocker.
-
-### R11 — Verification
-```bash
-bin/setup-dev.sh             # must exit 0
-pytest merism/tests          # all smoke tests pass
-python manage.py check       # no Django errors
-ruff check merism            # no lint errors
-pyright merism               # no type errors
+bin/setup-dev.sh             # 一键启动
+pytest merism/tests          # 全 boundary smoke
+python manage.py check       # 0 错误
+ruff check merism            # 0 lint
+pyright merism               # 0 type
 ```
 
 ---
 
-## 🔭 Later (post-MVP)
+## ✅ R12-R13 — API 完整 + 实时层（已完成）
 
-- **Codebook Governance (R16)**: Full codebook lifecycle subsystem — in progress.
-  - ✅ Design doc: `docs/specs/codebook-governance/design.md`
-  - ✅ Data models: `CodebookVersion`, `CodeChange`, `CodeMapping`
-  - ✅ `InductiveCodeSuggester` agent (batch emergent code discovery)
-  - ✅ `CodebookReviewer` agent (merge/split/rename/deprecate proposals)
-  - ✅ `CodebookVersionManager` (immutable snapshots + mappings)
-  - ✅ `RetaggingJob` (selective re-tagging of affected quotes)
-  - ✅ `ThemeSynthesizer` auto-trigger (saturation + target_reached)
-  - ✅ Pipeline integration in `post_session.py`
-  - ⬜ Frontend: codebook version history + proposal approve/reject UI
-  - ⬜ Admin: CodebookVersion / CodeChange browsing
-- **Dagster or Temporal**: The platform spec doesn't decide. Default to
-  Celery + Celery Beat for now. Revisit when cross-DAG workflows become
-  necessary.
-- **Dark mode**: Tokens already have `semanticDark`; primitives use CSS
-  vars. Visual tuning needed.
-- **Frontend Kea → Jotai?**: Old repo was Kea-heavy. Evaluate in R9
-  whether to keep Kea or move to Jotai + Tanstack Query for simplicity.
-  Decision can wait until we have 5+ connected views.
-- **Stimuli S3 upload flow**: Req 6.5 says S3 via PostHog's abstraction.
-  We need a Merism-native equivalent — probably just `boto3` + signed URL.
-- **i18n**: `InterviewSession.locale` is already a field. Deliver i18n
-  once English flow is green.
+- 22 serializer / 17 viewset / 10 @actions（launch / close / finalize / search / test / send / retry 等）
+- SSE：`merism/realtime/sse_interview.py`（Redis Streams + Last-Event-ID 回放 + 15s heartbeat + 5000 maxlen）
+- WebSocket：`merism/realtime/voice.py` + `voice_protocol.py`（Pydantic 严格消息 + ADR-0002 barge-in）
 
 ---
 
-## Commit plan
+## ✅ R14 — Outset-grade UX 升级（已完成 2026-05-10）
 
-Commits are small and atomic. Today's sequence:
+8 条线，详细记录见 `docs/.archive_2026-05-20/ROADMAP.md` 中的 R14 段。要点：
 
-1. `chore(rebuild): scaffold merism-app bootstrap` — R1+R2
-2. `chore(rebuild): port merism.testing and boundary tests` — R3
-3. `feat(models): add merism core models with merism_ prefix` — R4
-4. `feat(recruit): port IMChannel adapters + crypto + renderer` — R6
-5. `docs(rebuild): add ROADMAP, MIGRATION, copy specs` — R10
+### R14.1 — Concept Testing 2.0
+- `Concept` / `ConceptBlock` / `ConceptRotationCursor`，3 种 rotation 策略
+- `concept_plan.expand_guide()` 纯函数 + `moderator._expand_if_needed`
+- `StimulusShowFrame` 通过 voice pipeline 推前端 crossfade
+- Dimensions scorer：sentiment / purchase_intent / appeal / comprehension
 
-Then stop and let the developer review before R5/R7-R9.
+### R14.2 — Design tokens（8pt grid + Slate + Stripe alpha-core tag）
+- 10-tier 排版（hero 72 → caption 12）
+- Radii xs 4 → 2xl 24
+- Elevation `shadow-merism-{xs,sm,card,float,pop}`
+- Hairline `--merism-hairline`
+- Tag 同色 alpha-core（neutral / accent / success / warning / danger / info）
+- 全局 6px 滚动条
+- `bin/align_8pt.py` 可重跑迁移脚本
 
+### R14.3 — 新增 / 重写 primitives 与 patterns
+PageTopBar / PageHeading / KpiCard / KpiGrid / ExecutiveSummary / SettingsSection / OrderedList / ThreePaneLayout / LogicCard / LiveSummaryPanel / Illustration / ChatPanel / Tag …
 
----
+### R14.4 — Sidebar 四区
+WorkspaceAnchor / 平铺实体导航 / PinnedStudies / UserBadge
 
-## ✅ R14 — Outset-grade UX overhaul (2026-05-10)
+### R14.5 — Home Scene
+5-列 KpiGrid + Studies 横排 + FirstStudyHero（`GET /api/home/stats/`）
 
-A front-to-back visual + architectural pass that takes the app from "functional
-MVP" to "Outset.ai-grade research workbench". Six major threads, all completed
-in a single sitting with a zero-regression bar (`pytest 59 passed · frontend
-37 passed · build < 5s` at every checkpoint).
+### R14.6 — Settings + 模型变更
+- `Study.research_objectives: JSONField(default=list)` + 迁移 0004
+- 安全修复：`TeamScopedModelViewSet.perform_create` 永远注入 team
 
-### R14.1 — Concept Testing 2.0 (carry-overs from R13)
-- Per-concept section rotation (`Concept` + `ConceptBlock` + `ConceptRotationCursor`)
-  with three strategies (fixed / random_per_session / **persistent latin-square**).
-- `concept_plan.expand_guide()` as pure function + `moderator._expand_if_needed`
-  advances cursor atomically via `F("position") + 1` for latin_square blocks.
-- `StimulusShowFrame` + `WebSocketEgressObserver` bridge to
-  `StimulusShowMessage` — frontend crossfades concept preview image on transition.
-- Dimensions scorer (`merism/concept/dimensions.py`, 146 LOC):
-  sentiment / purchase_intent / appeal / comprehension — weights by transcript
-  turns buckets via `{question_id, concept_id}` tagging. Winner tiebreak:
-  `purchase_intent → appeal → sentiment → sessions_seen`.
-- `ConceptBlockViewSet.report` action returns `dimensions[]` per concept.
+### R14.7 — Per-page 子导航 + 插画
+所有 7 个顶层页接 `PageTopBar`
 
-### R14.2 — Design token system overhaul (8pt grid + Slate)
-- **Neutrals**: warm Cohere paper → cool Slate (`#F9FAFB` / `#0F172A` /
-  `#64748B` / `#E2E8F0`).
-- **Typography**: 10-tier strict 8pt-aligned scale
-  (`hero 72 · display 48 · headline 32 · h2 24 · title 20 · subtitle 18 ·
-  body 16 · body-sm 14 · label 13 · caption 12 · mono 13`).
-- **Radii**: `xs 4 · sm 6 · md 8 · lg 12 · xl 16 · 2xl 24 · full 9999`.
-- **Elevation**: `shadow-merism-xs / sm / card / float / pop` — diffuse
-  rgba(15,23,42,α) shadows replace solid borders on all cards.
-- **Hairline**: `--merism-hairline` (rgba 0.06) for "invisible structure".
-- **4 tracking tokens**: `caps` / `caps-tight` / `tight` / `display`.
-- **Tag palette**: Stripe-grade same-hue alpha-core system —
-  `--merism-status-{neutral|accent|success|warning|danger|info}` core + matching
-  `-bg` at 8-9% alpha. **No pastel fills, no solid borders anywhere.**
-- **Global scrollbar**: thin (6px), invisible track, 10%→25% thumb on hover,
-  WebKit + Firefox, dark-mode automatic.
-- **Global font-smoothing**: `antialiased` + explicit webkit/moz overrides.
-- **bin/align_8pt.py**: repeatable migration script (75 spacing + 22 text-size
-  fixes applied) — safe to re-run.
+### R14.8 — Header 紧凑（节省每屏 ~80px）
 
-### R14.3 — Design-system primitives
-
-All new / rewritten components live under `frontend/src/lib/merism/{primitives,patterns}/`:
-
-| Pattern | Purpose | LOC |
-|---|---|---|
-| `PageTopBar` | Per-scene masthead (title + status tag + actions + tabs) | 73 |
-| `PageHeading` | H1 block — 32px/medium, asymmetric vertical rhythm | 96 |
-| `KpiCard` / `KpiGrid` | Editorial big-number cards (5-col responsive) | 168 + 54 |
-| `ExecutiveSummary` | Narrative hero with LLM-stream skeleton | 138 |
-| `SettingsSection` | Editable section block (H2 + body + Edit action) | 95 |
-| `OrderedList` | Numbered editorial list (read/editable) | 187 |
-| `ThreePaneLayout` / `LogicCard` / `LiveSummaryPanel` | Editor primitives | 59 + 91 + 101 |
-| `Illustration` | Notioly SVG themed via `currentColor` | 87 |
-| `ChatPanel` | Glass AI bubble + 24px ink send button (rewrite) | 227 |
-| `Tag` (primitive) | Same-hue alpha-core + 5px dot + unified inset edge | 193 |
-
-Storybook stories for every new pattern (Catalog / SizeLadder / Theming /
-InEmptyState / etc.).
-
-### R14.4 — Sidebar architecture (Outset four-zone)
-Replaced abstract "Workspace / Library" group headers with a flat entity
-navigation:
-
-| Zone | Component | Behaviour |
-|---|---|---|
-| 1 | `WorkspaceAnchor` | Team name + chevron (click → /settings) |
-| 2 | Flat entity nav | Home · Studies · Ask · Inbox · Repository · Decisions |
-| 3 | `PinnedStudies` | localStorage-backed max-3 recent + inline "New study" |
-| 4 | `UserBadge` + Settings | Avatar + name + email + sign out |
-
-`sidebarLogic.ts` uses a `touchStudy` listener on `sceneLogic.setScene` so the
-current study auto-pins whenever the user navigates in.
-
-### R14.5 — Home scene
-New `Scene.Home` at `/` (was mapped to Ask) with:
-- 5-column KpiGrid (Sessions · Studies · Talk time · Participants · Insights)
-  served by `GET /api/home/stats/`.
-- Horizontal `StudyCard` strip + tail "+ Start a new study" card.
-- `FirstStudyHero` illustration-backed empty state.
-- Overview / Activity / Drafts sub-tabs (Overview implemented).
-
-### R14.6 — Settings scene + model change
-- **Backend**: `Study.research_objectives: JSONField(default=list)` added —
-  migration `0004_study_research_objectives` applied. North-Star
-  `research_goal` kept single-line (AI anchor).
-- **Frontend**: `/studies/:id/settings` — SettingsSection + OrderedList
-  composition, per-section edit mode via `studySettingsLogic`.
-- **Security fix**: `TeamScopedModelViewSet.perform_create` now always
-  injects `team` when model has `team_id` (was only when serializer exposed
-  the field). Closed the `POST /api/studies/` null-team path.
-
-### R14.7 — Per-page sub-nav + illustration wiring
-`PageTopBar` applied to all 7 top-level pages with matching tab sets:
-
-| Page | Tabs (default bold) | Illustration (empty state) |
-|---|---|---|
-| Home | **Overview** · Activity · Drafts | `planning-a-trip` (xl) |
-| Studies | **All** · Active · Drafts · Archived | `jumping` (xl) |
-| Ask | **Chat** · History · Saved | `fast-internet` (md) |
-| Inbox | **All** · Unread · Flagged | `chill-time` (xl) |
-| Repository | **Documents** · Chunks · Templates | `painting` (xl) |
-| Decisions | **Open** · Closed · Linked | `flag` (xl) |
-| Settings (workspace) | — | — |
-
-Studies page: `active/drafts/archived` filters are real (client-side
-`visibleStudies` slicing); `all` uses same data as the list page did.
-
-### R14.8 — Header compaction (last pass)
-- `PageHeading` title: 48px display → 32px headline · weight 450 → 500.
-- Internal rhythm: asymmetric gaps (eyebrow 8 / title 8 / lede 24).
-- Inline `status` slot baseline-aligned with title (replaces right-side tag).
-- `AppLayout` top padding: 72 → 24px (`--spacing-merism-page-top` retained
-  as token for future marketing heroes but no longer applied in app shell).
-- Top-level pages outer `gap-section-y` (64) → `gap-8` (32). Inside-page
-  section-y (Home Overview between KPI row and Studies strip) retained.
-
-**Net vertical-space reclaim:** ~80px per scene — from TopBar edge to
-first interactive element.
-
-### Verification at final checkpoint
-
-```
-backend pytest : 59 passed + 1 skipped
-frontend       : typecheck 0 · vitest 37 · oxlint 0 · vite build 3.6s
-kea typegen    : 21 logics
-storybook      : HMR live on :6006
-API smoke test : GET /api/home/stats/ → 200 · POST /api/studies/ → 201
-```
-
-### Files touched this sprint
-
-~50 files modified/created. Highlights:
-
-**Backend (7 files)**
-- `merism/api/home.py` (new) · `merism/api/base.py` (security fix) ·
-  `merism/api/urls.py` · `merism/api/serializers.py` ·
-  `merism/models/study.py` · `merism/migrations/0004_*`.
-
-**Frontend design system (16 files)**
-- `lib/merism/{tokens/variables,tokens/theme,fonts/preload}.css` ·
-  `lib/merism/primitives/{Tag,Card,Button,Input,Dialog}.tsx` ·
-  `lib/merism/patterns/{KpiCard,KpiGrid,ExecutiveSummary,LogicCard,
-  LiveSummaryPanel,ObjectiveList,SettingsSection,OrderedList,PageTopBar,
-  ThreePaneLayout,ChatPanel,PageHeading}.tsx` ·
-  `lib/merism/illustrations/{Illustration.tsx,svg/*.svg}` · Storybook
-  stories for every new component.
-
-**Frontend scenes (10 files)**
-- `features/{home,studies,ask,inbox,repository,decisions}/...` +
-  `features/studies/tabs/{settings,outline,screener,stimuli}/...`.
-
-**Infra**
-- `bin/align_8pt.py` — repeatable 4pt-grid migration script.
-- `.gitignore` — excludes raw illustration pack.
-
+收尾验证：`pytest 59 passed + 1 skipped` / `vitest 37 passed` / build < 5s。
 
 ---
 
-## ✅ R14 — Outset-grade UX overhaul (2026-05-10)
+## ✅ R15 — 运行时编排 + 端到端自动化（已完成 2026-05-11）
 
-A front-to-back visual + architectural pass that takes the app from "functional
-MVP" to "Outset.ai-grade research workbench". Eight threads, all completed
-with a zero-regression bar (`pytest 59 passed · frontend 37 passed · build < 5s`
-at every checkpoint).
+R15 的 8 个步骤把"链接发出 → 受访者完成 → 研究者收到分析"全链路串起来。详见 [`RUNTIME.md`](RUNTIME.md)。
 
-### R14.1 — Concept Testing 2.0 finalization
-
-- Per-concept section rotation (`Concept` / `ConceptBlock` /
-  `ConceptRotationCursor`) with three strategies — the key one being
-  **persistent latin-square** via `F("position") + 1` atomic advance.
-- `concept_plan.expand_guide()` pure function + `moderator._expand_if_needed`.
-- `StimulusShowFrame` → `WebSocketEgressObserver` → `StimulusShowMessage` —
-  frontend crossfades preview image on transition.
-- Dimensions scorer (`merism/concept/dimensions.py`) scores sentiment /
-  purchase_intent / appeal / comprehension per concept; tiebreak
-  `purchase_intent → appeal → sentiment → sessions_seen`.
-- `ConceptBlockViewSet.report` returns `dimensions[]` per concept.
-
-### R14.2 — Design-token overhaul (8pt grid + Slate + Stripe algorithm)
-
-- **Neutrals**: warm Cohere paper → cool Slate (`#F9FAFB` / `#0F172A` /
-  `#64748B` / `#E2E8F0`).
-- **Typography**: 10-tier strict 8pt-aligned scale
-  (hero 72 · display 48 · headline 32 · h2 24 · title 20 · subtitle 18 ·
-  body 16 · body-sm 14 · label 13 · caption 12 · mono 13).
-- **Radii**: xs 4 · sm 6 · md 8 · lg 12 · xl 16 · 2xl 24 · full 9999.
-- **Elevation**: `shadow-merism-xs / sm / card / float / pop` — diffuse
-  rgba(15,23,42,α) shadows replace solid borders on every card surface.
-- **Hairline**: `--merism-hairline` (rgba 0.06) + `-strong` (0.1) for
-  "invisible structure".
-- **Tracking**: 4 new tokens (`caps` / `caps-tight` / `tight` / `display`).
-- **Tag palette**: Stripe-grade same-hue **alpha-core** algorithm —
-  `--merism-status-{neutral|accent|success|warning|danger|info}` one core
-  colour + `-bg` at 8-9% alpha. Zero pastel fills, zero solid borders,
-  unified 1px inset edge (`--merism-status-edge`) across all variants.
-- **Scrollbar**: thin (6px) global, invisible track, 10%→25% thumb-on-hover,
-  WebKit + Firefox, dark-mode flipping via CSS vars.
-- **Font-smoothing**: global `antialiased` + explicit webkit/moz overrides.
-- **`bin/align_8pt.py`**: repeatable migration script (75 spacing + 22
-  text-size fixes applied) — safe to re-run.
-
-### R14.3 — Primitives + patterns built or rewritten
-
-| Component | Role | LOC |
+| 步骤 | 内容 | 迁移 |
 |---|---|---|
-| `PageTopBar` | Per-scene masthead (title + status + actions + tabs) | 73 |
-| `PageHeading` | H1 block — 32px/medium, asymmetric vertical rhythm | 96 |
-| `KpiCard` / `KpiGrid` | Editorial big-number cards (2/3/4/5 column) | 168 + 54 |
-| `ExecutiveSummary` | Narrative hero block with LLM-stream skeleton | 138 |
-| `SettingsSection` | Editable section (H2 + body + Edit action) | 95 |
-| `OrderedList` | Numbered editorial list (read + editable modes) | 187 |
-| `ThreePaneLayout` / `LogicCard` / `LiveSummaryPanel` | Editor shells | 59 / 91 / 101 |
-| `Illustration` | Notioly SVGs themed via `currentColor` | 87 |
-| `ChatPanel` (rewrite) | Glass AI bubble + 24px ink send button | 227 |
-| `Tag` (2× rewrite) | Same-hue alpha-core + 5px dot + unified inset edge | 193 |
+| R15.0 | `SessionEvent` 事件日志（append-only，per-session 单调 seq）+ `event_log.py` 服务 | 0009 |
+| R15.1 | `trace_id` 横贯 7 张表 + `observability.bind_trace` + admin Trail view | 0010 |
+| R15.2 | `Invitation` 模型 + `StudyLink.require_invitation` + 单次令牌链路 | 0011 |
+| R15.3 | 文本模式 SSE 回合：`POST /api/sessions/<id>/message/` + cookie 鉴权 + frontend `TextInterviewPage` | — |
+| R15.4 | 6 信号 closure（`closure.py`）+ `abandon_stuck_sessions` Celery beat | 0012 |
+| R15.5 | `Study.actual_completed_count` 改 `@property`（aggregate）+ auto-close 信号 + study_full vs link_closed 区分 | — |
+| R15.6 | `InboxItem` + 3 个 post_save signal + 前端 `InboxPage` 重写 | 0013 |
+| R15.7 | `ModeratorLLMProcessor` —— voice pipeline 接入 `stream_turn`，替代默认 LLMProcessor | — |
+| R15.8 | `process_completed_session` 切成 Celery `chain`（polish → extract_and_tag → index_and_insight）+ `dispatch_pending_broadcasts` 60s catch-up | — |
 
-Storybook stories for every new pattern (Catalog · SizeLadder · Theming ·
-InEmptyState · etc.).
+收尾：`pytest 211 passed + 1 skipped`（+57 vs R14）；`merism/tests/test_e2e_automation.py` 1 个用例完整走通 invite→inbox 链路 (mocked LLM, < 6s)。
 
-### R14.4 — Sidebar architecture (Outset four-zone)
+---
 
-Replaced abstract "Workspace / Library" group labels with flat entity
-navigation anchored top + user-identity anchored bottom:
+## ✅ R16 — Codebook 治理（后端完成，前端 UI 待做）
 
-| Zone | Component | Behaviour |
-|---|---|---|
-| 1 | `WorkspaceAnchor` | Team name + chevron (click → /settings) |
-| 2 | Flat entity nav | Home · Studies · Ask · Inbox · Repository · Decisions |
-| 3 | `PinnedStudies` | localStorage-backed max-3 recent + inline "New study" |
-| 4 | `UserBadge` + Settings | Avatar + name + email + sign out |
+- 设计文档：`docs/specs/codebook-governance/design.md`
+- 数据模型：`CodebookVersion` / `CodeChange` / `CodeMapping` —— 迁移 0018
+- 4 个 agent：`InductiveCodeSuggester` / `CodebookReviewer` / `CodebookVersionManager` / `RetaggingJob`
+- `merism/codebook/saturation.py` 触发 ThemeSynthesizer
+- 集成进 `conductor.post_session.py` 第 5 步
+- ⬜ 前端：codebook 版本历史 + 提议 approve/reject UI
+- ⬜ Admin：CodebookVersion / CodeChange 浏览界面
 
-`sidebarLogic.ts` uses a `touchStudy` listener on `sceneLogic.setScene` so
-the current study auto-pins whenever the user navigates in.
+---
 
-### R14.5 — Home scene
+## ✅ R17 — Cleaning pipeline + Glossary（已完成）
 
-New `Scene.Home` at `/` (was mapped to Ask) with:
-- 5-column `KpiGrid`: Sessions · Studies · Talk time · Participants ·
-  Insights, served by `GET /api/home/stats/`.
-- Horizontal `StudyCard` strip + tail "+ Start a new study" card.
-- `FirstStudyHero` illustration-backed empty state (`planning-a-trip`).
-- Overview / Activity / Drafts sub-tabs (Overview implemented).
-
-### R14.6 — Study settings scene + model change
-
-- **Backend**: `Study.research_objectives: JSONField(default=list)` added —
-  migration `0004_study_research_objectives` applied. North-Star
-  `research_goal` kept single-line (AI anchor).
-- **Frontend**: `/studies/:id/settings` — `SettingsSection` + `OrderedList`
-  composition, per-section edit mode via `studySettingsLogic`.
-- **Security fix**: `TeamScopedModelViewSet.perform_create` now always
-  injects `team` when the model has `team_id` (was gated on serializer
-  exposing the field). Closed the `POST /api/studies/` null-team path.
-
-### R14.7 — Per-page sub-nav + illustration wiring
-
-`PageTopBar` applied to all seven top-level pages:
-
-| Page | Tabs (default bold) | Illustration (empty state) |
-|---|---|---|
-| Home | **Overview** · Activity · Drafts | `planning-a-trip` (xl) |
-| Studies | **All** · Active · Drafts · Archived | `jumping` (xl) |
-| Ask | **Chat** · History · Saved | `fast-internet` (md) |
-| Inbox | **All** · Unread · Flagged | `chill-time` (xl) |
-| Repository | **Documents** · Chunks · Templates | `painting` (xl) |
-| Decisions | **Open** · Closed · Linked | `flag` (xl) |
-
-Studies page filter tabs are real (client-side `visibleStudies` slicing).
-
-### R14.8 — Header compaction (last pass)
-
-- `PageHeading` title: 48px display → 32px headline · weight 450 → 500.
-- Asymmetric rhythm: eyebrow→title 8px, title→lede 8px, lede→hairline 24px.
-- Inline `status` slot baseline-aligned with title (replaces right-side tag).
-- `AppLayout` top pad: 72 → 24. Top-level pages outer gap 64 → 32.
-- Token `--spacing-merism-page-top` retained for future marketing heroes
-  but no longer applied in app shell.
-
-Net vertical-space reclaim: **~80px per scene** from TopBar edge to first
-interactive element.
-
-### Verification at final checkpoint
+多阶段转写清洗，每阶段独立可关：
 
 ```
-backend pytest : 59 passed + 1 skipped
-frontend       : typecheck 0 · vitest 37 · oxlint 0 · vite build 3.6s
-kea typegen    : 21 logics
-storybook      : HMR live on :6006
-API smoke     : GET /api/home/stats/ → 200 · POST /api/studies/ → 201
+stage1_asr_correct (Glossary 替换)
+   ↓
+stage3_normalize (NFKC + 中英混排归一)
+   ↓
+rule_clean (filler 词正则)
+   ↓
+llm_polish (批量 LLM)
+   ↓
+stage6_semantic_merge (可选 opt-in)
 ```
 
-### R14.5 — Home scene
+模型：`Glossary`（团队级 / 单 study 级，迁移 0017）；编排：`merism/cleaning/pipeline.py`。
 
-New `Scene.Home` at `/` (was mapped to Ask) with:
-- 5-column `KpiGrid`: Sessions · Studies · Talk time · Participants ·
-  Insights, served by `GET /api/home/stats/`.
-- Horizontal `StudyCard` strip + tail "+ Start a new study" card.
-- `FirstStudyHero` illustration-backed empty state (`planning-a-trip`).
-- Overview / Activity / Drafts sub-tabs (Overview implemented).
+---
 
-### R14.6 — Study settings scene + model change
+## ✅ R18 — LLM Gateway + ServiceSettings（已完成）
 
-- **Backend**: `Study.research_objectives: JSONField(default=list)` added —
-  migration `0004_study_research_objectives` applied. North-Star
-  `research_goal` kept single-line (AI anchor).
-- **Frontend**: `/studies/:id/settings` — `SettingsSection` + `OrderedList`
-  composition, per-section edit mode via `studySettingsLogic`.
-- **Security fix**: `TeamScopedModelViewSet.perform_create` now always
-  injects `team` when model has `team_id` (was gated on serializer exposing
-  the field). Closed the `POST /api/studies/` null-team path.
+- 迁移 0014：LLM 调用观测 schema（之前的 ad-hoc 表，后被 0023 取代）
+- 迁移 0023：`ServiceSettings`（每团队 LLM/TTS/STT/Embedding 配置；加密 api_key）
+- `merism/llm_gateway/client.py` —— 统一 `get_client(logical_name, *, team, trace_id)`：team ServiceSettings 优先，回退环境变量
+- `merism/services/configuration/{factory,registry}.py` —— Dograh 风格 service registry
 
-### R14.7 — Per-page sub-nav + illustration wiring
+---
 
-`PageTopBar` applied to all seven top-level pages:
+## ✅ R19 — Channel Target + Email 渠道（已完成）
 
-| Page | Tabs (default bold) | Illustration (empty state) |
-|---|---|---|
-| Home | **Overview** · Activity · Drafts | `planning-a-trip` (xl) |
-| Studies | **All** · Active · Drafts · Archived | `jumping` (xl) |
-| Ask | **Chat** · History · Saved | `fast-internet` (md) |
-| Inbox | **All** · Unread · Flagged | `chill-time` (xl) |
-| Repository | **Documents** · Chunks · Templates | `painting` (xl) |
-| Decisions | **Open** · Closed · Linked | `flag` (xl) |
+- 迁移 0019：`ChannelTarget`（独立群发目标）
+- `merism/recruitment/adapters/email_adapter.py` —— SMTP / MCP 双形态
+- `merism/recruitment/participant_email_recruitment.py` —— 受访者邮件邀请
+- `merism/management/commands/send_participant_email_recruitment.py`
+- `ChannelType.EMAIL` 加入枚举
+- 6 测试覆盖 email_adapter + participant_email_recruitment
 
-Studies page filter tabs are real (client-side `visibleStudies` slicing).
+---
 
-### R14.8 — Header compaction (last pass)
+## ✅ R20 — Link tracking（Dub.co 风格，已完成）
 
-- `PageHeading` title 48px display → 32px headline · weight 450 → 500.
-- Asymmetric rhythm: eyebrow→title 8px, title→lede 8px, lede→hairline 24px.
-- Inline `status` slot baseline-aligned with title (replaces right-side tag).
-- `AppLayout` top pad 72 → 24. Top-level pages outer gap 64 → 32.
-- Token `--spacing-merism-page-top` retained for future marketing heroes
-  but no longer applied in app shell.
+- 迁移 0020：`LinkClick` + `LinkShareEvent`
+- `merism/participant/link_tracking.py` —— `_identity_hash(ip, ua)` 1h 去重 + `referrer_participation` 链路
+- `merism/api/link_tracking_views.py` —— LinkClickViewSet / LinkShareEventViewSet
+- UTM 参数捕获 / device 解析 / Geo（IP-lookup 可选）
+- `StudyLink.clicks` 计数器原子 `F() + 1` 更新
 
-Net vertical-space reclaim: **~80px per scene** from TopBar edge to first
-interactive element.
+---
 
-### Verification at final checkpoint
+## ✅ R21 — Insights / Custom Reports（已完成）
 
-```
-backend pytest : 59 passed + 1 skipped
-frontend       : typecheck 0 · vitest 37 · oxlint 0 · vite build 3.6s
-kea typegen    : 21 logics
-storybook      : HMR live on :6006
-API smoke      : GET /api/home/stats/ → 200 · POST /api/studies/ → 201
-```
+迁移 0021：
 
-### R14.8 — Header compaction (last pass)
+**Insights（auto-generated）**
+- `StudyInsights`（status 状态机：pending → generating → ready → failed）
+- `InsightHighlight`（3-6 张 headline + summary，可选跳转 finding）
+- `InsightFinding`（chart_spec + chart_interpretation + themes + subthemes + insight_nuggets + supporting_evidence）
 
-- Title 48 → 32px · weight 450 → 500.
-- Asymmetric rhythm: eyebrow→title 8px, title→lede 8px, lede→hairline 24px.
-- Inline `status` slot baseline-aligned with title.
-- `AppLayout` top pad 72 → 24. Pages outer gap 64 → 32.
-- Net reclaim: ~80px per scene.
+**Custom Reports（user-created）**
+- `CustomReport`（含 `share_token` + `is_public` + `/shared/report/<token>/` 公开 URL）
+- `ReportSegment`（人群子集，selector 跟 CohortSegment 同形）
+- `ReportQuestion`（每问题独立 AI 分析；question_type 5 种；可绑 segment）
 
-### Verification at R14 close
+API：`StudyInsightsViewSet` / `InsightHighlightViewSet` / `InsightFindingViewSet` / `CustomReportViewSet` / `ReportSegmentViewSet` / `ReportQuestionViewSet` + `shared_report_view`。
 
-```
-backend pytest : 59 passed + 1 skipped
-frontend       : typecheck 0 · vitest 37 · oxlint 0 · vite build 3.6s
-kea typegen    : 21 logics
-storybook      : HMR live on :6006
-API smoke      : GET /api/home/stats/ → 200 · POST /api/studies/ → 201
-```
+任务：`merism/api/insights_tasks.py`（generate_study_insights / generate_custom_report_question）。
 
-## ✅ R15 — Runtime harness + end-to-end automation
+前端：`features/analysis/InsightsPage.tsx` / `ReportsListPage.tsx` / `ReportDetailPage.tsx` / `AnalysisChart.tsx`。
 
-Closes the gap between "link can be sent" and "link runs end-to-end
-unattended". See [`docs/RUNTIME.md`](RUNTIME.md) for the full design
-writeup. Eight tightly-scoped steps.
+---
 
-### R15.0 — SessionEvent event log
+## ✅ R22 — 跨 session 分析（Themes / Coverage / Cohort，已完成）
 
-New `merism_session_event` table. Append-only, monotone `seq` per
-session, atomic allocation via `select_for_update`. Service module
-`merism/conductor/event_log.py`:
+迁移 0016：
 
-- `append_event(session, kind, payload, trace_id=...)`
-- `append_events(session, iterable, trace_id=...)` — batched atomic
-- `reconstruct_state(session) → ExecutionState` — fold events
-- `current_transcript(session)` — project events to transcript shape
+- `StudyGoal`（结构化研究问题，priority P0/P1/P2，coverage 0..1，is_answered）
+- `Theme`（HDBSCAN 聚类，centroid_embedding 增量分配，session_count / quote_count / sentiment_mix）
+- `CoverageSnapshot`（每场结束后重建，按优先级加权）
+- `CohortSegment`（人群子集，selector）
 
-`moderator_state` / `transcript` / `decision_log` on the session row
-are now **derived caches**. The events are authoritative, which is
-how we get resumability after process restart.
+实现：`merism/analysis/themes/{embedder,clusterer,theme_matcher,theme_summarizer}.py` + `merism/analysis/coverage/goal_coverage.py` + `merism/analysis/pipeline.py:rebuild_study_analysis`。
 
-Migration: `0009_sessionevent`.
-Tests: `merism/conductor/tests/test_event_log.py` (9).
+API：`StudyGoalViewSet` / `ThemeViewSet` / `CoverageSnapshotViewSet` / `CohortSegmentViewSet`。
 
-### R15.1 — trace_id vertical
+---
 
-`trace_id: UUIDField` added to:
-- `Participation` (default uuid4)
-- `DeliveryRecord` (nullable, stamped by adapter)
-- `InterviewSession` (copied from participation on start)
-- `SessionInsight` (copied from session)
-- `SessionEvent` (carried from session on append)
+## ✅ R23 — Conductor 2-node pipeline（已完成 2026-05-18）
 
-New module `merism/observability.py::bind_trace` binds the id into
-structlog `contextvars` for a block. Admin `Participation` list
-exposes `trace_id_short` + a custom `/trail/` view that aggregates
-DeliveryRecord + SessionEvent + SessionInsight into a chronological
-timeline.
+> ⚠️ **架构变更**：从单 LLM call 改成 `coverage_steer (decide) → generate (stream)` 顺序两节点。详见 `docs/PRODUCT.md` §5.2。
 
-Migration: `0010_deliveryrecord_trace_id_interviewsession_trace_id_and_more`.
-Tests: `merism/tests/test_trace_id_propagation.py` (4).
+实现：
+- `merism/conductor/decision_prompt.py` + `decision_validator.py` —— Node 1
+- `merism/conductor/generation_prompt.py` —— Node 2
+- `merism/conductor/probe_blocks.py` —— 动态探针定义
+- `merism/conductor/adaptive_probing.py` —— `build_coverage_context`
+- `merism/conductor/text_chunker.py` —— TTS 友好分句
+- `merism/conductor/moderator_eval.py` —— 离线评测
+- `merism/conductor/closure.py` —— 6 信号 + closing_grace 宽限期
 
-### R15.2 — Invitation + per-recipient token
+⬜ 仍待：把 AGENTS.md 规则 4 + `docs/specs/merism-platform/requirements.md` Req 14.7 同步成 2-node 描述。
 
-PIPL/GDPR-grade closed-audience support. `StudyLink.require_invitation`
-flag (default False — existing open-audience studies unchanged).
-When True, `/i/<slug>/?t=<token>` requires a matching `Invitation`
-row; otherwise a forwarded link works as before.
+---
 
-`recruitment.tasks._delivery_context` auto-creates an Invitation per
-recipient, renders the participant URL with `?t=<token>`, and
-propagates the Invitation's trace_id down to the Delivery row and
-eventually to the Participation on first click.
+## ✅ R24 — Voice Pipeline pipecat-style（已完成 2026-05-18 / 19）
 
-Migration: `0011_studylink_require_invitation_invitation`.
-Tests: `merism/participant/test_invitation_flow.py` (6).
+迁移：无（纯运行时）。
 
-### R15.3 — moderator → text pipeline + guardrails
-
-- `POST /api/sessions/<id>/message/` — SSE stream of `delta` deltas
-  and final `done` with decision. Cookie-authenticated
-  (`merism_browser_token`).
-- `stream_turn` writes `SessionEvent` rows per turn.
-- `max_probes` hard cap enforced server-side even when the LLM
-  disagrees (via existing `decision_validator`).
-- Frontend: `TextInterviewPage` + `textInterviewLogic`;
-  `InterviewRoomPage` dispatches to text when `?mode=text`;
-  `ParticipantEntryPage` appends `?mode=text` when
-  `study.interview_mode == "text"`.
-
-Tests: `merism/conductor/tests/test_moderator_events.py` (2) +
-`merism/api/tests/test_interview_message_view.py` (3).
-
-### R15.4 — 6-signal closure + orphan cleanup
-
-`merism/conductor/closure.py` with six closure signals (OR logic,
-first match wins):
-
-| # | Signal |
-|---|---|
-| A | moderator `next_action=close` |
-| B | all P0 goals answered + elapsed ≥ min_duration |
-| C | leaving-intent regex match |
-| D | idle > 120s |
-| E | WS disconnected > 30s AND ≥ 4 turns |
-| F | elapsed ≥ max_duration |
-
-Plus Celery beat `abandon_stuck_sessions` every 10 minutes for any
-in-progress session > 2h. `complete_session` is atomic + idempotent
-and sets both session and Participation to COMPLETED, emits a
-`session_lifecycle=ended` event.
-
-Migration: `0012_participation_completed_at`.
-Tests: `merism/conductor/tests/test_closure.py` (7).
-
-### R15.5 — Study counter aggregated
-
-`Study.actual_completed_count` changed from stored counter (race-prone
-`+= 1`) to a `@property` that runs `COUNT(*)` on the
-Participation set. Admin/API use `Study.annotate_completed_count()`
-to avoid N+1.
-
-`study_closure_signal` auto-closes the Study (status=CLOSED +
-matching StudyLinks.is_active=False) when target is reached. Preview
-participations ignored. `_resolve_link` maps to the more-useful
-`study_full` (409) instead of `link_closed` (410) when the link was
-auto-closed due to quota.
-
-Tests: `merism/tests/test_study_counter.py` (5).
-
-### R15.6 — Researcher Inbox notifications
-
-New `merism_inbox_item` table with
-`unique_together=(team, kind, ref_kind, ref_id)` — dedup at the DB.
-Three signal handlers in `conductor/inbox_signals.py` write items
-for `session_completed`, `insight_ready`, `study_completed`.
-
-Frontend `InboxPage` rewritten to load `/api/inbox-items/` and render
-with `Mark read` action; empty state preserved via i18n keys.
-
-Migration: `0013_inboxitem`.
-Tests: `merism/tests/test_inbox_signals.py` (5).
-
-### R15.7 — moderator → voice pipeline
-
-`ModeratorLLMProcessor` (`merism/voice/processors/moderator.py`)
-replaces the generic `LLMProcessor` whenever `session.guide_id`
-is set. Wires every `TranscriptionFrame` into `stream_turn` and
-streams the resulting content deltas as `LLMTextFrame`s to TTS.
-`InterruptionFrame` flips a cancellation flag; the moderator
-generator drains cleanly.
-
-Voice tests updated to patch `stream_turn` alongside the existing
-STT/TTS/LLM stubs.
-
-### R15.8 — post_session Celery chain + broadcast catch-up
-
-`process_completed_session` now launches a Celery `chain`:
-- `stage_polish_transcript` — intelligent-verbatim cleanup
-- `stage_extract_and_tag` — codebook + quotes + tags
-- `stage_index_and_insight` — RAG index + SessionInsight
-
-Each stage retries independently (3 × 30s); idempotent at the domain
-level. `process_completed_session_inline` preserved for admin replay.
-
-`dispatch_pending_broadcasts` periodic task (every 60s) re-enqueues
-APPROVED/SENDING broadcasts whose initial `.delay()` may have been
-lost (web dyno crash before task hit Redis).
-
-### R15 — Verification at close
+**Frame-based 架构**（`merism/voice/`）：
 
 ```
-backend pytest : 211 passed + 1 skipped  (+57 vs R14 close)
-frontend       : typecheck 0 · vitest 39 · oxlint 0 · vite build 2.30s
-e2e smoke      : merism/tests/test_e2e_automation.py — 1 test walks
-                 invite → consent → screener → moderator → closure →
-                 auto-close → inbox in <6s with mocked LLM
-migrations     : 0009 sessionevent · 0010 trace_id · 0011 invitation ·
-                 0012 completed_at · 0013 inboxitem
+STTProcessor (Qwen Paraformer 流式)
+   ↓ TranscriptionFrame
+ModeratorLLMProcessor (接 conductor.stream_turn)
+   ↓ LLMTextFrame (response_id)
+TTSProcessor (Qwen CosyVoice 流式)
+   ↓ TTSAudioRawFrame
+ConversationState (OpenAI-Realtime-style truncation)
+   ↓
+UserIdleDetector (注入合成 turn)
 ```
+
+- `merism/voice/frames.py` —— Frame 层级（System / Data / Control）
+- `merism/voice/pipeline.py` —— Pipeline / PipelineTask / PipelineRunner / FrameProcessor 基类
+- `merism/voice/observer.py` —— Composite / Metrics / Structlog / TranscriptRecorder
+- `merism/voice/processors/{stt,llm,tts,conversation_state,user_idle,moderator}.py`
+- `merism/realtime/voice.py` —— Channels WebSocket consumer
+- `merism/realtime/voice_egress.py` —— 出栈 frame 序列化到 wire
+- `merism/realtime/recording_observer.py` —— 录音落 S3
+- ADR 0002 barge-in：PTT start → InterruptionFrame → TruncatedFrame → 修剪 ConversationState 已存的 assistant 回合
+
+⬜ 仍待：网络丢帧自动重发；TTS sentence-level prefetch。
+
+---
+
+## ✅ R25 — Ask Merism 完整闭环（已完成）
+
+迁移 0024 / 0026 / 0031 / 0032：
+
+- `Conversation.messages: JSONField` 直接持久化（不再依赖 LangGraph checkpointer）
+- `AskArtifact`（5 种 type，含 `short_id` 独立分享）
+- `merism/api/ask_views.py` —— `ask_stream` SSE + `ask_title`
+- `merism/api/conversation_views.py` —— Conversation CRUD（list / get / save / delete）
+- 前端 `features/ask/`：AskPage + askLogic + ChartRenderer + CitationStrip
+- `merism/memai/title_generator.py` 异步起标题
+- `merism/memai/agents/study_narrative_summary.py` study summary artifact
+
+---
+
+## ✅ R26 — 受访者模式扩展 + StudyLink 简化（已完成）
+
+迁移 0027 / 0028 / 0029 / 0030：
+
+- `StudyLink.link_mode ∈ {anonymous, named}`（迁移 0028）
+- `Study.status` 从 6 状态简化到 3 状态 `{draft, live, closed}`（迁移 0029 + 0030 数据迁移）
+- `Invitation.uses_left` + `valid_from`（迁移 0027）
+- `Invitation.bound_browser_token`（迁移 0025）
+
+---
+
+## ⏳ 进行中
+
+### Codebook 治理 UI
+- 后端完成（R16）
+- ⬜ 前端：CodebookVersion 历史 + CodeChange 审批 + diff view
+- ⬜ Admin：Codebook* 模型浏览界面
+
+### Concept Testing 报告可视化
+- 后端 `ConceptBlockViewSet.report` 已能返回 dimensions
+- ⬜ Insights 页 / Report tab 接入概念维度可视化
+- ⬜ 概念偏好 vs 人群（CohortSegment）交叉对比
+
+### AGENTS.md / spec 同步
+- ✅ AGENTS.md 规则 4 已更新为"决策 + 生成两节点"（2026-05-20）
+- ✅ `docs/specs/merism-platform/requirements.md` Req 14 已同步（2026-05-20）
+- ✅ `docs/specs/merism-platform/design.md` runtime model 段已同步（2026-05-20）
+- ✅ `merism/conductor/{__init__,state,prompts,README}.{py,md}` 模块 docstring 已同步（2026-05-20）
+- ✅ README.md / frontend/README.md / ADR 0002 / ADR 0006 已同步（2026-05-20）
+
+### LLM observability
+- ✅ Langfuse 自动注入（无 key 时 noop）
+- ⬜ 接入 langsmith / helicone 之一作为 prod 替代
+- ⬜ trace 关联到 SessionEvent / Conversation 行
+
+### Email 渠道扩展
+- ✅ SMTP / MCP 双形态
+- ⬜ MCP 端 Resend 适配
+- ⬜ 邮件打开率回报（list-unsubscribe 处理）
+
+---
+
+## 🔭 后续候选（post-current sprint）
+
+- **i18n 完整链路** —— `InterviewSession.locale` 字段已就位，但 prompt + UI 仍是单语言
+- **Stimuli S3 上传 UX** —— 当前需要 admin 后台上传，前端待做
+- **共享报告权限管控** —— `CustomReport.is_public + share_token` 已能公开，缺 rate-limit / audit / revoke
+- **跨 study Knowledge Explore 重排** —— 当前 RRF 简单融合，按 goal 相似度重排尚未上线
+- **Theme confirmation UI** —— `Theme.status=draft` 已有，缺前端审批
+- **SMS 渠道** —— 推到非 MVP
+- **iOS / 微信小程序受访端** —— 推到非 MVP
+- **Dark mode** —— tokens 已有 `semanticDark`，UI 未深度调过
+
+---
+
+## 历史归档
+
+R14 / R15 完整 commit-by-commit 记录见 `docs/.archive_2026-05-20/ROADMAP.md`（备份在仓库内）。本 ROADMAP 把那些细节折叠进了上面的小节，重点放在"现在能做什么 / 还没做什么"。
+
+---
+
+> 修订记录
+>
+> - **2026-05-20** 全面同步当前代码状态。新增 R17-R26 段（Cleaning / ServiceSettings / ChannelTarget / Email / LinkTracking / Insights / Custom Reports / Themes / 2-node Conductor / pipecat Voice / Ask Merism / 受访者模式扩展）。明确"进行中"清单，把 R14/R15 的 commit 详细记录归档到 `.archive_2026-05-20/`。
+> - **2026-05-11** R15 收尾。
+> - **2026-05-10** R14 收尾。

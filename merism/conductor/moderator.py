@@ -406,7 +406,7 @@ _MAX_TOKENS_BY_ACTION = {
 }
 
 
-# ── State resolution helpers (extracted from the old single-call) ──
+# ── State resolution helpers (extracted from the legacy moderator.py) ──
 
 
 async def _resolve_state(
@@ -502,7 +502,7 @@ async def _resolve_goal_text(study_id: Any, goal_id: str) -> str:
     return await _fetch()
 
 
-# ── State application, save, events (kept from single-call impl) ──
+# ── State application, save, events (kept from the legacy moderator) ──
 
 
 def _apply_decision_to_state(

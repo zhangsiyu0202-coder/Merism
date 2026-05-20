@@ -1,12 +1,15 @@
 """Interview conductor state.
 
 Per PRODUCT.md §5.2 and ``merism-platform`` Req 14, the interview moderator
-is a **single LLM call** per user turn. State persists between turns; one
-call produces both the spoken text and the ``next_action`` function call.
+runs as a **2-node sequential pipeline** per user turn (non-streaming
+``coverage_steer`` decide → streaming ``generate``). State persists between
+turns; the ``ExecutionState`` here is the snapshot the runner reads at the
+top of each turn and writes back at the bottom.
 
-Do NOT introduce macro/meso/micro layers. Do NOT add policies (coverage_steer,
-engagement, off_topic). Both are explicitly forbidden by the spec (Req
-14.7, Req 21.5) — revisit after 100+ real interviews.
+Do NOT introduce macro/meso/micro layers. Do NOT add persistent policy
+modules (coverage_steer / engagement / off_topic) — they're decision-prompt
+context, not modules. Both are explicitly forbidden by the spec
+(Req 14.7, Req 21.5) — revisit after 100+ real interviews.
 """
 
 from __future__ import annotations
@@ -48,7 +51,7 @@ class ExecutionState(BaseModel):
     # Question IDs already answered (moved past).
     answered_question_ids: list[str] = Field(default_factory=list)
 
-    # ── single-call output fields ─────────────────────────
+    # ── decision output fields (Node 1 → Node 2 handoff) ─
     # Latest next_action decision returned by the LLM function call.
     # "followup" / "move_on" / "clarify" / "close" per PRODUCT.md §5.2.
     last_action: Literal["followup", "move_on", "clarify", "close", ""] = ""

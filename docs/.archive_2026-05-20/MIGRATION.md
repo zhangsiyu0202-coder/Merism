@@ -54,7 +54,7 @@ These existed in the old repo but the spec says drop them:
 
 | NOT ported | why |
 |---|---|
-| `merism/conductor/macro.py` (LangGraph 3-layer graph) | Platform spec Req 14.7 — moderator is a **2-node sequential pipeline** (`coverage_steer → generate`, both inside one `stream_turn` coroutine), not macro/meso/micro |
+| `merism/conductor/macro.py` (LangGraph 3-layer graph) | Platform spec Req 14.7 — moderator is a **single LLM call**, not macro/meso/micro |
 | `products/studies/backend/conductor/policies/` (coverage_steer, engagement, off_topic) | Platform spec Req 21.5 — defer policies until 100+ real interviews inform the design |
 | `merism/memai/tools/{execute_sql, create_insight, upsert_dashboard, call_mcp_server, create_form, create_notebook, list_data, read_data, read_data_warehouse_schema, read_taxonomy, search}.py` | None are Merism features — these are PostHog-product-specific tools |
 | `merism/memai/core/agent_modes/presets/{product_analytics, session_replay, error_tracking, flags, survey, llm_analytics, sql}.py` | All map 1:1 to PostHog products |
@@ -132,69 +132,3 @@ Field additions (non-model files):
 | `merism_delivery_record` | `trace_id: UUIDField(null, indexed)` | `0010_*` |
 | `merism_session_insight` | `trace_id: UUIDField(null, indexed)` | `0010_*` |
 | `merism_study_link` | `require_invitation: BooleanField(default=False)` | `0011_*` |
-
----
-
-## R17-R26 新增表 / 模块（2026-05-12 至 2026-05-19）
-
-R15 之后又陆续加了一批新功能。完整迁移清单（0014-0032）：
-
-| 迁移 | 内容 |
-|---|---|
-| 0014 | LLM gateway 观测 schema（后被 0023 替代/重塑）|
-| 0015 | `StudyLink.short_link_domain` |
-| 0016 | Cross-session analysis 模型：`StudyGoal` / `Theme` / `CoverageSnapshot` / `CohortSegment` |
-| 0017 | `Glossary`（ASR 修正词表）|
-| 0018 | Codebook 治理：`CodebookVersion` / `CodeChange` / `CodeMapping` |
-| 0019 | `ChannelTarget`（独立群发目标 + ChannelConfig.email enum）|
-| 0020 | Link tracking：`LinkClick` / `LinkShareEvent` |
-| 0021 | Insights & Custom Reports（6 张表）|
-| 0022 | `SessionEvent` 增加 `question_id` / `turn_number` 列 |
-| 0023 | `ServiceSettings`（每团队 LLM/TTS/STT/Embedding 配置 + 加密 api_key）|
-| 0024 | `Conversation.messages` JSONField |
-| 0025 | `Invitation.bound_browser_token` |
-| 0026 | `AskArtifact` 雏形 |
-| 0027 | `Invitation.uses_left` / `valid_from` |
-| 0028 | `StudyLink.link_mode`（anonymous / named）|
-| 0029 | `Study.status` 从 6 状态简化到 3（draft / live / closed）|
-| 0030 | Study.status 数据迁移（旧 status → 新 3 状态映射）|
-| 0031 | `AskArtifact` 重建（schema 调整）|
-| 0032 | `Conversation.messages` schema fine-tune |
-
-## 新模块来源
-
-| `merism-app/` 新模块 | 出处 | 备注 |
-|---|---|---|
-| `merism/voice/` | 全新（pipecat 风格自实现，BSD-2 思想，无代码引用）| Frame/Pipeline/Processor 三层抽象；ADR 0002 barge-in |
-| `merism/conductor/{decision_prompt,generation_prompt,probe_blocks,decision_validator,closure,event_log}.py` | 全新（R15 + R23）| 2-node moderator + 6 信号 closure |
-| `merism/cleaning/` | 全新（R17）| 多阶段转写清洗 |
-| `merism/codebook/` | 全新（R16）| 治理 4 agent + version_manager |
-| `merism/concept/` | 全新（R14.1）| Concept Testing 2.0 |
-| `merism/analysis/` | 全新（R22）| Themes + Coverage + Cohort |
-| `merism/llm_gateway/` | 全新（R18）| 团队级路由 |
-| `merism/services/configuration/` | 全新（R18）| Dograh 风格 service registry |
-| `merism/recruitment/adapters/email_adapter.py` | 全新（R19）| SMTP / MCP 双形态 |
-| `merism/recruitment/orchestrator.py` | 全新 | 群发流水编排 |
-| `merism/recruitment/participant_email_recruitment.py` | 全新（R19）| 受访者邮件邀请 |
-| `merism/participant/link_tracking.py` | 全新（R20）| Dub.co 风格 click 记录 |
-| `merism/participant/funnel.py` | 全新 | 漏斗统计 |
-| `merism/api/{insights_views,insights_tasks,ask_views,conversation_views,interview_message_view,link_tracking_views,analysis_views,cleaning_views,home,users}.py` | 全新（R12-R25）| 各域 viewset / 端点 |
-| `merism/memai/agents/{outline_review,recruitment_message,quote_extractor,quote_tagger,session_insight_generator,study_narrative_summary,inductive_code_suggester,codebook_seeder,codebook_reviewer,analysis}.py` | 全新（R12-R25）| 12+ agents |
-| `merism/memai/title_generator.py` | 全新（R25）| Conversation 异步起标题 |
-| `merism/memai/graph/` | 全新 | LangGraph 风格 graph helpers |
-| `frontend/src/features/{home,studies,ask,inbox,repository,decisions,analysis,interview,participant,sessions,settings,authentication,welcome}/` | 全新（R9 + R14）| 14 个 Scene |
-| `frontend/src/lib/merism/{primitives,patterns,tokens,illustrations,fonts}/` | 全新（R14）| Outset-grade 设计系统 |
-
-## 与 PRODUCT.md 不再冲突的描述
-
-PRODUCT.md 已更新到 2026-05-20 版本，以下旧"deviations"已不再适用：
-
-| 旧描述 | 现状 |
-|---|---|
-| "对象存储：PostHog object_storage" | 已删，PRODUCT.md §6 写明 boto3 / MinIO |
-| "所有 LLM 调用通过 posthoganalytics.ai.openai" | 已删，PRODUCT.md §6 写明 `merism.llm_gateway.client.get_client` 路由 |
-| "Email / SMS 非 MVP" | Email 已 MVP（R19）；SMS 仍延后 |
-| "单 LLM 调用同时返回 (text, next_action)" | 已改为 2-node（R23）；AGENTS.md 规则 4 + spec Req 14 已在 2026-05-20 同步 |
-| "Study.status 6 状态" | 已简化到 3 状态（迁移 0029） |
-
-> 修订记录：**2026-05-20** —— 追加 R17-R26 迁移与新模块清单；删除已修复的 deviations。

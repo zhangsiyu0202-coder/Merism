@@ -18,7 +18,7 @@
 - **Channel_Adapter**: 从 CowAgent Channel 基类适配而来的 Merism 内部发送器，负责调用 IM 平台 API
 - **Study**: Merism 中的研究实体，招募广播关联到具体 Study
 - **StudyLink**: 研究参与链接，嵌入招募消息中供受邀者点击参与
-- **Team**: PostHog 中的团队实体，所有渠道配置按 Team 隔离
+- **Team**: `merism.Team`(merism-app 中的团队实体)，所有渠道配置按 Team 隔离
 - **Config_Wizard**: 引导式配置向导 UI，帮助用户逐步完成渠道接入
 
 ## Requirements
@@ -86,7 +86,7 @@
 1. THE System SHALL perform a periodic health check (via Celery beat, every 30 minutes) on all active Channel_Configs by sending a lightweight ping to the IM platform API.
 2. IF a health check fails for a channel, THEN THE System SHALL update the channel status to "error" and record the failure timestamp and reason.
 3. WHEN a channel transitions from "active" to "error", THE System SHALL display a warning banner on the recruitment page indicating which channel is unhealthy.
-4. WHEN a channel has been in "error" status for more than 2 consecutive checks, THE System SHALL send a notification to the Team admin (via existing PostHog notification system).
+4. WHEN a channel has been in "error" status for more than 2 consecutive checks, THE System SHALL send a notification to the Team admin (via the team Inbox surface (InboxItem.kind=channel_unhealthy)).
 5. WHEN a previously errored channel passes a health check, THE System SHALL automatically restore its status to "active".
 
 ### Requirement 6: 新手引导与帮助

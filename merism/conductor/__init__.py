@@ -1,6 +1,11 @@
 """Merism interview conductor.
 
-Single-call moderator per PRODUCT.md §5.2 / ``merism-platform`` Req 14.
+2-node moderator (decide → generate) per PRODUCT.md §5.2 / ``merism-platform``
+Req 14. The first call (``coverage_steer``) returns a structured
+``ModeratorDecision`` via function calling; the second call streams the
+spoken reply token-by-token. Both run sequentially inside one
+``stream_turn`` coroutine — no graph, no policy layer, no macro/meso/micro
+split.
 
 Public surface:
 

@@ -137,6 +137,17 @@ class Study(TimestampedModel):
     def is_target_reached(self) -> bool:
         return self.actual_completed_count >= self.target_completed_count
 
+    @property
+    def primary_link(self):
+        """The single canonical share link for this Study.
+
+        Auto-created by ``signals.study_primary_link.ensure_primary_link``
+        on Study creation. ``UniqueConstraint`` guarantees at most one
+        per Study. Returns None only in the brief window before the
+        signal runs (or when the row was created via raw SQL).
+        """
+        return self.links.filter(is_primary=True).first()
+
     objects = models.Manager()  # canonical
 
     @classmethod
@@ -198,6 +209,11 @@ class StudyLink(TimestampedModel):
         help_text="Custom short-link domain (e.g. 'go.acme.com'). Empty = use app domain.",
     )
     is_active = models.BooleanField(default=True)
+    is_primary = models.BooleanField(
+        default=False,
+        help_text="The single canonical link surfaced as the Study's share URL. "
+        "Auto-created on Study creation; one per Study (UniqueConstraint).",
+    )
     require_invitation = models.BooleanField(default=False, help_text="If True, /i/<slug>/ requires ?t=<token> from an Invitation row.")
     # Optional hard expiry. NULL = never expires. The /i/<slug> resolver
     # treats past expiries the same as ``is_active=False``.
@@ -211,6 +227,13 @@ class StudyLink(TimestampedModel):
         db_table = "merism_study_link"
         indexes = [
             models.Index(fields=["slug"], name="merism_link_slug_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["study"],
+                condition=models.Q(is_primary=True),
+                name="merism_studylink_one_primary_per_study",
+            ),
         ]
 
     @property

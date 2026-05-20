@@ -42,7 +42,7 @@ merism-app/
 │   ├── models/                     # Team, Study, Interview, Knowledge, Recruitment, Report
 │   ├── api/                        # DRF viewsets
 │   ├── memai/                      # AI tool layer (Merism-native; not PostHog's hogai)
-│   ├── conductor/                  # Single-call interview moderator (per platform spec)
+│   ├── conductor/                  # 2-node interview moderator: decide → generate (per platform spec)
 │   ├── knowledge/                  # RAG (pgvector + BM25), Ask Merism
 │   ├── recruitment/                # IMChannel adapters (Feishu, WeCom, QQ Group/Guild, WeCom Bot)
 │   ├── realtime/                   # SSE + WebSocket (interview replay + voice)
@@ -95,8 +95,11 @@ docs: factories, fakes, assertions, fixtures.
 
 1. **Single Django project.** Not a monorepo of "products". Everything Merism
    does lives under `merism/`.
-2. **Single LLM call per interview turn.** The moderator agent returns
-   `(text, next_action)` in one call. No macro/meso/micro pyramid, no
+2. **Two-node interview moderator (decide → generate).** Each user turn
+   runs `coverage_steer` (non-streaming, returns structured
+   `ModeratorDecision`) → `decision_validator` (server-side hard rules)
+   → `generate` (streaming text). Both calls live in one
+   `stream_turn` coroutine. No macro/meso/micro pyramid, no persistent
    conductor policies (see spec `merism-platform` Req 14).
 3. **`merism_` db_table prefix.** Every model. Always. Multi-tenant isolation
    via `team_id` on every tenant-data model.
@@ -122,17 +125,20 @@ docs: factories, fakes, assertions, fixtures.
   Dialog/Tabs), patterns (PageShell/TabBar/StudyCard/SessionRow/ChatPanel).
 - **Merism platform**: Study CRUD, outline editor + AI review, screener,
   stimuli, recruitment, preview mode, consent + screener flow, voice/video
-  interview room, single-call moderator, session analysis, study report,
-  custom report sidebar, cross-study knowledge explore.
+  interview room, 2-node moderator (decide → generate), session analysis,
+  study report, custom report sidebar, cross-study knowledge explore.
 
 See [`docs/MIGRATION.md`](docs/MIGRATION.md) for file-level provenance.
 
 ## What's NOT ported (deliberately dropped)
 
 - Conductor 3-layer pyramid (macro / meso / micro split) — platform spec
-  Req 14.7 forbids it; single LLM call does text + function call.
+  Req 14.7 forbids it; the 2-node moderator (decide → generate) does
+  not split into more than two sequential LLM calls per turn.
 - Conductor policies (coverage_steer / engagement / off_topic) — platform
-  spec Req 21.5 defers them until 100+ real interviews inform the design.
+  spec Req 21.5 defers persistent policy modules until 100+ real
+  interviews inform the design. Coverage / engagement context is
+  injected into the decision prompt, not stored in dedicated tables.
 - MEM AI PostHog-product tools (execute_sql / create_insight / upsert_dashboard
   / session_replay / error_tracking / flags / surveys / llm_analytics) —
   none are Merism features.

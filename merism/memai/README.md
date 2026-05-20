@@ -9,8 +9,8 @@ Merism's AI agent layer. Follows PRODUCT.md §5 — **three agents**:
 | Analysis Agent          | `merism.memai.agents.analysis` (R8 TODO)       | `(A)` Celery task after session ends; `(B)` user asks a Custom Report question |
 
 > Note the Interview Moderator lives under `merism.conductor/` not here,
-> because per PRODUCT.md §5.2 it's a single-call text+function-call
-> streaming loop, not a multi-tool agent.
+> because per PRODUCT.md §5.2 it's a 2-node (decide → generate)
+> streaming coroutine, not a multi-tool agent.
 
 ## What's done
 

@@ -44,7 +44,7 @@ best properties without ceding control:
    regions are `us-east-1` / `eu-central-1` with 200-400 ms RTT from
    mainland China and occasional censorship disruption.
 3. **Sunk cost is asset.** R1-R11 delivered 91 backend files — settings,
-   models with `merism_` prefix, 27 models, IMChannel adapters, report
+   models with `merism_` prefix, 56 models (initial 27 grew to 56 by R26), IMChannel adapters, report
    schema, test harness. All of it works with Django conventions.
 4. **Self-hosting.** Django + Postgres + Redis is trivial to self-host
    on a single VPS for MVP, or Kubernetes at scale. Self-hosted Supabase

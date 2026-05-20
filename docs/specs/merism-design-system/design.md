@@ -109,7 +109,7 @@ Before: `fonts.css` hand-declares Inter `@font-face` pointing to `public/Inter.w
 returns immediately; `@fontsource-*` packages absent.
 
 After:
-- `pnpm --filter=@posthog/frontend add @fontsource-variable/inter@5.2.5 @fontsource-variable/geist@5.2.5 @fontsource/ibm-plex-mono@5.2.5` (pinned exact minor).
+- `pnpm --filter=merism-frontend add @fontsource-variable/inter@5.2.5 @fontsource-variable/geist@5.2.5 @fontsource/ibm-plex-mono@5.2.5` (pinned exact minor).
 - `fonts/fonts.css` becomes:
 
 ```css

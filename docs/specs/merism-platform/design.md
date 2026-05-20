@@ -8,7 +8,7 @@ Merism 平台的技术设计。本文档基于 `requirements.md` 和 `standalone
 - **复用 Phase 0 已有骨架**: `products/studies/backend/` 下的 models / api / guide_generator / analysis 作为基座,本设计是增量扩展
 - **单次 LLM 调用决策**: Interview_Moderator_Agent 不拆分 macro/meso/micro,合并在一次 function-calling
 - **严格 Team 隔离**: 所有 queryset 必须经 `team_id` 过滤,不信任任何外部 id
-- **LLM 统一走 PostHog 包装**: `posthoganalytics.ai.openai` + DeepSeek 兼容 OpenAI API 切 `base_url`
+- **LLM 统一走 merism gateway**: `merism.llm_gateway.client.get_client` + DeepSeek 兼容 OpenAI API 切 `base_url`
 - **前端 kea-first**: 业务逻辑进 kea logic,React 组件只做渲染
 - **Merism 设计系统统一入口**: 所有新 surface 从 `~/lib/merism` 导入
 
@@ -42,9 +42,9 @@ Merism 平台的技术设计。本文档基于 `requirements.md` 和 `standalone
 │                              │                                   │
 │  ┌──────────────┐ ┌──────────▼──────────┐ ┌──────────────────┐ │
 │  │ Celery Tasks │ │ LLM Client Wrapper  │ │ Recruitment      │ │
-│  │ analyze_     │ │ posthoganalytics.   │ │ CowAgent adapters│ │
-│  │ session,     │ │ ai.openai →         │ │ (feishu/wecom/qq)│ │
-│  │ generate_    │ │ DeepSeek / Qwen     │ │                  │ │
+│  │ analyze_     │ │ merism.llm_gateway. │ │ CowAgent adapters│ │
+│  │ session,     │ │ client.get_client → │ │ (feishu/wecom/qq │ │
+│  │ generate_    │ │ DeepSeek / Qwen     │ │  /email)         │ │
 │  │ study_report │ │                     │ │                  │ │
 │  └──────────────┘ └──────────┬──────────┘ └──────────────────┘ │
 └─────────────────────────────┼───────────────────────────────────┘
@@ -77,7 +77,7 @@ Merism 平台的技术设计。本文档基于 `requirements.md` 和 `standalone
 
 ## Data Model
 
-所有模型 `class Meta: db_table = "merism_<name>"`。所有租户数据模型都带 `team_id`(FK 到 `posthog.Team`)。
+所有模型 `class Meta: db_table = "merism_<name>"`。所有租户数据模型都带 `team_id`(FK 到 `merism.Team`)。
 
 ### 复用/扩展的已有模型
 
@@ -85,7 +85,7 @@ Merism 平台的技术设计。本文档基于 `requirements.md` 和 `standalone
 
 **Study** (merism_study)
 ```python
-team = models.ForeignKey("posthog.Team", ...)
+team = models.ForeignKey("merism.Team", ...)
 research_goal = models.TextField()                       # 唯一必填
 research_background = models.TextField(blank=True, default="")
 hypothesis = models.TextField(blank=True, default="")
@@ -97,7 +97,7 @@ status = models.CharField(
     default="draft",
 )
 slug = models.CharField(max_length=64, unique=True)      # 用于 /i/:slug
-owner = models.ForeignKey("posthog.User", ...)
+owner = models.ForeignKey("django.contrib.auth.User", ...)
 created_at / updated_at
 ```
 
@@ -181,14 +181,14 @@ content = models.JSONField()
 # {exec_summary, quant_panel: [...], qual_panel: [...], insight_nuggets: [...]}
 charts = models.JSONField(default=list)
 generated_at = models.DateTimeField(auto_now_add=True)
-generated_by = FK("posthog.User", null=True)
+generated_by = FK("django.contrib.auth.User", null=True)
 ```
 
 **CustomReportQuery** (merism_custom_report_query)
 ```python
 team = FK(Team)
 study = FK(Study, null=True, blank=True)  # null 表示跨 study (Knowledge)
-user = FK("posthog.User")
+user = FK("django.contrib.auth.User")
 question = models.TextField()
 answer_markdown = models.TextField()
 chart_spec = models.JSONField(null=True, blank=True)
@@ -293,7 +293,7 @@ generated_at
 
 ## AI Agent Design
 
-所有 LLM 调用经 `posthoganalytics.ai.openai`,通过设置 `base_url=https://api.deepseek.com/v1` 切到 DeepSeek。
+所有 LLM 调用经 `merism.llm_gateway.client.get_client`,通过设置 `base_url=https://api.deepseek.com/v1` 切到 DeepSeek。
 
 ### Outline Review Agent
 
@@ -368,9 +368,9 @@ User: {user_message}
 
 ### Interview Moderator Agent
 
-**Service**: `InterviewModeratorService` (products/studies/backend/interview_moderator.py)
+**Service**: `merism.conductor.moderator.stream_turn` (`merism/conductor/moderator.py`)
 
-**Runtime model**: 每次 user turn 一次 LLM call,LLM 返回**流式文本**+尾部的 function call。
+**Runtime model**: 每次 user turn 在同一个 `stream_turn` 协程内顺序执行两次 LLM call：(1) 非流式 `coverage_steer` 返回结构化 `ModeratorDecision`（function calling）；(2) 流式 `generate` 输出"下一句话"逐 token 推给 TTS。两节点之间穿插服务端硬规则校验 `decision_validator`（见 Req 14）。
 
 **Conversation state**(内存中,结束时落到 InterviewSession.transcript):
 ```python
@@ -491,7 +491,7 @@ def analyze_session(self, session_id: str) -> None:
     transcript = session.transcript
     guide = study.interviewguide_set.get(is_current=True)
 
-    with ph_scoped_capture(team_id=study.team_id) as capture:
+    with scoped_capture(team_id=study.team_id) as capture:
         prompt = build_session_insight_prompt(study.research_goal, guide.sections, transcript)
         resp = llm_client.chat.completions.create(
             model="deepseek-reasoner",
@@ -666,19 +666,19 @@ listeners:
 
 ## External Services Integration
 
-### LLM: DeepSeek via posthoganalytics.ai.openai
+### LLM: DeepSeek via merism.llm_gateway.client.get_client
 
 ```python
 # products/studies/backend/llm.py
-from posthoganalytics.ai.openai import OpenAI
+from merism.llm_gateway.client.get_client import OpenAI
 
 def get_llm(model: str = "deepseek-chat") -> OpenAI:
     return OpenAI(
-        api_key=settings.DEEPSEEK_API_KEY,
+        api_key=settings.MERISM_LLM_API_KEY,
         base_url="https://api.deepseek.com/v1",
-        posthog_distinct_id=...,
-        posthog_properties={...},
     )
+    # Trace / cost recording happens in `merism.memai.llm.get_llm`
+    # via Langfuse auto-instrumentation (no-op when keys absent).
 ```
 
 - Outline Review / Custom Report 用 `deepseek-chat` (v3)
@@ -712,7 +712,7 @@ def describe_frame(jpeg_bytes: bytes, *, context: str) -> str:
 
 ### Object Storage
 
-复用 `posthog.storage.object_storage`:
+复用 `merism.services.storage`:
 - 录像 key(仅 video 模式): `merism/sessions/{session_id}/video.webm`
 - 刺激物 key: `merism/stimuli/{study_id}/{filename}`
 - 附件 key: `merism/attachments/{session_id}/{filename}`
@@ -724,7 +724,7 @@ def describe_frame(jpeg_bytes: bytes, *, context: str) -> str:
 
 ## Settings
 
-所有 `MERISM_*` settings 统一放在 `posthog/settings/web.py` 的 annotated block 中:
+所有 `MERISM_*` settings 统一放在 `merism/settings/base.py` 的 annotated block 中:
 
 ```python
 # --- MERISM ---
@@ -747,7 +747,7 @@ Feature flags(env vars 同一 block):
 ## Security
 
 - Study slug(`/i/:slug`)用 32 字节 URL-safe token,不可枚举
-- Preview 模式仅通过 `/api/projects/:team_id/studies/:id/preview_session/` 启动,依赖 PostHog 标准 session auth + team membership 校验;不生成任何带 token 的外部链接,不在受访者公开路径 `/i/:slug` 上挂 preview 参数
+- Preview 模式仅通过 `/api/projects/:team_id/studies/:id/preview_session/` 启动,依赖 Django session auth + team membership 校验;不生成任何带 token 的外部链接,不在受访者公开路径 `/i/:slug` 上挂 preview 参数
 - 受访者端点不暴露 `team_id`, `study_id`, `owner_id`;只返回 slug 内部可见的内容
 - 附件上传:限制大小(图 10MB / 视频 100MB / PDF 20MB),MIME 白名单校验
 - Channel_Config secret fields Fernet 加密(复用 `products/studies/backend/recruitment/` 已有方案)
@@ -772,7 +772,7 @@ Feature flags(env vars 同一 block):
 **轻量单测** (`pytest -c products/studies/pytest.ini`):
 - 纯业务逻辑:prompt 构造、proposed_changes apply、ConvState 状态转移、chart_spec 验证
 - 不依赖 DB
-- Mock `posthoganalytics.ai.openai` 的响应;snapshot 测试 prompt 构造
+- Mock `merism.llm_gateway.client.get_client` 的响应;snapshot 测试 prompt 构造
 
 **ORM 测试** (`pytest -c products/studies/pytest.orm.ini`):
 - Model / serializer / viewset 集成

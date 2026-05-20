@@ -18,7 +18,7 @@
 - [x] 2.4 Add `DeliveryRecord` model with status tracking
 - [x] 2.5 Create Django migration (all 4 models, `merism_` table prefix)
 - [x] 2.6 Create data migration seeding 3 built-in templates ("简洁邀请", "详细说明", "紧急招募")
-- [x] 2.7 Add `MERISM_IM_RECRUITMENT` feature flag to `posthog/settings/web.py`
+- [x] 2.7 Add `MERISM_IM_RECRUITMENT` feature flag to `merism/settings/base.py`
 
 **Depends on:** nothing
 **Refs:** Requirement 1 (AC 1), Requirement 2 (AC 1), Design §2

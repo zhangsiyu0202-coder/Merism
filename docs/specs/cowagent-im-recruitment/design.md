@@ -112,7 +112,7 @@ class ChannelConfig(models.Model):
         ERROR = "error", "Error"
 
     id = models.UUIDField(primary_key=True, default=uuid4)
-    team = models.ForeignKey("posthog.Team", on_delete=models.CASCADE)
+    team = models.ForeignKey("merism.Team", on_delete=models.CASCADE)
     channel_type = models.CharField(max_length=20, choices=ChannelType.choices)
     name = models.CharField(max_length=100)  # 用户自定义名称
     # 加密存储的凭证 JSON (Fernet)
@@ -130,7 +130,7 @@ class ChannelConfig(models.Model):
 class MessageTemplate(models.Model):
     """招募消息模板。"""
     id = models.UUIDField(primary_key=True, default=uuid4)
-    team = models.ForeignKey("posthog.Team", on_delete=models.CASCADE)
+    team = models.ForeignKey("merism.Team", on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     content = models.TextField()  # 支持 {{variable}} 占位符
     msg_format = models.CharField(max_length=20, default="markdown")  # text | markdown
@@ -150,7 +150,7 @@ class RecruitmentBroadcast(models.Model):
         PARTIALLY_FAILED = "partially_failed", "Partially Failed"
 
     id = models.UUIDField(primary_key=True, default=uuid4)
-    team = models.ForeignKey("posthog.Team", on_delete=models.CASCADE)
+    team = models.ForeignKey("merism.Team", on_delete=models.CASCADE)
     study = models.ForeignKey("studies.Study", on_delete=models.CASCADE)
     channel_config = models.ForeignKey(ChannelConfig, on_delete=models.PROTECT)
     template = models.ForeignKey(MessageTemplate, on_delete=models.SET_NULL, null=True)

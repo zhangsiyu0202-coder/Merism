@@ -24,8 +24,10 @@ from pydantic import BaseModel, ConfigDict, Field
 class ModeratorDecision(BaseModel):
     """The function-call output the moderator returns alongside text.
 
-    PRODUCT.md §5.2: **one LLM call** decides both "what to say" and
-    "what to do next". Do not split this into separate calls.
+    PRODUCT.md §5.2: this is the structured output of Node 1
+    (``coverage_steer``) — Node 2 (``generate``) reads this to ground
+    its streamed reply. Both nodes live in the same ``stream_turn``
+    coroutine; do not split into a third call or a graph.
     """
 
     model_config = ConfigDict(extra="forbid")

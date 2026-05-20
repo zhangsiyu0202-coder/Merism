@@ -63,6 +63,16 @@ export interface Study {
     target_completed_count?: number
     recruitment_quotas?: RecruitmentQuota[]
     codebook?: CodebookEntry[]
+    /** Auto-generated share URL pointing at the primary StudyLink. */
+    share_url?: string | null
+    /** The single canonical share link for this study (auto-created on Study save). */
+    primary_link?: {
+        id: string
+        slug: string
+        is_active: boolean
+        url_path: string
+        full_url: string
+    } | null
     created_at: string
     updated_at: string
 }
@@ -103,6 +113,14 @@ export interface InterviewSession {
     status: SessionStatus
     started_at: string | null
     ended_at: string | null
+    /** Per-Study sequential number (1, 2, 3, ...). Renders as #1 in the list. */
+    interview_number?: number
+    /** Participant's display name from the named-link intake form (empty for anonymous). */
+    participant_name?: string
+    /** Number of transcript turns. */
+    turn_count?: number
+    /** Session length in seconds. */
+    duration_seconds?: number | null
 }
 
 export interface SessionInsight {

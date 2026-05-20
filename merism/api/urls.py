@@ -16,6 +16,16 @@ from merism.api.analysis_views import (
     StudyGoalViewSet,
     ThemeViewSet,
 )
+from merism.api.ask_views import ask_stream, ask_title, knowledge_search
+from merism.api.cleaning_views import GlossaryViewSet
+from merism.api.conversation_views import (
+    delete_conversation,
+    get_conversation,
+    list_conversations,
+    save_conversation,
+)
+from merism.api.home import HomeStatsView
+from merism.api.interview_message_view import post_message
 from merism.api.insights_views import (
     CustomReportViewSet,
     InsightFindingViewSet,
@@ -25,13 +35,6 @@ from merism.api.insights_views import (
     StudyInsightsViewSet,
     shared_report_view,
 )
-from merism.api.cleaning_views import GlossaryViewSet
-from merism.api.home import HomeStatsView
-from merism.api.ask_views import ask_stream, ask_title, knowledge_search
-from merism.api.conversation_views import list_conversations, get_conversation, save_conversation, delete_conversation
-from merism.api.conversation_views import list_conversations, get_conversation, save_conversation, delete_conversation
-from merism.api.conversation_views import list_conversations, get_conversation, save_conversation, delete_conversation
-from merism.api.interview_message_view import post_message
 from merism.api.link_tracking_views import LinkClickViewSet, LinkShareEventViewSet
 from merism.api.users import UserMeView
 
@@ -72,7 +75,6 @@ router.register(r"insights", views.SessionInsightViewSet, basename="sessioninsig
 router.register(r"custom-report-queries", views.CustomReportQueryViewSet, basename="customreportquery")
 
 # ── MEM AI / memory ────────────────────────────────────────
-router.register(r"conversations", views.ConversationViewSet, basename="conversation")
 router.register(r"memories", views.AgentMemoryViewSet, basename="agentmemory")
 
 # ── LLM Gateway (DEPRECATED — removed, use ServiceSettings admin) ──
@@ -106,26 +108,6 @@ urlpatterns = [
     path("conversations/", list_conversations, name="conversations-list"),
     path("conversations/save/", save_conversation, name="conversations-save"),
     path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
-    path("conversations/", list_conversations, name="conversations-list"),
-    path("conversations/save/", save_conversation, name="conversations-save"),
-    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
-    path("conversations/save/", save_conversation, name="conversations-save"),
-    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
-    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
-    path("conversations/", list_conversations, name="conversations-list"),
-    path("conversations/save/", save_conversation, name="conversations-save"),
-    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
-    path("conversations/save/", save_conversation, name="conversations-save"),
-    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
-    path("conversations/<str:conversation_id>/", get_conversation, name="conversations-detail"),
-    path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
     path("conversations/<str:conversation_id>/delete/", delete_conversation, name="conversations-delete"),
     path("sessions/<uuid:session_id>/message/", post_message, name="session-message"),
     path("knowledge/search/", knowledge_search, name="knowledge-search"),

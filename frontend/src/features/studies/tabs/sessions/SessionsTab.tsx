@@ -62,13 +62,13 @@ export default function SessionsTab(): JSX.Element {
     return (
         <div className="flex flex-col gap-6">
             <header className="flex items-center justify-between">
-                <SectionLabel>Sessions · {sessions.length}</SectionLabel>
+                <SectionLabel>访谈列表 · {sessions.length}</SectionLabel>
                 <div className="relative max-w-sm">
                     <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-merism-text-subtle" />
                     <Input
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search id, status…"
+                        placeholder="搜索受访者 / 编号 / 状态…"
                         className="pl-8"
                     />
                 </div>
@@ -115,7 +115,7 @@ export default function SessionsTab(): JSX.Element {
                             <EmptyRow colspan={columns.length}>Loading…</EmptyRow>
                         ) : sessions.length === 0 ? (
                             <EmptyRow colspan={columns.length}>
-                                No sessions yet. Launch the study to start collecting.
+                                还没有访谈记录。复制访谈链接发给受访者就能开始。
                             </EmptyRow>
                         ) : (
                             table.getRowModel().rows.map((row) => (
@@ -147,21 +147,39 @@ const col = createColumnHelper<InterviewSession>()
 
 function buildColumns(): ColumnDef<InterviewSession, unknown>[] {
     return [
-        col.accessor((row) => row.id.slice(0, 8), {
-            id: "id",
-            header: () => "ID",
-            cell: (info) => (
-                <span className="font-mono text-merism-caption text-merism-text-muted">
-                    {info.getValue() as string}
-                </span>
-            ),
+        col.accessor((row) => row.participant_name || "", {
+            id: "participant",
+            header: () => "受访者",
+            cell: (info) => {
+                const name = info.getValue() as string
+                if (name) {
+                    return <span className="text-merism-body-sm text-merism-text">{name}</span>
+                }
+                return (
+                    <span className="text-merism-body-sm italic text-merism-text-subtle">
+                        匿名受访者
+                    </span>
+                )
+            },
+        }),
+        col.accessor((row) => row.interview_number ?? 0, {
+            id: "interview_number",
+            header: () => "访谈编号",
+            cell: (info) => {
+                const n = info.getValue() as number
+                return (
+                    <span className="font-mono text-merism-caption text-merism-text-muted">
+                        {n > 0 ? `#${n}` : "—"}
+                    </span>
+                )
+            },
         }),
         col.accessor("status", {
-            header: () => "Status",
+            header: () => "状态",
             cell: (info) => <StatusCell status={info.getValue() as SessionStatus} />,
         }),
         col.accessor("started_at", {
-            header: () => "Started",
+            header: () => "开始时间",
             cell: (info) => {
                 const v = info.getValue() as string | null
                 return (
@@ -178,7 +196,7 @@ function buildColumns(): ColumnDef<InterviewSession, unknown>[] {
         }),
         col.display({
             id: "duration",
-            header: () => "Duration",
+            header: () => "时长",
             cell: ({ row }) => {
                 const s = row.original
                 if (!s.started_at) return <span className="text-merism-text-subtle">—</span>
@@ -192,6 +210,18 @@ function buildColumns(): ColumnDef<InterviewSession, unknown>[] {
                 )
             },
         }),
+        col.accessor((row) => row.turn_count ?? 0, {
+            id: "turn_count",
+            header: () => "轮次",
+            cell: (info) => {
+                const n = info.getValue() as number
+                return (
+                    <span className="font-mono text-merism-caption text-merism-text-muted">
+                        {n}
+                    </span>
+                )
+            },
+        }),
         col.display({
             id: "actions",
             header: () => "",
@@ -200,7 +230,7 @@ function buildColumns(): ColumnDef<InterviewSession, unknown>[] {
                     href={`/sessions/${row.original.id}/transcript`}
                     className="font-mono text-merism-caption uppercase tracking-merism-caps text-merism-accent hover:underline"
                 >
-                    View →
+                    查看详情 →
                 </a>
             ),
         }),

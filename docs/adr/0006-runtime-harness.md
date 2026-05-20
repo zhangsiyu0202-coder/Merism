@@ -38,7 +38,8 @@ views) that share a session's lifetime.
 + Ecosystem fit for LLM agents.
 + Checkpointing + resume out of the box.
 - PRODUCT.md §5.2 explicitly forbids multi-node graphs for the
-  moderator (one LLM call per turn).
+  moderator (the 2-node decide → generate pipeline lives inside one
+  ``stream_turn`` coroutine; no graph framework needed).
 - Adds a mental model competing with Django's ORM + signal model.
 
 ### Option C — OpenHands-style `AgentController` + `EventStream` + `Runtime`

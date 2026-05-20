@@ -58,12 +58,34 @@ team_id = models.BigIntegerField(db_index=True)
 Models without `team_id` must be org-scoped, user-scoped, or instance-global —
 **never silently unscoped**.
 
-### 4. Single-call interview moderator
+### 4. Two-node interview moderator (decide → generate)
 
-Per platform spec Req 14.7 — the interview moderator makes **one** LLM call
-per user turn, returning `(text, next_action)` via a function call. Do NOT
-introduce macro / meso / micro decision layers. If you think you need more
-structure, read Req 14 again.
+Per `docs/PRODUCT.md` §5.2 — every user turn runs as **two** sequential
+LLM calls inside a single `merism.conductor.moderator.stream_turn`
+coroutine:
+
+1. `coverage_steer` (non-streaming) returns a structured
+   `ModeratorDecision` via function calling.
+2. `decision_validator` enforces hard `probe_policy` / `max_probes`
+   rules server-side; illegal LLM decisions are rewritten without
+   another model call.
+3. `generate` (streaming) yields the spoken reply token-by-token to
+   TTS / SSE.
+
+Hard limits — do **not** exceed:
+
+- No third LLM call. No macro / meso / micro decision split.
+- No persistent policy modules (`coverage_steer` / `engagement` /
+  `off_topic` are decision-prompt context, not modules).
+- No LangGraph / Prefect / agent-framework wrapping.
+
+If you think the moderator needs more structure, raise it in an ADR
+before writing code.
+
+> Note: prior versions of this rule called for a **single** LLM call.
+> The 2-node split was introduced in R23 (2026-05-18) to make the
+> decision a first-class structured step under PTT mode's ~1s
+> latency budget.
 
 ### 5. DeepSeek + Qwen stack only
 

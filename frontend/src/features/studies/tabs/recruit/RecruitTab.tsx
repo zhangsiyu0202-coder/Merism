@@ -1,7 +1,5 @@
 import { useActions, useMountedLogic, useValues } from "kea"
-import { Copy, Link2, Pencil, Plus, QrCode, Save, Send, Users } from "lucide-react"
-import { QRCodeSVG } from "qrcode.react"
-import { useState } from "react"
+import { Pencil, Plus, Save, Send, Users } from "lucide-react"
 import { useEffect } from "react"
 
 import {
@@ -13,10 +11,9 @@ import {
     SectionLabel,
     Tag,
 } from "~/lib/merism"
-import { useLinkShare } from "~/lib/hooks/useLinkShare"
 import { studyLogic } from "~/features/studies/studyLogic"
 
-import { broadcastsLogic, type BroadcastRow, type StudyLinkRow } from "./broadcastsLogic"
+import { broadcastsLogic, type BroadcastRow } from "./broadcastsLogic"
 import { launchRecruitmentLogic } from "./launchRecruitmentLogic"
 import { QuotaDialog } from "./QuotaDialog"
 import { recruitPlanLogic } from "./recruitPlanLogic"
@@ -330,8 +327,7 @@ function RecruitmentStatusPanel({
 }: {
     hasUnsavedChanges: boolean
 }): JSX.Element {
-    const { broadcasts, studyLinks, broadcastsLoading, studyLinksLoading } = useValues(broadcastsLogic)
-    const { createStudyLink } = useActions(broadcastsLogic)
+    const { broadcasts, broadcastsLoading } = useValues(broadcastsLogic)
     const { isLaunching, lastLaunchResult, launchError } = useValues(launchRecruitmentLogic)
     const { launchRecruitment, clearLaunchFeedback } = useActions(launchRecruitmentLogic)
 
@@ -404,97 +400,9 @@ function RecruitmentStatusPanel({
                 )}
             </div>
 
-            <SectionLabel>Participant URL</SectionLabel>
-            <StudyLinkRow studyLinks={studyLinks} loading={studyLinksLoading} onCreate={createStudyLink} />
-
             <SectionLabel className="mt-4">Broadcasts</SectionLabel>
             <BroadcastList rows={broadcasts} loading={broadcastsLoading} />
         </section>
-    )
-}
-
-function StudyLinkRow({
-    studyLinks,
-    loading,
-    onCreate,
-}: {
-    studyLinks: StudyLinkRow[]
-    loading: boolean
-    onCreate: () => void
-}): JSX.Element {
-    const [qrSlug, setQrSlug] = useState<string | null>(null)
-    if (loading && studyLinks.length === 0) {
-        return <div className="rounded-merism-lg bg-merism-surface p-6 text-merism-body-sm text-merism-text-muted shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">Loading links…</div>
-    }
-    if (studyLinks.length === 0) {
-        return (
-            <div className="flex items-center justify-between gap-4 rounded-merism-lg bg-merism-surface p-6 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]">
-                <div>
-                    <p className="text-merism-body font-medium text-merism-text">No participant link yet</p>
-                    <p className="text-merism-body-sm text-merism-text-muted">Create a public URL to share with invited participants.</p>
-                </div>
-                <Button iconLeft={<Link2 className="h-4 w-4" />} onClick={onCreate}>Create link</Button>
-            </div>
-        )
-    }
-    return (
-        <div className="flex flex-col gap-3">
-            {studyLinks.map((link) => (
-                <StudyLinkItem key={link.id} link={link} qrSlug={qrSlug} setQrSlug={setQrSlug} />
-            ))}
-        </div>
-    )
-}
-
-function StudyLinkItem({
-    link,
-    qrSlug,
-    setQrSlug,
-}: {
-    link: StudyLinkRow
-    qrSlug: string | null
-    setQrSlug: (slug: string | null) => void
-}): JSX.Element {
-    const { copyLink, copied } = useLinkShare(link.slug)
-    const url = `${window.location.origin}/i/${link.slug}`
-    return (
-        <div className="flex flex-col gap-2">
-            <div
-                className="flex items-center gap-3 rounded-merism-lg bg-merism-surface px-4 py-3 shadow-merism-card ring-1 ring-[color:var(--merism-hairline)]"
-            >
-                <Link2 className="h-4 w-4 shrink-0 text-merism-text-subtle" />
-                <code className="flex-1 truncate font-mono text-merism-label text-merism-text">{url}</code>
-                {link.is_active ? (
-                    <Tag variant="success" size="sm">active</Tag>
-                ) : (
-                    <Tag variant="neutral" size="sm">inactive</Tag>
-                )}
-                <button
-                    type="button"
-                    onClick={copyLink}
-                    className="flex h-8 w-8 items-center justify-center rounded-merism-md bg-merism-bg-subtle text-merism-text-muted transition-colors hover:bg-merism-accent-soft hover:text-merism-text"
-                    title="Copy link"
-                >
-                    <Copy className="h-4 w-4" />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setQrSlug(qrSlug === link.slug ? null : link.slug)}
-                    className="flex h-8 w-8 items-center justify-center rounded-merism-md bg-merism-bg-subtle text-merism-text-muted transition-colors hover:bg-merism-accent-soft hover:text-merism-text"
-                    title="Show QR code"
-                >
-                    <QrCode className="h-4 w-4" />
-                </button>
-                {copied && (
-                    <span className="font-mono text-merism-caption text-[color:var(--merism-status-success)]">copied</span>
-                )}
-            </div>
-            {qrSlug === link.slug && (
-                <div className="flex justify-center rounded-merism-md border border-merism-border bg-white p-4">
-                    <QRCodeSVG value={url} size={160} level="H" />
-                </div>
-            )}
-        </div>
     )
 }
 

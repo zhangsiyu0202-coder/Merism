@@ -1,10 +1,11 @@
-"""MEM AI agents — the three agents per PRODUCT.md §5.
+"""MEM AI agents per PRODUCT.md §5.
 
 - :mod:`merism.memai.agents.outline_review` — §5.1 conversational outline reviewer
 - :mod:`merism.memai.agents.analysis`        — §5.3 session insight + custom report
 
 The Interview Moderator (§5.2) lives in :mod:`merism.conductor` because
-it's a streaming single-call loop, not a multi-tool agent.
+it's a streaming 2-node pipeline (decide → generate) coroutine, not a
+multi-tool agent.
 """
 
 from __future__ import annotations

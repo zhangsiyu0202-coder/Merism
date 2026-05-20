@@ -128,7 +128,10 @@ def _boot_study(interview_mode="text"):
         questions=[{"id": "fit", "text": "Fit?"}],
         pass_logic={"correct_answers": {"fit": "yes"}},
     )
-    link = StudyLink.objects.create(study=study, team=team)
+    # As of 2026-05-20, Study creation auto-creates a primary StudyLink
+    # (link_mode=NAMED) via merism.signals.study_primary_link. Use it.
+    link = study.primary_link
+    assert link is not None, "post_save signal should have created a primary link"
     return team, study, link
 
 

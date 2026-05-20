@@ -176,6 +176,12 @@ class InterviewSession(TimestampedModel):
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
 
+    # Per-Study sequential number (1, 2, 3, ...) — what researchers see in
+    # the sessions list ("访谈 #1 / #2"). Allocated atomically when the
+    # session is created (select_for_update on the parent Study). 0 = not
+    # yet allocated (legacy rows backfilled by migration 0033).
+    interview_number = models.PositiveIntegerField(default=0, db_index=True)
+
     # Transcripts: list of {ts, role, text, question_id?}
     trace_id = models.UUIDField(null=True, blank=True, db_index=True)
     transcript = models.JSONField(default=list, blank=True)
@@ -186,7 +192,7 @@ class InterviewSession(TimestampedModel):
     video_s3_key = models.CharField(max_length=512, blank=True, default="")
     # Video mode: [{ts, vl_description}] 10-second interval
     vision_frames = models.JSONField(default=list, blank=True)
-    # Conductor-side state (single-call moderator): current_question_id,
+    # Conductor-side state (2-node moderator): current_question_id,
     # remaining_followups per question, etc.
     moderator_state = models.JSONField(default=dict, blank=True)
     # Persisted decision log (used by analysis + debugging).

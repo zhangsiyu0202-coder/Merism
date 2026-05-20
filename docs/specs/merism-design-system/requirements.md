@@ -99,7 +99,7 @@ Sprint 0.5 为 Merism 前端建立设计系统基座,确保后续 Ask / Intervie
 
 #### Acceptance Criteria
 
-1. `pnpm --filter=@posthog/frontend typescript:check` SHALL pass with no new errors introduced by this spec.
+1. `pnpm --filter=merism-frontend typescript:check` SHALL pass with no new errors introduced by this spec.
 2. `hogli test frontend/src/lib/merism` (or equivalent jest invocation) SHALL pass for every `.test.tsx` under `lib/merism/`.
 3. `ruff check . --fix && ruff format .` SHALL report no changes for touched Python files (there should be none).
 4. THE Storybook dev or build invocation SHALL discover every new `.stories.tsx` and render without console errors.

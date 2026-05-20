@@ -1,8 +1,10 @@
 # `merism.conductor`
 
-Interview runtime. Single LLM call per participant turn
-(no macro/meso/micro, no policies — see PRODUCT.md §5.2 and
-`merism-platform` Req 14.7). The moderator **does not choose tools**;
+Interview runtime. **Two-node moderator pipeline** per participant turn:
+non-streaming `coverage_steer` (decide) → streaming `generate` (speak),
+both awaited in order inside the same `stream_turn` coroutine. No
+macro/meso/micro split, no persistent policies — see PRODUCT.md §5.2
+and `merism-platform` Req 14. The moderator **does not choose tools**;
 its action space is a fixed enum (`followup / move_on / clarify /
 close`). This constraint is what lets us skip the OpenHands-style
 AgentController layer.
@@ -12,13 +14,23 @@ AgentController layer.
 | File | Role |
 |---|---|
 | `state.py` | `ExecutionState` Pydantic model — rebuildable view over the event log |
-| `prompts.py` | `ModeratorDecision` function-call schema + `build_system_prompt()` |
-| `moderator.py` | `stream_turn(session, participant_message)` — async generator yielding text chunks; writes events + decision inline |
-| `guide_cursor.py` | `find_question` / `next_question` / `followup_budget` — pure guide traversal |
-| `decision_validator.py` | Hard-cap validation (max_probes, probe_policy=none) — rejects illegal decisions without re-calling LLM |
+| `prompts.py` | `ModeratorDecision` function-call schema + concept context formatter |
+| `decision_prompt.py` | System prompt builder for Node 1 (coverage_steer) |
+| `decision_validator.py` | Hard-cap validation (max_probes, probe_policy=none, dynamic-probe rules) — rejects illegal decisions without re-calling LLM |
+| `generation_prompt.py` | System prompt builder for Node 2 (generate) |
+| `probe_blocks.py` | Dynamic probe block schema + prompt formatting |
+| `adaptive_probing.py` | `build_coverage_context` — pulls fresh CoverageSnapshot for the decision prompt |
+| `text_chunker.py` | TTS-friendly sentence chunker on streamed deltas |
+| `moderator.py` | `stream_turn(session, participant_message)` — orchestrates Node 1 → validator → Node 2; persists events + state inline |
+| `moderator_eval.py` | Offline eval harness (replays canned turns against either single-call legacy or 2-call current variant) |
+| `guide_cursor.py` | `find_question` / `next_question` / `followup_budget` / `dynamic_probe_config` — pure guide traversal |
 | `event_log.py` | `append_event` / `reconstruct_state` / `current_transcript` — atomic writes to `SessionEvent`; authoritative record |
 | `closure.py` | 6-signal OR closure + `complete_session` + `abandon_stuck_sessions` orphan cleanup |
+| `concept_plan.py` | Concept Testing 2.0 — expand per_concept sections, transition payloads |
 | `post_session.py` | Async orchestrator (polish → codebook → quotes → tags → index → insight) |
+| `llm_polish.py` | Batched LLM polish for transcript turns (delegated by `merism.cleaning`) |
+| `rule_clean.py` | Filler-word regex cleanup (delegated by `merism.cleaning`) |
+| `transcript_helpers.py` | Read-only transcript projections (`get_transcript_text`, `has_clean_transcript`) |
 | `tasks.py` | Celery shims — `process_completed_session` launches a 3-stage chain |
 | `signals.py` | `post_save(InterviewSession)` → enqueue post-session chain when COMPLETED |
 | `study_closure_signal.py` | `post_save(Participation)` → auto-close Study when target reached |

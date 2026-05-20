@@ -26,7 +26,7 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 - **Study_Report**: 一个 study 的结构化群体报告(exec_summary / quant_panel / qual_panel / insight_nuggets)
 - **Custom_Report_Query**: 用户在分析页 sidebar 提的一次问答,含 answer_markdown / chart_spec / citations
 - **Outline_Review_Agent**: 对话式审查提纲的 AI(返回 proposed_changes 列表)
-- **Interview_Moderator_Agent**: 主持访谈的流式 AI(每个 user turn 一次 LLM call 合并"说什么"+"下一步")
+- **Interview_Moderator_Agent**: 主持访谈的流式 AI(每个 user turn 在同一个 `stream_turn` 协程内顺序两次 LLM call: 非流式 `coverage_steer` 决策 → 流式 `generate` 生成,详见 Req 14)
 - **Analysis_Agent**: 个体 + 群体分析 + Custom Report 的 AI
 - **Preview_Mode**: 研究者在 Study 详情页点击 "Test your interview" 按钮进入的自测模式, 走 authed 路径, 不写真实 Participation / Session, 不扣配额, 不生成外部链接
 - **Knowledge_Explore**: 跨 study 的问答知识库页,检索所有 study 的 session 内容
@@ -97,7 +97,7 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 5. THE Outline_Review_Agent SHALL NOT 代替用户决定,回复必须以"你希望……?"的形式结尾,不主动修改。
 6. WHEN 研究者在 chat 中点击"接受"或"全部接受", THE System SHALL 按 proposed_changes 逐条 apply 到当前提纲并创建新版本。
 7. WHEN 研究者在 chat 中继续对话(如辩护某条建议), THE Outline_Review_Agent SHALL 在下一轮响应中理解上下文并可能修改或撤回之前的 proposed_changes。
-8. THE Outline_Review_Agent 的 LLM 调用 SHALL 通过 `posthoganalytics.ai.openai` 包装器进行,以记录 trace 和成本。
+8. THE Outline_Review_Agent 的 LLM 调用 SHALL 通过 `merism.llm_gateway.client.get_client` 包装器进行,以记录 trace 和成本。
 
 ### Requirement 6: Stimuli 管理
 
@@ -109,7 +109,7 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 2. THE Stimulus.kind SHALL 为枚举 `[image, video, text, pdf, link]`。
 3. THE Stimulus.content SHALL 为 JSONField `{url, text, title, description}`。
 4. THE System SHALL 支持上传 jpg/png/gif(图片)、mp4/webm(视频)、pdf、纯文字块、外链。
-5. THE 上传文件 SHALL 通过 PostHog `object_storage` 抽象写入 S3。
+5. THE 上传文件 SHALL 通过 `merism.services.storage`(S3/MinIO via boto3)写入 S3。
 6. THE Stimulus.linked_question_ids SHALL 为 JSONField, 记录该刺激物关联的 question id 列表。
 7. THE 提纲编辑器的每个 Question SHALL 允许关联 1 个或多个 `stimulus_id`。
 8. WHERE 某题被标记为 active 且关联了 stimulus, THE 受访者房间的左 2/3 预览框 SHALL 覆盖展示对应 stimulus。
@@ -207,14 +207,14 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 
 #### Acceptance Criteria
 
-1. WHEN 一次 user turn 的 STT 产出 final transcript segment, THE Interview_Moderator_Agent SHALL 用一次 LLM 调用同时生成"下一句话"和 function call `{next_action ∈ [followup, move_on, clarify, close], next_question_id?}`。
+1. WHEN 一次 user turn 的 STT 产出 final transcript segment, THE Interview_Moderator_Agent SHALL 在同一个 `stream_turn` 协程内顺序执行两次 LLM 调用：(a) 非流式 `coverage_steer` 返回结构化 `ModeratorDecision` 含 `next_action ∈ [followup, move_on, clarify, close]` 与可选 `next_question_id` / `target_goal_id`；(b) 流式 `generate` 输出"下一句话"逐 token 推给 TTS。
 2. THE Interview_Moderator_Agent SHALL 跟踪 conversation state: 当前题号 / 该题已追问次数 / 剩余追问预算 = `followup_depth - 已追问`。
-3. IF 剩余追问预算 == 0, THEN THE Interview_Moderator_Agent SHALL 强制返回 `next_action = move_on`。
-4. THE Interview_Moderator_Agent 的 system prompt SHALL 包含: `<research_goal>`, `<current_question>`, `<current_stimulus>`(如有), `<remaining_followups>`, `<vision_context>`(视频模式,最近一帧 VL 描述)。
-5. WHEN LLM 生成文本时, THE System SHALL 并行两路: 文本喂给 Qwen CosyVoice 流式 TTS 推音频给浏览器 + 文本推字幕到右侧对话框。
-6. WHEN 所有题问完且 closing section 过完且 `next_action = close`, THE System SHALL 结束 session 并跳转到受访者感谢页。
-7. THE Interview_Moderator_Agent SHALL NOT 拆分为独立的 macro/meso 决策层(决策全部塞进同一个 function call)。
-8. THE Interview_Moderator_Agent 的 LLM 调用 SHALL 通过 `posthoganalytics.ai.openai` 包装器 + DeepSeek v3 作为 base_url 切换。
+3. IF 剩余追问预算 == 0 OR `probe_policy=none` 拒绝 followup, THEN THE `decision_validator` SHALL 在服务端覆写 LLM 决策为 `next_action = move_on`，**不**触发额外 LLM 调用。
+4. THE coverage_steer prompt SHALL 包含: `<research_goal>`, `<current_question>`, `<current_stimulus>`(如有), `<remaining_followups>`, `<vision_context>`(视频模式,最近一帧 VL 描述), `<coverage_context>`(P0/P1/P2 goal 当前覆盖度), `<concept_context>`(若该题在 ConceptBlock 内)。
+5. WHEN generate 节点产出文本时, THE System SHALL 并行两路: 文本喂给 Qwen CosyVoice 流式 TTS 推音频给浏览器 + 文本推字幕到右侧对话框。
+6. WHEN closure 检查任一信号命中(close_decision / all_p0_answered / leaving_intent / idle_timeout / ws_disconnect / max_duration), THE System SHALL 结束 session 并跳转到受访者感谢页。
+7. THE Interview_Moderator_Agent SHALL NOT 引入第三次 LLM 调用、macro/meso/micro 三层决策、或独立 policy 持久化模块(coverage_steer / engagement / off_topic 仅作为 prompt context, 不作为模块)。LangGraph / Prefect / 任意 agent framework 同样禁止。
+8. THE Interview_Moderator_Agent 的 LLM 调用 SHALL 通过 `merism.llm_gateway.client.get_client(logical_name, *, team, trace_id)` 路由：优先读 team 的 ServiceSettings(每队 base_url + model + 加密 api_key),回退环境变量 `MERISM_LLM_*`。
 
 ### Requirement 15: 受访者附件上传
 
@@ -237,7 +237,7 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 3. THE SessionInsight 模型 SHALL 使用 `merism_session_insight` 作为 `db_table`, 含 FK 到 Session、`team_id`。
 4. THE SessionInsight SHALL 包含: `summary`(3-5 句) / `highlights: [{text, ts_start, ts_end, importance}]`(3-8 条) / `tags: {dimension_name: value}` / `extracted_tasks: [{title, category, priority, evidence_quote_id}]`。
 5. THE tags 的维度 SHALL 由 Analysis_Agent 基于 `research_goal + outline_questions` 自动推导,不由用户配置。
-6. WHEN Celery task 中需要埋点, THE System SHALL 使用 `ph_scoped_capture`(不使用 `posthoganalytics.capture()`, 后者在 Celery 中会静默丢事件)。
+6. WHEN Celery task 中需要埋点, THE System SHALL 使用 `merism.memai.capture.scoped_capture`(不使用 `structlog`/Langfuse 直接埋点, 后者在 Celery 中会静默丢事件)。
 
 ### Requirement 17: 群体分析(Study Report)
 
@@ -287,11 +287,11 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 
 #### Acceptance Criteria
 
-1. THE System SHALL 使用 DeepSeek v3 / DeepSeek Reasoner 作为默认 LLM(通过切换 `posthoganalytics.ai.openai` 包装器的 `base_url`)。
+1. THE System SHALL 使用 DeepSeek v3 / DeepSeek Reasoner 作为默认 LLM(通过切换 `merism.llm_gateway.client.get_client` 包装器的 `base_url`)。
 2. THE System SHALL 使用 Qwen CosyVoice(流式)作为 TTS。
 3. THE System SHALL 使用 Qwen Paraformer-realtime 作为 STT。
 4. THE System SHALL 使用 Qwen-VL-Max 作为视觉理解模型。
-5. THE System SHALL 使用 PostHog `object_storage`(S3 抽象)存储录音/录像/刺激物/附件。
+5. THE System SHALL 使用 `merism.services.storage`(boto3 + S3/MinIO)存储录音/录像/刺激物/附件。
 6. THE System SHALL NOT 在默认安装中依赖 DashScope 特定地理区域的 endpoint(按 ADR 0002 延后决策)。
 7. THE System SHALL NOT 引入 Node.js plugin-server 做行为触发(按 ADR 0001,行为触发走 Celery beat + HogQL scanner)。
 
@@ -302,7 +302,7 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 #### Acceptance Criteria
 
 1. THE 所有 Merism 相关 Django 模型 SHALL 设置 `class Meta: db_table = "merism_xxx"`。
-2. THE 所有租户数据模型 SHALL 包含 `team_id`(作为 FK 到 posthog.Team 或 BigIntegerField,取决于是否单 DB)。
+2. THE 所有租户数据模型 SHALL 包含 `team_id`(作为 FK 到 merism.Team 或 BigIntegerField,取决于是否单 DB)。
 3. THE 本计划 SHALL NOT 主动删除以下 Phase 0 遗留表: `StudyGoal`, `StudyTransition`, conductor policies 相关持久化。
 4. THE 本计划 SHALL NOT 在代码路径中引用 `StudyGoal` 多 goal flat list; 统一使用 `Study.research_goal` 单文本字段。
 5. THE 本计划 SHALL NOT 使用 Conductor policies(coverage / engagement / off_topic)—— 100+ 真实访谈后再评估需要哪个。
@@ -325,9 +325,9 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 
 #### Acceptance Criteria
 
-1. THE 所有 LLM 调用 SHALL 通过 `posthoganalytics.ai.openai` 包装器,自带 trace 和成本统计。
+1. THE 所有 LLM 调用 SHALL 通过 `merism.llm_gateway.client.get_client` 包装器,自带 trace 和成本统计。
 2. THE InterviewSession SHALL 记录该次访谈的累计 cost_cents(可后台聚合,不要求实时在前端展示)。
-3. WHILE 单场 InterviewSession 成本超过预设阈值(默认 $10), THE System SHALL 通过 PostHog 通知机制提示 study owner。
+3. WHILE 单场 InterviewSession 成本超过预设阈值(默认 $10), THE System SHALL 写一条 `InboxItem.kind=cost_alert`(或 `study_stuck` 占位)给 study owner 通知。
 
 ### Requirement 24: 前端设计系统边界
 
@@ -349,7 +349,7 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 1. THE 与 Django DB 无关的单测 SHALL 通过 `pytest -c products/studies/pytest.ini` 运行(轻量/smoke 入口)。
 2. THE 需要 ORM 的测试 SHALL 通过 `pytest -c products/studies/pytest.orm.ini` + `DJANGO_SETTINGS_MODULE=products.studies.test_settings_orm` 运行。
 3. THE 对同一逻辑的多种输入变体 SHALL 使用 `parameterized` 库参数化,不手写重复 assert。
-4. THE 对 Outline_Review_Agent、Interview_Moderator_Agent、Analysis_Agent 的 LLM 交互 SHALL 通过 mock `posthoganalytics.ai.openai` 的响应测试,不发真实请求。
+4. THE 对 Outline_Review_Agent、Interview_Moderator_Agent、Analysis_Agent 的 LLM 交互 SHALL 通过 mock `merism.llm_gateway.client.get_client` 的响应测试,不发真实请求。
 5. THE 对 AI agent 的 prompt 构造 SHALL 有 snapshot 测试,保证 research_goal / current_question / stimulus / vision_context 正确注入。
 
 ### Requirement 26: 非目标(明确不做)
@@ -372,5 +372,5 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 #### Acceptance Criteria
 
 1. THE System SHALL 在以下节点埋点: study_created / outline_finalized / recruit_link_generated / participation_started / session_completed / insight_generated / study_report_generated / custom_report_query_submitted。
-2. THE 在 Celery task 内部的埋点 SHALL 使用 `ph_scoped_capture`(不使用 `posthoganalytics.capture()`)。
+2. THE 在 Celery task 内部的埋点 SHALL 使用 `merism.memai.capture.scoped_capture`(不使用 `structlog`/Langfuse 直接埋点)。
 3. THE 每个埋点事件 SHALL 包含 `team_id`, `study_id`(如适用), `user_id`(如适用)。

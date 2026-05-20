@@ -20,7 +20,6 @@ from merism.api.serializers import (
     ChannelConfigSerializer,
     ConceptBlockSerializer,
     ConceptSerializer,
-    ConversationSerializer,
     CustomReportQuerySerializer,
     DeliveryRecordSerializer,
     InterviewGuideSerializer,
@@ -45,7 +44,6 @@ from merism.models import (
     ChannelConfig,
     Concept,
     ConceptBlock,
-    Conversation,
     CustomReportQuery,
     DeliveryRecord,
     InterviewGuide,
@@ -572,14 +570,6 @@ class CustomReportQueryViewSet(TeamScopedModelViewSet):
         instance.chart_spec = answer.chart.model_dump() if answer.chart else {}
         instance.citations = [c.model_dump() for c in answer.citations]
         instance.save(update_fields=["answer_markdown", "chart_spec", "citations", "updated_at"])
-
-
-# ── MEM AI / memory ────────────────────────────────────────
-
-
-class ConversationViewSet(TeamScopedModelViewSet):
-    queryset = Conversation.objects.all()
-    serializer_class = ConversationSerializer
 
 
 class AgentMemoryViewSet(TeamScopedModelViewSet):

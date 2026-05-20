@@ -12,13 +12,6 @@ clarify / close`) — it does not select tools — so the whole class of
 unnecessary. What we keep from those projects is the **event-sourcing
 discipline** and the **trace-id correlation pattern**.
 
-> **Update 2026-05-20**: the moderator now runs as a **2-node sequential
-> pipeline** (decide → generate) instead of a single function-call. Both
-> calls are awaited in order inside the same `stream_turn` coroutine — no
-> graph, no policy layer, no macro/meso/micro split. See PRODUCT.md §5.2
-> for rationale. AGENTS.md rule 4 + platform spec Req 14 now match this
-> 2-node design.
-
 ## Data model for the runtime
 
 Five tables carry the runtime:
@@ -231,7 +224,7 @@ rendered as a chronological timeline. Primary ops triage surface.
 ## Deliberately not here
 
 - ❌ **Temporal / Restate** — Celery + event log is enough for Merism's scale (45min sessions)
-- ❌ **LangGraph / Prefect** — 2-node moderator pipeline per turn; no graph needed
+- ❌ **LangGraph / Prefect** — single LLM call per turn; no graph needed
 - ❌ **OpenHands `AgentController` + `Runtime`** — moderator has a 4-action enum, not a tool space
 - ❌ **Kafka / EventStore** — append-only Postgres rows with `seq` unique constraint give the same semantics
 - ❌ **Langfuse / Helicone** — structlog with trace_id + SessionEvent give 95% of the value; add if shadow-eval needs kick in

@@ -141,7 +141,7 @@ user speaks
   → Silero VAD onSpeechStart (client, <90 ms)
   → AudioCapture flushes 300 ms pre-pad buffer to WS
   → Paraformer streaming STT (server)
-  → moderator.stream_turn single LLM call (server)
+  → moderator.stream_turn 2-node pipeline: coverage_steer (decide) → generate (stream) (server)
     → text delta → WS → CaptionColumn + CosyVoice TTS
   → AudioPlayback on shared AudioContext (<20 ms decode)
 AI speaks

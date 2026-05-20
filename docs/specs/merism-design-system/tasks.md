@@ -92,7 +92,7 @@ Legend: `[x]` done before this spec · `[ ]` to do · `[-]` deferred
 **Refs:** Requirement 6
 
 ## Task 10: Verification
-- [ ] 10.1 `pnpm --filter=@posthog/frontend typescript:check` clean
+- [ ] 10.1 `pnpm --filter=merism-frontend typescript:check` clean
 - [ ] 10.2 `hogli test frontend/src/lib/merism` or equivalent jest run passes
 - [ ] 10.3 `ruff check . --fix && ruff format .` no Python changes expected
 - [ ] 10.4 Storybook story files compile (build-time discovery smoke check)
