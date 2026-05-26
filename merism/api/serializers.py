@@ -78,7 +78,6 @@ class StudySerializer(serializers.ModelSerializer):
             "status",
             "interview_mode",
             "estimated_minutes",
-            "barge_in_enabled",
             "target_audience",
             "target_completed_count",
             "recruitment_quotas",

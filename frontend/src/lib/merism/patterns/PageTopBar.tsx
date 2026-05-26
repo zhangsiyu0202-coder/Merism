@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
 
-import { PageHeading } from "./PageHeading"
-import { TabRail, type TabRailItem } from "./TabRail"
+import { PageHeading } from "./PageHeading";
+import { TabRail, type TabRailItem } from "./TabRail";
 
 /**
  * PageTopBar — the per-scene masthead.
@@ -26,48 +26,44 @@ import { TabRail, type TabRailItem } from "./TabRail"
  */
 
 export interface PageTopBarProps {
-    eyebrow?: ReactNode
-    title: ReactNode
-    /** Inline status tag baseline-aligned with title. */
-    status?: ReactNode
-    /** Right-aligned CTA actions. */
-    actions?: ReactNode
-    lede?: ReactNode
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  /** Inline status tag baseline-aligned with title. */
+  status?: ReactNode;
+  /** Right-aligned CTA actions. */
+  actions?: ReactNode;
+  lede?: ReactNode;
 
-    tabs?: TabRailItem[]
-    activeTab?: string
-    onTabChange?: (value: string) => void
+  tabs?: TabRailItem[];
+  activeTab?: string;
+  onTabChange?: (value: string) => void;
 
-    className?: string
+  className?: string;
 }
 
 export function PageTopBar({
-    eyebrow,
-    title,
-    status,
-    actions,
-    lede,
-    tabs,
-    activeTab,
-    onTabChange,
-    className,
+  eyebrow,
+  title,
+  status,
+  actions,
+  lede,
+  tabs,
+  activeTab,
+  onTabChange,
+  className,
 }: PageTopBarProps): JSX.Element {
-    return (
-        <div className={"flex flex-col gap-4 " + (className ?? "")}>
-            <PageHeading
-                eyebrow={eyebrow}
-                title={title}
-                status={status}
-                actions={actions}
-                lede={lede}
-            />
-            {tabs && activeTab && onTabChange && (
-                <TabRail
-                    tabs={tabs}
-                    activeTab={activeTab}
-                    onTabChange={onTabChange}
-                />
-            )}
-        </div>
-    )
+  return (
+    <div className={"flex flex-col gap-4 " + (className ?? "")}>
+      <PageHeading
+        eyebrow={eyebrow}
+        title={title}
+        status={status}
+        actions={actions}
+        lede={lede}
+      />
+      {tabs && activeTab && onTabChange && (
+        <TabRail tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
+      )}
+    </div>
+  );
 }

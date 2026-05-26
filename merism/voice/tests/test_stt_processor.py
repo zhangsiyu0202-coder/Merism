@@ -1,4 +1,5 @@
 """Tests for :class:`~merism.voice.processors.stt.STTProcessor`."""
+# ruff: noqa: RUF001
 
 from __future__ import annotations
 
@@ -100,15 +101,17 @@ async def test_stt_processor_commits_turn_on_explicit_stop() -> None:
 
     await task.start()
     await task.queue_frame(InputAudioRawFrame(audio=b"\x00" * 3200))
+    # Yield to the event loop so the STT stream task picks up the audio
+    # chunk BEFORE _close_turn fires. Without this, queue.put + immediate
+    # close drain the stream before the first STTEvent is yielded.
+    await asyncio.sleep(0.05)
     await task.queue_frame(UserStoppedSpeakingFrame())
     await asyncio.sleep(0.2)
     await task.queue_frame(EndFrame())
     await asyncio.sleep(0.05)
     await task.stop()
 
-    transcripts = [
-        frame for frame in recorder.seen if isinstance(frame, TranscriptionFrame)
-    ]
+    transcripts = [frame for frame in recorder.seen if isinstance(frame, TranscriptionFrame)]
     assert any(frame.text == "你好，我想了解一下" for frame in transcripts)
 
 
@@ -125,7 +128,5 @@ async def test_stt_processor_does_not_emit_transcript_for_empty_turn() -> None:
     await asyncio.sleep(0.05)
     await task.stop()
 
-    transcripts = [
-        frame for frame in recorder.seen if isinstance(frame, TranscriptionFrame)
-    ]
+    transcripts = [frame for frame in recorder.seen if isinstance(frame, TranscriptionFrame)]
     assert transcripts == []

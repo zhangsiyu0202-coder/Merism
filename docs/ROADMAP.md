@@ -1,6 +1,6 @@
 # Merism rebuild roadmap
 
-最后更新：**2026-05-20**。本文档记录 `merism-app/` 重建工作每一轮的内容、状态与下一步。
+最后更新：**2026-05-23**（R29 v1 retirement）。本文档记录 `merism-app/` 重建工作每一轮的内容、状态与下一步。
 
 格式：每个里程碑（R*）独立小节，开头标 ✅ / ⏳ / 🔭，越靠下越近期完成。文末列出"下一阶段候选"。
 
@@ -327,6 +327,116 @@ UserIdleDetector (注入合成 turn)
 
 ---
 
+## ✅ R27 — Conductor v2 list interpreter (deleted 2026-05-23, superseded by R28)
+
+实施 2026-05-21 / 22, 删除 2026-05-23. ADR 0009 落地了 list interpreter 架构 (~2150 LOC + 150 tests, 含 schema/engine/event_log/router/text_runner/sse_sink/voice_sink/ai_clients/persistence + 前端 V2AdvancedSection 折叠面板), 一天内 dogfeed 即判定 typed slots / skip_if / behavior_slots 抽象不必要, 砍掉重写为 LangGraph (R28). v2 上线期间 0 个生产 session 跑过.
+
+---
+
+## ✅ R28 — Conductor v3 LangGraph (实施 + 简化 2026-05-23)
+
+ADR 0012 落地. 抛弃 v2 list interpreter + 全部 typed slots / skip_if / behavior_slots 抽象, 改用 LangGraph 的 `StateGraph` (5 节点固定拓扑). 同日二次简化: 删除 prepare_session + finish_interview 两个节点, probe_instruction 直接塞 judge prompt 不做 LLM 转写, final report 交给现有 post_session 管线.
+
+**架构**:
+- 5 节点固定图: `ask → [judge_off | judge_standard | judge_deep] → advance | ask`, advance done=True 直达 END
+- 提纲是数据 (`Outline.sections[].questions[]`). 题目字段 = `id / ask / goal / must_get / max_followups + 可选 probe_instruction`
+- 3 模式 follow_up_mode (off / standard / deep) 是路由 key, 由 `route_after_ask` dispatch
+- probe_instruction 是研究员手写自然语言, 直接注入 judge prompt verbatim (不 LLM 转写)
+- final_report 不再由 graph 生成; 现有 post_session 管线读 InterviewSession.transcript 异步生成报告
+- 文件分层借鉴 google-gemini/gemini-fullstack-langgraph-quickstart
+
+**关键决定**:
+- AGENTS.md Rule 4 重写: v3 = ≤ 1 LLM call/turn (judge), 0/session 外环. v1 仍是 2 calls/turn (decide + generate).
+- AGENTS.md Rule 9 放宽: v3 不写 per-turn `SessionEvent`. LangGraph PostgresSaver 是运行时权威; 终态写 `InterviewSession.transcript`, 触发 post_session 管线.
+- AGENTS.md Rule 12 守住: routing functions 全是纯 `state -> Literal[node_name]`. 没有 LLM 决定边.
+- AGENTS.md Rule 13 更新: 路由 key 从 `version: "v2"` 改为 `version: "v3"`. v1 sessions 走 `stream_turn` 不变.
+- DeepSeek + LangChain 必须用 `with_structured_output(method="json_mode")`; 默认 `json_schema` 报 HTTP 400. Prompt 必须含 "JSON" 字样过 DeepSeek 安全检查. 锁在 `llm.py + prompts.py` 注释里.
+
+**代码量**:
+- 新增 `merism/conductor_v3/` (12 模块, ~1200 LOC + ~1500 行测试)
+- 新增 `merism/voice/processors/moderator_v3.py` (190 行 pipecat FrameProcessor with 60s IdleTimer)
+- 删除 `merism/conductor_v2/` (~3000 LOC + 150 tests). 净减 ~1800 LOC.
+- migration 0038 加 `InterviewSession.follow_up_mode` 字段 (off/standard/deep, default standard)
+
+**测试**:
+- 142 tests pass (含 1 live smoke 真实 DeepSeek 跑 5 题 outline standard 模式 14.98s, 比 7-node 版本快 ~5s)
+- ruff / ruff format / pyright pure-logic 全绿
+- 前端 TypeScript 类型与 lint 仍绿; OutlineTab v2 高级面板已删除, v3 UI 编辑器待 R29 补
+
+**文档**:
+- ADR 0012 写定 + ADR 0009/0011 标 superseded
+- `docs/specs/conductor-v3/` (requirements / design / tasks) 三件套, 已同步 5 节点设计
+- AGENTS.md Rule 4/9/12/13 + "Engine architecture (Conductor v3)" 段全部按新架构重写
+
+**剩余 (R29+)**:
+- 前端 V3 outline 编辑器 (5 字段表单 + 3 状态 follow_up_mode radio)
+- 真实参与者 dogfood 至少 1 场
+- 视情况, 把 v3 checkpoint 表 schema 加 v1 SessionEvent 镜像 sink (如果分析需要)
+
+**生产持久化** (2026-05-23 完成):
+- `text_adapter.get_graph()` 用 `PostgresSaver` 替代 `InMemorySaver`
+- 4 张 LangGraph 表已创建: `checkpoints / checkpoint_blobs / checkpoint_writes / checkpoint_migrations`
+- 共享 `psycopg_pool.ConnectionPool` (min=1 max=10) 跨 daphne / gunicorn worker
+- `saver.setup()` 幂等, 进程首次 build_graph 时自动调用
+- 进程重启 + 多 worker 状态共享均已验证 (端到端 3 turn 测试通过, DB 写入 6 个 checkpoint 行)
+
+**剩余 (R29+)**:
+- 前端 V3 outline 编辑器 (5 字段表单 + 3 状态 follow_up_mode radio)
+- 真实参与者 dogfood 至少 1 场
+- 视情况, 把 v3 checkpoint 表 schema 加 v1 SessionEvent 镜像 sink (如果分析需要)
+
+**生产持久化** (2026-05-23 完成):
+- `text_adapter.get_graph()` 用 `PostgresSaver` 替代 `InMemorySaver`
+- 4 张 LangGraph 表已创建: `checkpoints / checkpoint_blobs / checkpoint_writes / checkpoint_migrations`
+- 共享 `psycopg_pool.ConnectionPool` (min=1 max=10) 跨 daphne / gunicorn worker
+- `saver.setup()` 幂等, 进程首次 build_graph 时自动调用
+- 进程重启 + 多 worker 状态共享均已验证 (端到端 3 turn 测试通过, DB 写入 6 个 checkpoint 行)
+
+---
+
+## ✅ R29 — Conductor v1 retirement (2026-05-23)
+
+ADR 0013 落地. v3 验证全过 (142 单测 + live LLM smoke + 3 轮压力 + 真 DashScope STT/TTS 端到端 + post_session 兼容验证) → 删 v1.
+
+**删的代码** (~5000 LOC + ~2000 LOC 测试):
+- `merism/conductor/`: 14 个 v1 引擎文件 (moderator/decision_*/generation_prompt/guide_cursor/probe_blocks/adaptive_probing/concept_plan/state/prompts/moderator_eval/event_log/closure/text_chunker)
+- `merism/voice/`: processors/moderator.py + interview_pipeline.py + services/moderator_processor.py
+- 9 个 v1 单测 (test_closure/concept_plan/decision_validator/dynamic_probe/event_log/generation_prompt/moderator_eval/moderator_events/rule_clean/text_chunker)
+- 2 个 management commands: evaluate_moderator + migrate_probe_blocks
+- v1 voice consumer 测试 + truncation flow 测试
+
+**保留为 cross-engine 工具** (`merism/conductor/`):
+- post_session.py / transcript_helpers.py / llm_polish.py / rule_clean.py / signals.py / study_closure_signal.py / inbox_signals.py / tasks.py
+- `__init__.py` 改成简洁 facade (无 v1 export)
+
+**简化 routing**:
+- `api/interview_message_view.py` 删 is_v3_session 分支 → 全部走 run_v3_turn
+- `realtime/voice.py` 删 is_v3 分发 → guide_id 有则 ModeratorV3Processor, 无则 ad-hoc LLMProcessor
+- `conductor_v3/router.py` 保留 is_v3_session 给 legacy 数据防御性读取, 不再用于请求路径
+
+**数据迁移**:
+- `python manage.py migrate_guide_to_v3 --all-studies --apply` 跑过, 23/23 v1 guides 全部转 v3
+- 字段映射: v1.text → v3.ask, v1.probe_policy(none/light/standard/deep) → v3.follow_up_mode(off/standard/standard/deep), v1.probe_directions → v3.probe_instruction
+- 丢: followup_depth, max_probes, required, intent, linked_stimulus_ids, type, scope, concept_block_id
+
+**AGENTS.md**:
+- Rule 4 重写: single-engine v3, ≤1 LLM call/turn, 0/session 外环
+- Rule 13 重写: single-engine v3, 无 dual-engine routing, 无 cross-engine import concern
+- Rule 9, 12 不变 (v3 exception 已在 ADR 0012 写定)
+
+**测试结果**:
+- 270 passed, 2 skipped (test_full_chain_invite_to_inbox 标 v1-only, R29 待 v3 重写), 2 pre-existing baseline failures (test_stt_processor_commits_turn_on_explicit_stop, test_django_settings_is_merism_test)
+- ruff / ruff format / pyright 全绿
+- `pre-v1-removal-2026-05-23` git tag 保存了删除前的 snapshot
+
+**当前状态**:
+- 单引擎 v3 (LangGraph 5 节点)
+- 23 个 active study, 全部 v3 outline
+- post_session 管线兼容 v3 transcript shape (v1-compat 转换在 finalize_to_session 完成)
+- 真实 DashScope STT/TTS roundtrip 通过 (TTS 3.0s + STT 2.2s + graph 推进 = 完整闭环)
+
+---
+
 ## ⏳ 进行中
 
 ### Codebook 治理 UI
@@ -338,6 +448,13 @@ UserIdleDetector (注入合成 turn)
 - 后端 `ConceptBlockViewSet.report` 已能返回 dimensions
 - ⬜ Insights 页 / Report tab 接入概念维度可视化
 - ⬜ 概念偏好 vs 人群（CohortSegment）交叉对比
+
+### Conductor v2 dogfood + v1 退役
+- ⬜ P3.5 v2 端到端 dogfood（3 场内部访谈，混合 voice / text）
+- ⬜ P4.2 staging `migrate_guide_to_v2 --all-studies --apply` 灰度
+- ⬜ P4.3 6 周 grace 期监控（v1 vs v2 错误率 / 首字延迟 p95 dashboard）
+- ⬜ P4.4 ADR 0010 v1 退役（删 `merism/conductor/decision_prompt.py / decision_validator.py / moderator.py / guide_cursor.py / probe_blocks.py / adaptive_probing.py`）
+- ⬜ P4.5 文档归档（`AGENTS.md` Rule 4 改"extract → generate"; `docs/PRODUCT.md` §5.2 同步; `docs/MIGRATION.md` 标 v2 完成）
 
 ### AGENTS.md / spec 同步
 - ✅ AGENTS.md 规则 4 已更新为"决策 + 生成两节点"（2026-05-20）

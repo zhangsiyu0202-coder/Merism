@@ -57,7 +57,7 @@ frontend/
     ├── wizard/                 # TODO — study creation wizard
     ├── inbox/                  # TODO
     ├── repository/             # TODO
-    ├── decisions/              # TODO
+    ├── assistant/              # AI assistant surface
     ├── design_system/
     │   ├── tokens/
     │   │   ├── variables.css   # :root / html.dark CSS var bridge
@@ -157,7 +157,7 @@ See `docs/ROADMAP.md` § R9 follow-up:
 
 - Interview Room (voice/video participant surface — biggest remaining piece)
 - Study Wizard (create + outline + screener + stimuli)
-- Inbox / Repository / Decisions surfaces
+- Inbox / Repository / Assistant surfaces
 - Kea router wiring
 - API client codegen from DRF spec (drf-spectacular → Zod schemas)
 - Storybook story files for every primitive + pattern

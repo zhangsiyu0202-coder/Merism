@@ -39,6 +39,65 @@ from merism.models import (
 class StudyInsightsSerializer(serializers.ModelSerializer):
     highlights_count = serializers.IntegerField(source="highlights.count", read_only=True)
     findings_count = serializers.IntegerField(source="findings.count", read_only=True)
+    # Derive ``status`` from observable reality rather than trusting the
+    # stored field. The DB column can drift out of sync if a worker is
+    # killed mid-task, if a rerun() races with the task's final save,
+    # or if the queue is wiped by a redis flush. A serializer that
+    # asks "what does the world actually look like?" is self-healing:
+    # the UI tells the truth even when the column lies.
+    #
+    # Three resolution rules:
+    #
+    # 1. If the underlying data is fully populated → ``ready``. The
+    #    task succeeded; the column is just stale.
+    # 2. If the column says ``generating`` but generation can never
+    #    succeed (no completed interviews to analyze) → ``failed``.
+    #    Otherwise the frontend polls forever waiting for a task
+    #    that has nothing to feed on.
+    # 3. Otherwise → trust the column. Genuine in-flight generation
+    #    is the common case for a healthy fresh task.
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, obj: StudyInsights) -> str:
+        # Rule 1: data is intact → trust the data.
+        data_complete = (
+            obj.generated_at is not None
+            and bool(obj.executive_summary)
+            and obj.highlights.exists()
+            and obj.findings.exists()
+        )
+        if data_complete:
+            return StudyInsights.Status.READY
+
+        # Rule 2: stuck at generating but generation cannot possibly
+        # succeed. ``actual_completed_count`` is a property that runs
+        # ``Participation.objects.filter(status=COMPLETED).count()`` —
+        # if it's zero, the task's first guard returns FAILED with
+        # "No completed interviews to analyze" anyway. We mirror that
+        # outcome at the read path so a stranded row surfaces as
+        # ``failed`` instead of looping the frontend's poller forever.
+        if (
+            obj.status == StudyInsights.Status.GENERATING
+            and obj.study.actual_completed_count == 0
+        ):
+            return StudyInsights.Status.FAILED
+
+        # Rule 3: trust the column.
+        return obj.status
+
+    def get_error_message(self, obj: StudyInsights) -> str:
+        # Mirror ``get_status``'s synthesized FAILED state with a
+        # human-readable reason so the UI doesn't show an empty
+        # error string next to a "Failed" badge.
+        if (
+            obj.status == StudyInsights.Status.GENERATING
+            and obj.study.actual_completed_count == 0
+            and not obj.executive_summary
+        ):
+            return "无已完成的访谈可供分析。"
+        return obj.error_message or ""
+
+    error_message = serializers.SerializerMethodField()
 
     class Meta:
         model = StudyInsights
@@ -205,6 +264,16 @@ class StudyInsightsViewSet(TeamScopedModelViewSet):
         if study_id:
             qs = qs.filter(study_id=study_id)
         return qs
+
+    def perform_create(self, serializer) -> None:
+        """Auto-trigger generation when a StudyInsights record is created."""
+        instance = serializer.save(
+            team=self.get_team(),
+            status=StudyInsights.Status.GENERATING,
+        )
+        from merism.api.insights_tasks import generate_insights_task
+
+        generate_insights_task.delay(str(instance.id))
 
     @action(detail=True, methods=["post"])
     def rerun(self, request: Request, pk: str | None = None) -> Response:

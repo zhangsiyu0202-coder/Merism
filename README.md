@@ -18,19 +18,27 @@ Built fresh in 2026-05. Zero PostHog lineage.
 # Prerequisites:
 #   - Python 3.12.12
 #   - Node.js 24.13.x (frontend only)
-#   - Docker (for postgres + redis)
+#   - Docker (for postgres + redis + minio + celery)
 #   - uv (Python package manager)
 
-bin/setup-dev.sh
+# First-time bootstrap (idempotent):
+make setup       # uv sync + docker compose up + migrate + seed_dev
+
+# Daily workflow:
+make dev         # start full stack (backend + frontend + docker + auto-doctor)
+make status      # what's running?
+make stop        # clean shutdown — no zombie processes
+make doctor      # 18-check self-diagnostic (ports, DB, admin, celery, ...)
+make reset       # one-shot recovery (kills stale, clears queues, re-seeds)
 ```
 
-This runs:
-1. `docker compose up -d` (postgres + redis)
-2. `uv sync` (install Python deps to `.venv/`)
-3. `python manage.py migrate`
-4. `python manage.py runserver`
+Login: **admin@merism.test** / **merism-dev**
 
-Tests: `pytest merism/tests`
+The launcher (`bin/dev.sh`) writes PIDs to `.pids/dev/`, refuses to
+start a duplicate, and Ctrl-C cleans up every child process. If
+something gets stuck, `make reset` returns to a known-good state.
+
+Tests: `make test` (or `pytest merism/tests` for backend smoke only).
 
 ## Repo layout
 
@@ -42,7 +50,7 @@ merism-app/
 │   ├── models/                     # Team, Study, Interview, Knowledge, Recruitment, Report
 │   ├── api/                        # DRF viewsets
 │   ├── memai/                      # AI tool layer (Merism-native; not PostHog's hogai)
-│   ├── conductor/                  # 2-node interview moderator: decide → generate (per platform spec)
+│   ├── conductor/                  # LangGraph interview moderator (5 nodes; ADR 0012)
 │   ├── knowledge/                  # RAG (pgvector + BM25), Ask Merism
 │   ├── recruitment/                # IMChannel adapters (Feishu, WeCom, QQ Group/Guild, WeCom Bot)
 │   ├── realtime/                   # SSE + WebSocket (interview replay + voice)
@@ -58,7 +66,7 @@ merism-app/
 │       ├── wizard/                 # Study creation wizard
 │       ├── inbox/                  # Recruitment + session inbox
 │       ├── repository/             # Knowledge repository
-│       └── decisions/              # Decision log
+│       └── assistant/               # AI assistant surface
 ├── docs/
 │   ├── PRODUCT.md                  # Single product spec
 │   ├── ROADMAP.md                  # What's done, what's next
@@ -95,12 +103,12 @@ docs: factories, fakes, assertions, fixtures.
 
 1. **Single Django project.** Not a monorepo of "products". Everything Merism
    does lives under `merism/`.
-2. **Two-node interview moderator (decide → generate).** Each user turn
-   runs `coverage_steer` (non-streaming, returns structured
-   `ModeratorDecision`) → `decision_validator` (server-side hard rules)
-   → `generate` (streaming text). Both calls live in one
-   `stream_turn` coroutine. No macro/meso/micro pyramid, no persistent
-   conductor policies (see spec `merism-platform` Req 14).
+2. **LangGraph interview moderator (single engine).** Each user turn runs
+   one judge LLM call (`Evaluation` Pydantic via `json_mode`) and pure
+   routing functions decide flow. Five fixed nodes:
+   `ask → judge_off | judge_standard | judge_deep → advance → ask | END`.
+   No macro/meso/micro pyramid, no persistent conductor policies, no
+   second LLM call inside a turn (see ADR 0012 + 0013).
 3. **`merism_` db_table prefix.** Every model. Always. Multi-tenant isolation
    via `team_id` on every tenant-data model.
 4. **Research goal is the North Star.** `Study.research_goal: TextField`.

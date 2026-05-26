@@ -16,35 +16,51 @@
 
 /* Reduced motion — respected by motion/react across the app. */
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * PTT button "AI is speaking" indicator — animated soundwave bars.
+ * Three bars side-by-side, each animating its scaleY out of phase so
+ * the disabled state reads as "system is doing something, wait" not
+ * "the button is broken". See PTTButton in InterviewRoomPage.tsx.
+ */
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
 
 :root {
-    color-scheme: light dark;
+  color-scheme: light dark;
 }
 
 html,
 body,
 #root {
-    height: 100%;
+  height: 100%;
 }
 
 body {
-    margin: 0;
-    font-family: var(--font-sans);
-    font-feature-settings: "cv11", "ss01", "ss03";
-    background: var(--merism-bg);
-    color: var(--merism-text);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  background: var(--merism-bg);
+  color: var(--merism-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /*
@@ -66,40 +82,40 @@ body {
 *::-webkit-scrollbar-button:single-button,
 *::-webkit-scrollbar-button:start,
 *::-webkit-scrollbar-button:end {
-    display: none;
-    height: 0;
-    width: 0;
+  display: none;
+  height: 0;
+  width: 0;
 }
 
 /* 6 px track (vertical) · 6 px track (horizontal) — invisible. */
 *::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-    background-color: transparent;
+  width: 6px;
+  height: 6px;
+  background-color: transparent;
 }
 *::-webkit-scrollbar-track,
 *::-webkit-scrollbar-track-piece {
-    background: transparent;
-    border: none;
+  background: transparent;
+  border: none;
 }
 *::-webkit-scrollbar-corner {
-    background: transparent;
+  background: transparent;
 }
 
 /* Thumb — pill, translucent ink, fades in on hover. */
 *::-webkit-scrollbar-thumb {
-    background-color: var(--merism-scrollbar-thumb);
-    border-radius: 9999px;
-    border: 2px solid transparent;        /* visual inset */
-    background-clip: padding-box;
-    transition: background-color 0.2s ease;
+  background-color: var(--merism-scrollbar-thumb);
+  border-radius: 9999px;
+  border: 2px solid transparent; /* visual inset */
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
 }
 *::-webkit-scrollbar-thumb:hover {
-    background-color: var(--merism-scrollbar-thumb-hover);
+  background-color: var(--merism-scrollbar-thumb-hover);
 }
 
 /* Firefox equivalents. */
 * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--merism-scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--merism-scrollbar-thumb) transparent;
 }

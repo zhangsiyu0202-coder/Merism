@@ -1,6 +1,6 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
 
-import { cn } from "../utils/cn"
+import { cn } from "../utils/cn";
 
 /**
  * PageHeading — scene masthead.
@@ -40,57 +40,55 @@ import { cn } from "../utils/cn"
  */
 
 export interface PageHeadingProps {
-    eyebrow?: ReactNode
-    title: ReactNode
-    /** Inline tag baseline-aligned with the title — ideal for status. */
-    status?: ReactNode
-    /** Right-aligned action cluster (CTAs). */
-    actions?: ReactNode
-    lede?: ReactNode
-    className?: string
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  /** Inline tag baseline-aligned with the title — ideal for status. */
+  status?: ReactNode;
+  /** Right-aligned action cluster (CTAs). */
+  actions?: ReactNode;
+  lede?: ReactNode;
+  className?: string;
 }
 
 export function PageHeading({
-    eyebrow,
-    title,
-    status,
-    actions,
-    lede,
-    className,
+  eyebrow,
+  title,
+  status,
+  actions,
+  lede,
+  className,
 }: PageHeadingProps): JSX.Element {
-    return (
-        <header
-            className={cn(
-                "flex flex-col border-b border-[color:var(--merism-hairline)] pb-6",
-                className,
-            )}
-        >
-            {eyebrow && (
-                <div className="mb-2 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">
-                    {eyebrow}
-                </div>
-            )}
+  return (
+    <header
+      className={cn(
+        "flex flex-col border-b border-[color:var(--merism-hairline)] pb-6",
+        className,
+      )}
+    >
+      {eyebrow && (
+        <div className="mb-2 font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle">
+          {eyebrow}
+        </div>
+      )}
 
-            {/* Title row: title + optional status + optional actions — one line */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <h1 className="font-display text-[length:var(--text-merism-headline)] font-[500] leading-[var(--text-merism-headline--line-height)] tracking-[var(--text-merism-headline--letter-spacing)] text-merism-text">
-                    {title}
-                </h1>
-                {status && (
-                    <div className="flex items-center gap-2">{status}</div>
-                )}
-                {actions && (
-                    <div className="ml-auto flex shrink-0 items-center gap-2">
-                        {actions}
-                    </div>
-                )}
-            </div>
+      {/* Title row: title + optional status + optional actions — one line */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <h1 className="font-display text-[length:var(--text-merism-headline)] font-[500] leading-[var(--text-merism-headline--line-height)] tracking-[var(--text-merism-headline--letter-spacing)] text-merism-text">
+          {title}
+        </h1>
+        {status && <div className="flex items-center gap-2">{status}</div>}
+        {actions && (
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {actions}
+          </div>
+        )}
+      </div>
 
-            {lede && (
-                <p className="mt-2 max-w-[64ch] text-merism-body-sm leading-relaxed text-merism-text-muted">
-                    {lede}
-                </p>
-            )}
-        </header>
-    )
+      {lede && (
+        <p className="mt-2 max-w-[64ch] text-merism-body-sm leading-relaxed text-merism-text-muted">
+          {lede}
+        </p>
+      )}
+    </header>
+  );
 }

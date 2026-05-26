@@ -1,459 +1,461 @@
 {
-    "common": {
-        "search": "Search",
-        "loading": "Loading…",
-        "save": "Save",
-        "cancel": "Cancel",
-        "create": "Create",
-        "edit": "Edit",
-        "delete": "Delete",
-        "remove": "Remove",
-        "archive": "Archive",
-        "back": "Back",
-        "next": "Next",
-        "previous": "Previous",
-        "continue": "Continue",
-        "yes": "Yes",
-        "no": "No",
-        "open": "Open",
-        "close": "Close",
-        "sign_out": "Sign out",
-        "sections": "Sections",
-        "draft": "Draft",
-        "coming_soon": "Coming soon"
+  "common": {
+    "search": "Search",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Remove",
+    "archive": "Archive",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "continue": "Continue",
+    "yes": "Yes",
+    "no": "No",
+    "open": "Open",
+    "close": "Close",
+    "sign_out": "Sign out",
+    "sections": "Sections",
+    "draft": "Draft",
+    "coming_soon": "Coming soon"
+  },
+  "nav": {
+    "home": "Home",
+    "studies": "Studies",
+    "insights": "Insights",
+    "reports": "Reports",
+    "ask": "Ask",
+    "inbox": "Inbox",
+    "repository": "Repository",
+    "decisions": "Decisions",
+    "settings": "Settings",
+    "admin": "Admin",
+    "pinned": "Pinned",
+    "pin_study": "Pin a study for quick access.",
+    "workspace": "Workspace",
+    "search_hint": "Search"
+  },
+  "pagination": {
+    "range": "{{start}}–{{end}} of {{total}}",
+    "per_page": "{{n}} per page",
+    "prev": "Previous",
+    "next": "Next",
+    "page_of": "{{page}} / {{count}}"
+  },
+  "home": {
+    "title": "Home",
+    "lede": "One place for every active study, draft, and decision.",
+    "tabs": {
+      "overview": "Overview",
+      "drafts": "Drafts",
+      "inbox": "Inbox"
     },
+    "kpi": {
+      "active_studies": "Active studies",
+      "sessions_week": "Sessions this week",
+      "insights": "Insights",
+      "participants": "Participants",
+      "open_decisions": "Open decisions"
+    },
+    "first_study_hero": {
+      "title": "Design your first study.",
+      "body": "Merism recruits, interviews, codes, and reports on one focused research question end-to-end.",
+      "cta": "Create study"
+    },
+    "section": {
+      "active_studies": "Active studies",
+      "recent_decisions": "Recent decisions",
+      "see_all": "See all"
+    },
+    "new_study_card": {
+      "title": "New study",
+      "body": "Start from a blank canvas."
+    }
+  },
+  "studies": {
+    "title": "Studies",
+    "lede": "Everything you're learning about your users.",
+    "new_study": "New study",
+    "empty_hero_title": "Start your first study",
+    "empty_hero_body": "A study is one focused line of research. Merism recruits, interviews, codes, and reports on it end-to-end.",
+    "empty_tab_body": "No {{tab}} studies.",
+    "tabs": {
+      "all": "All",
+      "active": "Live",
+      "drafts": "Drafts",
+      "archived": "Closed"
+    },
+    "status": {
+      "draft": "Draft",
+      "live": "Live",
+      "closed": "Closed"
+    }
+  },
+  "study": {
+    "tabs": {
+      "outline": "Outline",
+      "screener": "Screener",
+      "stimuli": "Stimuli",
+      "recruit": "Recruit",
+      "analysis": "Analysis",
+      "report": "Report",
+      "sessions": "Sessions",
+      "settings": "Settings"
+    },
+    "mode": {
+      "voice": "Voice",
+      "video": "Video",
+      "text": "Text",
+      "offline": "Offline"
+    }
+  },
+  "ask": {
+    "title": "Ask Merism",
+    "lede": "A conversational co-researcher across your entire workspace.",
+    "tabs": {
+      "chat": "Chat",
+      "history": "History",
+      "saved": "Saved"
+    },
+    "empty_hero_title": "What do you want to know?",
+    "empty_hero_body": "Ask questions across every study, session, and quote. Merism searches the knowledge base and cites sources inline.",
+    "suggestions_label": "Try asking",
+    "suggestions": [
+      "What do participants say about pricing?",
+      "Which themes surfaced this quarter?",
+      "Compare onboarding reactions across concepts."
+    ],
+    "placeholder": "Ask Merism anything about your research…",
+    "history_coming_soon": "Recent queries will appear here.",
+    "saved_coming_soon": "Pin your favourite answers to re-run them later."
+  },
+  "inbox": {
+    "title": "Inbox",
+    "lede": "New responses, notifications, and signals across your studies.",
+    "empty_title": "You're all caught up.",
+    "empty_body": "New session completions, channel alerts, and @-mentions will land here."
+  },
+  "repository": {
+    "title": "Repository",
+    "lede": "Every quote, theme, and artefact — searchable across studies.",
+    "empty_title": "No artefacts yet.",
+    "empty_body": "As studies complete, Merism indexes every quote and code for cross-study search."
+  },
+  "decisions": {
+    "title": "Decisions",
+    "lede": "Action items extracted from research, tracked to close.",
+    "empty_title": "No open decisions.",
+    "empty_body": "Action items from completed sessions appear here with evidence links."
+  },
+  "settings": {
+    "title": "Settings",
+    "lede": "Workspace, team, and your account preferences.",
     "nav": {
-        "home": "Home",
-        "studies": "Studies",
-        "insights": "Insights",
-        "reports": "Reports",
-        "ask": "Ask",
-        "inbox": "Inbox",
-        "repository": "Repository",
-        "decisions": "Decisions",
-        "settings": "Settings",
-        "admin": "Admin",
-        "pinned": "Pinned",
-        "pin_study": "Pin a study for quick access.",
-        "workspace": "Workspace",
-        "search_hint": "Search"
+      "profile": "Profile",
+      "workspace": "Workspace"
     },
-    "pagination": {
-        "range": "{{start}}–{{end}} of {{total}}",
-        "per_page": "{{n}} per page",
-        "prev": "Previous",
-        "next": "Next",
-        "page_of": "{{page}} / {{count}}"
+    "profile": {
+      "title": "Profile",
+      "loading": "Loading your profile…",
+      "security_title": "Security",
+      "security_description": "Sign-in and authentication.",
+      "active_session": "Active session"
     },
-    "home": {
-        "title": "Home",
-        "lede": "One place for every active study, draft, and decision.",
-        "tabs": {
-            "overview": "Overview",
-            "drafts": "Drafts",
-            "inbox": "Inbox"
-        },
-        "kpi": {
-            "active_studies": "Active studies",
-            "sessions_week": "Sessions this week",
-            "insights": "Insights",
-            "participants": "Participants",
-            "open_decisions": "Open decisions"
-        },
-        "first_study_hero": {
-            "title": "Design your first study.",
-            "body": "Merism recruits, interviews, codes, and reports on one focused research question end-to-end.",
-            "cta": "Create study"
-        },
-        "section": {
-            "active_studies": "Active studies",
-            "recent_decisions": "Recent decisions",
-            "see_all": "See all"
-        },
-        "new_study_card": {
-            "title": "New study",
-            "body": "Start from a blank canvas."
-        }
+    "workspace": {
+      "title": "Workspace details",
+      "organisation": "Organisation: {{name}}",
+      "members_title": "Members",
+      "members_description": "Team members with access to this workspace.",
+      "members_body": "Member management lands with the first multi-tenant rollout.",
+      "language_title": "Language",
+      "language_description": "Interface language. Takes effect immediately.",
+      "compliance_title": "Compliance",
+      "compliance_description": "Data residency and audit logs.",
+      "compliance_body": "PIPL-aligned. Raw transcripts kept server-side; clean-verbatim exports available from any session."
+    }
+  },
+  "login": {
+    "eyebrow": "MERISM",
+    "heading": "Welcome back.",
+    "sub": "Sign in to your research workspace.",
+    "email": "Work email",
+    "password": "Password",
+    "forgot": "Forgot?",
+    "continue": "Continue",
+    "submitting": "Signing in…",
+    "new_workspace_prompt": "New to Merism?",
+    "new_workspace_cta": "Create a workspace",
+    "dev_hint": "Dev: admin@merism.local / admin"
+  },
+  "interview": {
+    "loading": "Preparing your session…",
+    "start_cta": "Begin",
+    "session_ended": "Thank you. Your session is complete.",
+    "session_ended_body": "Your response has been recorded. You may close this window."
+  },
+  "command_palette": {
+    "placeholder": "Type a command or search…",
+    "no_matches": "No matches for \"{{query}}\".",
+    "hint_esc": "ESC",
+    "hint_navigate": "navigate",
+    "hint_run": "run",
+    "footer": "Merism · quick actions",
+    "sections": {
+      "go_to": "Go to",
+      "actions": "Actions",
+      "studies": "Studies"
     },
-    "studies": {
-        "title": "Studies",
-        "lede": "Everything you're learning about your users.",
-        "new_study": "New study",
-        "empty_hero_title": "Start your first study",
-        "empty_hero_body": "A study is one focused line of research. Merism recruits, interviews, codes, and reports on it end-to-end.",
-        "empty_tab_body": "No {{tab}} studies.",
-        "tabs": {
-            "all": "All",
-            "active": "Live",
-            "drafts": "Drafts",
-            "archived": "Closed"
-        },
-        "status": {
-            "draft": "Draft",
-            "live": "Live",
-            "closed": "Closed"
-        }
-    },
-    "study": {
-        "tabs": {
-            "brief": "Brief",
-            "outline": "Outline",
-            "screener": "Screener",
-            "stimuli": "Stimuli",
-            "recruit": "Recruit",
-            "analysis": "Analysis",
-            "report": "Report",
-            "sessions": "Sessions",
-            "settings": "Settings"
-        },
-        "mode": {
-            "voice": "Voice",
-            "video": "Video",
-            "text": "Text",
-            "offline": "Offline"
-        }
-    },
-    "ask": {
-        "title": "Ask Merism",
-        "lede": "A conversational co-researcher across your entire workspace.",
-        "tabs": {
-            "chat": "Chat",
-            "history": "History",
-            "saved": "Saved"
-        },
-        "empty_hero_title": "What do you want to know?",
-        "empty_hero_body": "Ask questions across every study, session, and quote. Merism searches the knowledge base and cites sources inline.",
-        "suggestions_label": "Try asking",
-        "suggestions": [
-            "What do participants say about pricing?",
-            "Which themes surfaced this quarter?",
-            "Compare onboarding reactions across concepts."
-        ],
-        "placeholder": "Ask Merism anything about your research…",
-        "history_coming_soon": "Recent queries will appear here.",
-        "saved_coming_soon": "Pin your favourite answers to re-run them later."
-    },
-    "inbox": {
-        "title": "Inbox",
-        "lede": "New responses, notifications, and signals across your studies.",
-        "empty_title": "You're all caught up.",
-        "empty_body": "New session completions, channel alerts, and @-mentions will land here."
-    },
-    "repository": {
-        "title": "Repository",
-        "lede": "Every quote, theme, and artefact — searchable across studies.",
-        "empty_title": "No artefacts yet.",
-        "empty_body": "As studies complete, Merism indexes every quote and code for cross-study search."
-    },
-    "decisions": {
-        "title": "Decisions",
-        "lede": "Action items extracted from research, tracked to close.",
-        "empty_title": "No open decisions.",
-        "empty_body": "Action items from completed sessions appear here with evidence links."
-    },
-    "settings": {
-        "title": "Settings",
-        "lede": "Workspace, team, and your account preferences.",
-        "nav": {
-            "profile": "Profile",
-            "workspace": "Workspace"
-        },
-        "profile": {
-            "title": "Profile",
-            "loading": "Loading your profile…",
-            "security_title": "Security",
-            "security_description": "Sign-in and authentication.",
-            "active_session": "Active session"
-        },
-        "workspace": {
-            "title": "Workspace details",
-            "organisation": "Organisation: {{name}}",
-            "members_title": "Members",
-            "members_description": "Team members with access to this workspace.",
-            "members_body": "Member management lands with the first multi-tenant rollout.",
-            "language_title": "Language",
-            "language_description": "Interface language. Takes effect immediately.",
-            "compliance_title": "Compliance",
-            "compliance_description": "Data residency and audit logs.",
-            "compliance_body": "PIPL-aligned. Raw transcripts kept server-side; clean-verbatim exports available from any session."
-        }
-    },
-    "login": {
-        "eyebrow": "MERISM",
-        "heading": "Welcome back.",
-        "sub": "Sign in to your research workspace.",
-        "email": "Work email",
-        "password": "Password",
-        "forgot": "Forgot?",
-        "continue": "Continue",
-        "submitting": "Signing in…",
-        "new_workspace_prompt": "New to Merism?",
-        "new_workspace_cta": "Create a workspace",
-        "dev_hint": "Dev: admin@merism.local / admin"
-    },
-    "interview": {
-        "loading": "Preparing your session…",
-        "start_cta": "Begin",
-        "session_ended": "Thank you. Your session is complete.",
-        "session_ended_body": "Your response has been recorded. You may close this window."
-    },
-    "command_palette": {
-        "placeholder": "Type a command or search…",
-        "no_matches": "No matches for \"{{query}}\".",
-        "hint_esc": "ESC",
-        "hint_navigate": "navigate",
-        "hint_run": "run",
-        "footer": "Merism · quick actions",
-        "sections": {
-            "go_to": "Go to",
-            "actions": "Actions",
-            "studies": "Studies"
-        },
-        "commands": {
-            "go_home": "Go to Home",
-            "go_studies": "Go to Studies",
-            "go_ask": "Go to Ask Merism",
-            "go_inbox": "Go to Inbox",
-            "go_repository": "Go to Repository",
-            "go_decisions": "Go to Ask Merism",
-            "go_settings": "Go to Settings",
-            "new_study": "Create a new study",
-            "reload": "Reload studies list",
-            "open_admin": "Open Django admin",
-            "open_admin_hint": "Staff only"
-        }
-    },
+    "commands": {
+      "go_home": "Go to Home",
+      "go_studies": "Go to Studies",
+      "go_ask": "Go to Ask Merism",
+      "go_inbox": "Go to Inbox",
+      "go_repository": "Go to Repository",
+      "go_decisions": "Go to Ask Merism",
+      "go_settings": "Go to Settings",
+      "new_study": "Create a new study",
+      "reload": "Reload studies list",
+      "open_admin": "Open Django admin",
+      "open_admin_hint": "Staff only"
+    }
+  },
+  "errors": {
+    "not_found_title": "Page not found",
+    "not_found_body": "The page you're looking for doesn't exist or has moved.",
+    "not_found_cta": "Take me home"
+  },
+  "insights": {
+    "title": "Insights",
+    "select_study": "Select a study",
+    "select_study_desc": "Choose a study to view its AI-generated research insights.",
+    "loading": "Loading insights...",
+    "no_insights": "No insights yet",
+    "no_insights_desc": "Insights will be generated once interviews are completed.",
+    "generate": "Generate Insights",
+    "generation_failed": "Generation failed",
+    "generation_failed_desc": "Something went wrong while generating insights. Please try again.",
+    "retry": "Retry",
+    "rerun": "Re-run",
+    "kpi_interviews": "Interviews",
+    "kpi_avg_session": "Avg Session",
+    "kpi_topics": "Topics",
+    "kpi_last_updated": "Last Updated",
+    "executive_summary": "Executive Summary",
+    "based_on": "Based on {{count}} interviews",
+    "highlights": "Key Highlights",
+    "findings": "Findings",
+    "themes": "Themes",
+    "supporting_evidence": "Supporting Evidence"
+  },
+  "reports": {
+    "title": "Reports",
+    "select_study": "Select a study",
+    "select_study_desc": "Choose a study to create and view custom AI research reports.",
+    "loading": "Loading reports...",
+    "no_reports": "No reports yet",
+    "no_reports_desc": "Create a custom report to ask new research questions of your interview data.",
+    "create_report": "Create Report",
+    "report_title_placeholder": "Report title...",
+    "loading_report": "Loading report...",
+    "generating": "Generating report analysis",
+    "not_generated": "Not generated",
+    "not_yet_generated": "Not yet generated",
+    "back_to_reports": "Back to reports",
+    "share": "Share",
+    "unshare": "Unshare",
+    "public_link_active": "Public link active",
+    "question_placeholder": "Research question...",
+    "question_types": {
+      "open_ended": "Open-ended question",
+      "multi_select": "Multi-select question",
+      "single_select": "Single-select question",
+      "rating": "Rating question",
+      "ranking": "Ranking question"
+    }
+  },
+  "participant": {
+    "invalid_link": "Invalid link",
+    "something_wrong": "Something went wrong",
+    "something_wrong_desc": "This invitation link may have expired or the study has closed.",
+    "thank_you": "Thank you",
+    "thanks_interest": "Thanks for your interest",
     "errors": {
-        "not_found_title": "Page not found",
-        "not_found_body": "The page you're looking for doesn't exist or has moved.",
-        "not_found_cta": "Take me home"
-    },
-    "insights": {
-        "title": "Insights",
-        "select_study": "Select a study",
-        "select_study_desc": "Choose a study to view its AI-generated research insights.",
-        "loading": "Loading insights...",
-        "no_insights": "No insights yet",
-        "no_insights_desc": "Insights will be generated once interviews are completed.",
-        "generate": "Generate Insights",
-        "rerun": "Re-run",
-        "kpi_interviews": "Interviews",
-        "kpi_avg_session": "Avg Session",
-        "kpi_topics": "Topics",
-        "kpi_last_updated": "Last Updated",
-        "executive_summary": "Executive Summary",
-        "based_on": "Based on {{count}} interviews",
-        "highlights": "Key Highlights",
-        "findings": "Findings",
-        "themes": "Themes",
-        "supporting_evidence": "Supporting Evidence"
-    },
-    "reports": {
-        "title": "Reports",
-        "select_study": "Select a study",
-        "select_study_desc": "Choose a study to create and view custom AI research reports.",
-        "loading": "Loading reports...",
-        "no_reports": "No reports yet",
-        "no_reports_desc": "Create a custom report to ask new research questions of your interview data.",
-        "create_report": "Create Report",
-        "report_title_placeholder": "Report title...",
-        "loading_report": "Loading report...",
-        "generating": "Generating report analysis",
-        "not_generated": "Not generated",
-        "not_yet_generated": "Not yet generated",
-        "back_to_reports": "Back to reports",
-        "share": "Share",
-        "unshare": "Unshare",
-        "public_link_active": "Public link active",
-        "question_placeholder": "Research question...",
-        "question_types": {
-            "open_ended": "Open-ended question",
-            "multi_select": "Multi-select question",
-            "single_select": "Single-select question",
-            "rating": "Rating question",
-            "ranking": "Ranking question"
-        }
-    },
-    "participant": {
-        "invalid_link": "Invalid link",
-        "something_wrong": "Something went wrong",
-        "something_wrong_desc": "This invitation link may have expired or the study has closed.",
-        "thank_you": "Thank you",
-        "thanks_interest": "Thanks for your interest",
-        "errors": {
-            "link_invalid": "Link invalid",
-            "link_invalid_desc": "This link is not valid. Please check the URL.",
-            "study_closed": "Study closed",
-            "study_closed_desc": "This study is no longer accepting participants.",
-            "study_full": "Study full",
-            "study_full_desc": "This study has reached its participant limit.",
-            "link_expired": "Link expired",
-            "link_expired_desc": "This invitation link has expired.",
-            "invitation_required": "Invitation required",
-            "invitation_required_desc": "You need a personal invitation to join this study.",
-            "invitation_invalid": "Invitation invalid",
-            "invitation_invalid_desc": "This invitation is not valid.",
-            "invitation_revoked": "Invitation revoked",
-            "invitation_revoked_desc": "This invitation has been revoked.",
-            "invitation_expired": "Invitation expired",
-            "invitation_expired_desc": "This invitation has expired.",
-            "session_missing": "Session missing",
-            "session_missing_desc": "Could not find your session.",
-            "consent_required": "Consent required",
-            "consent_required_desc": "You must agree to the consent form to continue.",
-            "interview_not_ready": "Interview not ready",
-            "interview_not_ready_desc": "The interview is not yet available.",
-            "generic": "Something went wrong",
-            "generic_desc": "An unexpected error occurred. Please try again."
-        }
-    },
-    "interview_room": {
-        "voice_only": "Voice only",
-        "voice_only_desc": "Microphone. No camera.",
-        "voice_video": "Voice + video",
-        "voice_video_desc": "Camera on; richer feedback.",
-        "text_placeholder": "Type if you'd rather not speak…",
-        "text_answer_placeholder": "Type your answer…"
-    },
-    "analysis": {
-        "title": "Analysis",
-        "sessions": "Sessions",
-        "quotes": "Quotes",
-        "insights_label": "Insights",
-        "insights_subtitle": "generated per session",
-        "talk_time": "Talk time",
-        "talk_time_subtitle": "completed interviews",
-        "sentiment_over_time": "Sentiment over time",
-        "action_items": "Action items",
-        "top_themes": "Top themes",
-        "concept_comparison": "Concept comparison",
-        "sessions_seen": "Sessions seen",
-        "custom_report": "Custom report",
-        "custom_report_desc": "Ask anything about this study",
-        "custom_report_placeholder": "What do you want to know?",
-        "pinned": "Pinned",
-        "pin_to_dashboard": "Pin to dashboard"
-    },
-    "outline": {
-        "question_text": "Question text",
-        "task_text": "Task text",
-        "question_text_helper": "Main text shown to participants.",
-        "question_text_placeholder": "Write the prompt that the participant will see or hear.",
-        "question_type": "Question type",
-        "question_type_helper": "Switching type swaps the configuration block below.",
-        "probing_amount": "Amount of probing",
-        "probing_instructions": "Probing instructions",
-        "probing_placeholder": "What should the interviewer probe for?",
-        "allow_skip": "Allow interviewer to skip question",
-        "allow_skip_helper": "Useful when the participant already answered the signal elsewhere.",
-        "allow_dynamic_probe": "Allow interviewer to dynamically probe once they finish the task",
-        "allow_dynamic_probe_helper": "Lets the moderator ask follow-up questions after completion.",
-        "allow_skip_task": "Allow interviewer to skip question",
-        "allow_skip_task_helper": "Participants can move on if the task is not appropriate.",
-        "selection_type": "Selection type",
-        "single_select": "Single select",
-        "multi_select": "Multi select",
-        "randomize_options": "Randomize option order",
-        "randomize_options_helper": "Keeps the response list fresh during repeated sessions.",
-        "other_option_helper": "Adds a custom response path when the listed choices do not fit.",
-        "allow_skip_select": "Allow interviewer to skip question",
-        "allow_skip_select_helper": "Use when the question should be optional in live interviews.",
-        "scale_range": "Scale range",
-        "low_label": "Low label",
-        "middle_label": "Middle label",
-        "high_label": "High label",
-        "ask_explanation": "Ask for explanation after rating",
-        "ask_explanation_helper": "The moderator will ask why the participant chose that score.",
-        "allow_skip_rating": "Allow interviewer to skip question",
-        "allow_skip_rating_helper": "Makes the rating optional in live moderation.",
-        "placeholder_label": "Placeholder",
-        "unit_suffix": "Unit / suffix",
-        "min_value": "Minimum value",
-        "max_value": "Maximum value",
-        "allow_decimal": "Allow decimal numbers",
-        "allow_decimal_helper": "Use when the answer may contain fractions or percentages.",
-        "allow_skip_number": "Allow interviewer to skip question",
-        "allow_skip_number_helper": "Makes the number question optional in the live interview.",
-        "add_section_randomization": "Add section randomization",
-        "add_section_randomization_helper": "Turns on section-level ordering controls.",
-        "randomization_mode": "Randomization mode",
-        "shuffle_sections": "Shuffle sections",
-        "shuffle_questions": "Shuffle questions",
-        "save_failed": "Save failed",
-        "unsaved_changes": "Unsaved changes",
-        "duplicate_section": "Duplicate section",
-        "delete_section": "Delete section",
-        "add_question": "Add question",
-        "review_title": "Let AI review your outline",
-        "review_desc": "Six axes: privacy · ordering · structure · bias · alignment · follow-up depth",
-        "review_placeholder": "Ask me to review anything specific…"
-    },
-    "brief": {
-        "research_goal": "Research goal",
-        "research_goal_placeholder": "Why do advanced users cancel after day 14?",
-        "background": "Background (optional)",
-        "hypothesis": "Hypothesis (optional)",
-        "duration": "Estimated duration (minutes)",
-        "review_research_goal": "Research goal",
-        "review_background": "Background",
-        "review_hypothesis": "Hypothesis",
-        "review_mode": "Mode",
-        "review_duration": "Duration",
-        "review_barge_in": "Barge-in"
-    },
-    "recruit": {
-        "target_sessions": "Target sessions",
-        "target_sessions_subtitle": "completed interviews wanted",
-        "quotas": "Quotas",
-        "quota_sum": "Quota sum",
-        "participant_criteria_placeholder": "e.g. Chinese working professionals aged 25-40 who use productivity apps daily and have used at least 2 competing tools in the past 6 months.",
-        "copy_link": "Copy link",
-        "show_qr": "Show QR code",
-        "quota_name_placeholder": "e.g. Age ranges",
-        "segment_label_placeholder": "Segment label"
-    },
-    "screener": {
-        "question_placeholder": "Screener question…",
-        "summary_title": "Screener summary",
-        "summary_subtitle": "Pass criteria close the loop before save.",
-        "with_pass_logic": "With pass logic",
-        "missing_logic": "Missing logic"
-    },
-    "sessions": {
-        "search_placeholder": "Search id, status…"
-    },
-    "study_settings": {
-        "project_details": "Project details",
-        "study_name_placeholder": "Study name",
-        "research_objectives": "Research objectives",
-        "research_objectives_desc": "The concrete questions this study aims to answer.",
-        "add_objective": "Add objective",
-        "objective_placeholder": "e.g. Understand what was confusing about the checkout flow…"
-    },
-    "stimuli": {
-        "label_placeholder": "Label (e.g. Concept A)",
-        "no_stimuli": "No stimuli available — upload one first"
-    },
-    "glossary": {
-        "title": "Glossary",
-        "description": "Term replacements applied during transcript cleaning. Useful for ASR-likely misrecognitions of product names, people, or jargon.",
-        "correct_placeholder": "e.g. Merism",
-        "variants_placeholder": "e.g. 米瑞姆, merism, meriism"
-    },
-    "llm_gateway": {
-        "providers_title": "Providers",
-        "providers_desc": "LLM providers available to this team. Credentials are encrypted at rest.",
-        "routes_title": "Routes",
-        "routes_desc": "Map logical capabilities to providers. Each team can have one route per capability.",
-        "select_provider": "Select a provider",
-        "no_providers": "No providers available",
-        "budget_title": "Budget",
-        "budget_desc": "Monthly spend tracking per team. Reconciled hourly from Langfuse."
-    },
-    "side_panel": {
-        "ask_merism": "Ask Merism",
-        "close": "Close"
-    },
-    "select_study_placeholder": "Select a study...",
-    "untitled": "Untitled"
+      "link_invalid": "Link invalid",
+      "link_invalid_desc": "This link is not valid. Please check the URL.",
+      "study_closed": "Study closed",
+      "study_closed_desc": "This study is no longer accepting participants.",
+      "study_full": "Study full",
+      "study_full_desc": "This study has reached its participant limit.",
+      "link_expired": "Link expired",
+      "link_expired_desc": "This invitation link has expired.",
+      "invitation_required": "Invitation required",
+      "invitation_required_desc": "You need a personal invitation to join this study.",
+      "invitation_invalid": "Invitation invalid",
+      "invitation_invalid_desc": "This invitation is not valid.",
+      "invitation_revoked": "Invitation revoked",
+      "invitation_revoked_desc": "This invitation has been revoked.",
+      "invitation_expired": "Invitation expired",
+      "invitation_expired_desc": "This invitation has expired.",
+      "session_missing": "Session missing",
+      "session_missing_desc": "Could not find your session.",
+      "consent_required": "Consent required",
+      "consent_required_desc": "You must agree to the consent form to continue.",
+      "interview_not_ready": "Interview not ready",
+      "interview_not_ready_desc": "The interview is not yet available.",
+      "generic": "Something went wrong",
+      "generic_desc": "An unexpected error occurred. Please try again."
+    }
+  },
+  "interview_room": {
+    "voice_only": "Voice only",
+    "voice_only_desc": "Microphone. No camera.",
+    "voice_video": "Voice + video",
+    "voice_video_desc": "Camera on; richer feedback.",
+    "text_placeholder": "Type if you'd rather not speak…",
+    "text_answer_placeholder": "Type your answer…"
+  },
+  "analysis": {
+    "title": "Analysis",
+    "sessions": "Sessions",
+    "quotes": "Quotes",
+    "insights_label": "Insights",
+    "insights_subtitle": "generated per session",
+    "talk_time": "Talk time",
+    "talk_time_subtitle": "completed interviews",
+    "sentiment_over_time": "Sentiment over time",
+    "action_items": "Action items",
+    "top_themes": "Top themes",
+    "concept_comparison": "Concept comparison",
+    "sessions_seen": "Sessions seen",
+    "custom_report": "Custom report",
+    "custom_report_desc": "Ask anything about this study",
+    "custom_report_placeholder": "What do you want to know?",
+    "pinned": "Pinned",
+    "pin_to_dashboard": "Pin to dashboard"
+  },
+  "outline": {
+    "question_text": "Question text",
+    "task_text": "Task text",
+    "question_text_helper": "Main text shown to participants.",
+    "question_text_placeholder": "Write the prompt that the participant will see or hear.",
+    "question_type": "Question type",
+    "question_type_helper": "Switching type swaps the configuration block below.",
+    "probing_amount": "Amount of probing",
+    "probing_instructions": "Probing instructions",
+    "probing_placeholder": "What should the interviewer probe for?",
+    "allow_skip": "Allow interviewer to skip question",
+    "allow_skip_helper": "Useful when the participant already answered the signal elsewhere.",
+    "allow_dynamic_probe": "Allow interviewer to dynamically probe once they finish the task",
+    "allow_dynamic_probe_helper": "Lets the moderator ask follow-up questions after completion.",
+    "allow_skip_task": "Allow interviewer to skip question",
+    "allow_skip_task_helper": "Participants can move on if the task is not appropriate.",
+    "selection_type": "Selection type",
+    "single_select": "Single select",
+    "multi_select": "Multi select",
+    "randomize_options": "Randomize option order",
+    "randomize_options_helper": "Keeps the response list fresh during repeated sessions.",
+    "other_option_helper": "Adds a custom response path when the listed choices do not fit.",
+    "allow_skip_select": "Allow interviewer to skip question",
+    "allow_skip_select_helper": "Use when the question should be optional in live interviews.",
+    "scale_range": "Scale range",
+    "low_label": "Low label",
+    "middle_label": "Middle label",
+    "high_label": "High label",
+    "ask_explanation": "Ask for explanation after rating",
+    "ask_explanation_helper": "The moderator will ask why the participant chose that score.",
+    "allow_skip_rating": "Allow interviewer to skip question",
+    "allow_skip_rating_helper": "Makes the rating optional in live moderation.",
+    "placeholder_label": "Placeholder",
+    "unit_suffix": "Unit / suffix",
+    "min_value": "Minimum value",
+    "max_value": "Maximum value",
+    "allow_decimal": "Allow decimal numbers",
+    "allow_decimal_helper": "Use when the answer may contain fractions or percentages.",
+    "allow_skip_number": "Allow interviewer to skip question",
+    "allow_skip_number_helper": "Makes the number question optional in the live interview.",
+    "add_section_randomization": "Add section randomization",
+    "add_section_randomization_helper": "Turns on section-level ordering controls.",
+    "randomization_mode": "Randomization mode",
+    "shuffle_sections": "Shuffle sections",
+    "shuffle_questions": "Shuffle questions",
+    "save_failed": "Save failed",
+    "unsaved_changes": "Unsaved changes",
+    "duplicate_section": "Duplicate section",
+    "delete_section": "Delete section",
+    "add_question": "Add question",
+    "review_title": "Let AI review your outline",
+    "review_desc": "Six axes: privacy · ordering · structure · bias · alignment · follow-up depth",
+    "review_placeholder": "Ask me to review anything specific…"
+  },
+  "brief": {
+    "research_goal": "Research goal",
+    "research_goal_placeholder": "Why do advanced users cancel after day 14?",
+    "background": "Background (optional)",
+    "hypothesis": "Hypothesis (optional)",
+    "duration": "Estimated duration (minutes)",
+    "review_research_goal": "Research goal",
+    "review_background": "Background",
+    "review_hypothesis": "Hypothesis",
+    "review_mode": "Mode",
+    "review_duration": "Duration",
+    "review_barge_in": "Barge-in"
+  },
+  "recruit": {
+    "target_sessions": "Target sessions",
+    "target_sessions_subtitle": "completed interviews wanted",
+    "quotas": "Quotas",
+    "quota_sum": "Quota sum",
+    "participant_criteria_placeholder": "e.g. Chinese working professionals aged 25-40 who use productivity apps daily and have used at least 2 competing tools in the past 6 months.",
+    "copy_link": "Copy link",
+    "show_qr": "Show QR code",
+    "quota_name_placeholder": "e.g. Age ranges",
+    "segment_label_placeholder": "Segment label"
+  },
+  "screener": {
+    "question_placeholder": "Screener question…",
+    "summary_title": "Screener summary",
+    "summary_subtitle": "Pass criteria close the loop before save.",
+    "with_pass_logic": "With pass logic",
+    "missing_logic": "Missing logic"
+  },
+  "sessions": {
+    "search_placeholder": "Search id, status…"
+  },
+  "study_settings": {
+    "project_details": "Project details",
+    "study_name_placeholder": "Study name",
+    "research_objectives": "Research objectives",
+    "research_objectives_desc": "The concrete questions this study aims to answer.",
+    "add_objective": "Add objective",
+    "objective_placeholder": "e.g. Understand what was confusing about the checkout flow…"
+  },
+  "stimuli": {
+    "label_placeholder": "Label (e.g. Concept A)",
+    "no_stimuli": "No stimuli available — upload one first"
+  },
+  "glossary": {
+    "title": "Glossary",
+    "description": "Term replacements applied during transcript cleaning. Useful for ASR-likely misrecognitions of product names, people, or jargon.",
+    "correct_placeholder": "e.g. Merism",
+    "variants_placeholder": "e.g. 米瑞姆, merism, meriism"
+  },
+  "llm_gateway": {
+    "providers_title": "Providers",
+    "providers_desc": "LLM providers available to this team. Credentials are encrypted at rest.",
+    "routes_title": "Routes",
+    "routes_desc": "Map logical capabilities to providers. Each team can have one route per capability.",
+    "select_provider": "Select a provider",
+    "no_providers": "No providers available",
+    "budget_title": "Budget",
+    "budget_desc": "Monthly spend tracking per team. Reconciled hourly from Langfuse."
+  },
+  "side_panel": {
+    "ask_merism": "Ask Merism",
+    "close": "Close"
+  },
+  "select_study_placeholder": "Select a study...",
+  "untitled": "Untitled"
 }

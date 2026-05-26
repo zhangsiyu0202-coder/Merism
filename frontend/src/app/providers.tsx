@@ -1,9 +1,9 @@
-import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
-import type { ReactNode } from "react"
+import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
+import type { ReactNode } from "react";
 
-import { ToastProvider } from "~/lib/merism"
+import { ToastProvider } from "~/lib/merism";
 
-import { AppCommandPalette } from "./AppCommandPalette"
+import { AppCommandPalette } from "./AppCommandPalette";
 
 /**
  * Providers — app-level React Context wrappers.
@@ -12,12 +12,12 @@ import { AppCommandPalette } from "./AppCommandPalette"
  * (MSW bindings, per-scene contexts) live inside that scene.
  */
 export function Providers({ children }: { children: ReactNode }): JSX.Element {
-    return (
-        <TooltipProvider delayDuration={250} skipDelayDuration={50}>
-            <ToastProvider>
-                {children}
-                <AppCommandPalette />
-            </ToastProvider>
-        </TooltipProvider>
-    )
+  return (
+    <TooltipProvider delayDuration={250} skipDelayDuration={50}>
+      <ToastProvider>
+        {children}
+        <AppCommandPalette />
+      </ToastProvider>
+    </TooltipProvider>
+  );
 }

@@ -4,23 +4,23 @@
  */
 
 declare module "*.css" {
-    const content: string
-    export default content
+  const content: string;
+  export default content;
 }
 
 declare module "@fontsource/*/*.css" {
-    const content: string
-    export default content
+  const content: string;
+  export default content;
 }
 
 // Vite ?raw suffix — string contents of the file at build time.
 declare module "*?raw" {
-    const content: string
-    export default content
+  const content: string;
+  export default content;
 }
 
 // SVG default import as URL string (Vite's default behaviour).
 declare module "*.svg" {
-    const content: string
-    export default content
+  const content: string;
+  export default content;
 }

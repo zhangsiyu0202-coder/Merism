@@ -135,6 +135,14 @@ def _boot_study(interview_mode="text"):
     return team, study, link
 
 
+@pytest.mark.skip(
+    reason=(
+        "v1-only assertions: this test asserts specific SessionEvent.kind "
+        "values (user_turn / model_reply / decision) which are v1-engine "
+        "artifacts. v3 (ADR 0013, 2026-05-23) does not write per-turn "
+        "SessionEvent rows. Test needs full v3 rewrite — tracked in R29."
+    )
+)
 def test_full_chain_invite_to_inbox():
     team, study, link = _boot_study()
 

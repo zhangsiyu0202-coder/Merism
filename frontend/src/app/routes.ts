@@ -12,75 +12,78 @@
  */
 
 export enum Scene {
-    // top-level surfaces
-    Home = "Home",
-    Ask = "Ask",
-    Inbox = "Inbox",
-    Repository = "Repository",
-    Decisions = "Decisions",
-    Settings = "Settings",
+  // top-level surfaces
+  Home = "Home",
+  Ask = "Ask",
+  Inbox = "Inbox",
+  Repository = "Repository",
+  Decisions = "Decisions",
+  Settings = "Settings",
 
-    // studies
-    Study = "Study",
+  // studies
+  Study = "Study",
 
-    // analysis
-    Insights = "Insights",
-    Reports = "Reports",
+  // analysis
+  Insights = "Insights",
+  Reports = "Reports",
 
-    // participant-facing
-    InterviewRoom = "InterviewRoom",
-    ParticipantEntry = "ParticipantEntry",
-    SessionTranscript = "SessionTranscript",
+  // participant-facing
+  InterviewRoom = "InterviewRoom",
+  ParticipantEntry = "ParticipantEntry",
+  SessionTranscript = "SessionTranscript",
 
-    // auth
-    Login = "Login",
+  // auth
+  Login = "Login",
 
-    // marketing / landing
-    Welcome = "Welcome",
+  // marketing / landing
+  Welcome = "Welcome",
 
-    // errors
-    Error404 = "Error404",
+  // errors
+  Error404 = "Error404",
 }
 
 export type StudyTab =
-    | "brief"
-    | "outline"
-    | "screener"
-    | "stimuli"
-    | "recruit"
-    | "report"
-    | "sessions"
-    | "settings"
+  | "outline"
+  | "screener"
+  | "stimuli"
+  | "recruit"
+  | "report"
+  | "sessions"
+  | "settings";
 
 export const urls = {
-    default: (): string => "/",
+  default: (): string => "/",
 
-    home: (tab?: string): string => (tab ? `/?tab=${tab}` : "/"),
-    ask: (): string => "/ask",
-    inbox: (): string => "/inbox",
-    repository: (): string => "/repository",
-    decisions: (): string => "/decisions",
-    settings: (section?: string): string =>
-        section ? `/settings/${section}` : "/settings",
+  home: (tab?: string): string => (tab ? `/?tab=${tab}` : "/"),
+  ask: (): string => "/ask",
+  inbox: (): string => "/inbox",
+  repository: (): string => "/repository",
+  decisions: (): string => "/decisions",
+  settings: (section?: string): string =>
+    section ? `/settings/${section}` : "/settings",
 
-    studies: (): string => "/",
-    study: (id: string, tab: StudyTab = "brief"): string => `/studies/${id}/${tab}`,
+  studies: (): string => "/",
+  study: (id: string, tab: StudyTab = "outline"): string =>
+    `/studies/${id}/${tab}`,
 
-    insights: (studyId?: string): string => studyId ? `/insights?study=${studyId}` : "/insights",
-    reports: (studyId?: string): string => studyId ? `/reports?study=${studyId}` : "/reports",
-    reportDetail: (reportId: string): string => `/reports/${reportId}`,
+  insights: (studyId?: string): string =>
+    studyId ? `/insights?study=${studyId}` : "/insights",
+  reports: (studyId?: string): string =>
+    studyId ? `/reports?study=${studyId}` : "/reports",
+  reportDetail: (reportId: string): string => `/reports/${reportId}`,
 
-    interviewRoom: (sessionId: string): string => `/interview/${sessionId}`,
-    sessionTranscript: (sessionId: string): string => `/sessions/${sessionId}/transcript`,
-    participantEntry: (slug: string): string => `/i/${slug}`,
+  interviewRoom: (sessionId: string): string => `/interview/${sessionId}`,
+  sessionTranscript: (sessionId: string): string =>
+    `/sessions/${sessionId}/transcript`,
+  participantEntry: (slug: string): string => `/i/${slug}`,
 
-    login: (next?: string): string =>
-        next ? `/login?next=${encodeURIComponent(next)}` : "/login",
+  login: (next?: string): string =>
+    next ? `/login?next=${encodeURIComponent(next)}` : "/login",
 
-    welcome: (): string => "/welcome",
+  welcome: (): string => "/welcome",
 
-    error404: (): string => "/404",
-} as const
+  error404: (): string => "/404",
+} as const;
 
 /**
  * kea-router route patterns. Keys = URL patterns, values = Scene.
@@ -89,22 +92,22 @@ export const urls = {
  * sequentially via ``urlToAction`` handlers.
  */
 export const routes: Record<string, Scene> = {
-    "/": Scene.Home,
-    "/ask": Scene.Ask,
-    "/inbox": Scene.Inbox,
-    "/repository": Scene.Repository,
-    "/decisions": Scene.Decisions,
-    "/settings": Scene.Settings,
-    "/settings/:section": Scene.Settings,
-    "/studies/:id": Scene.Study,
-    "/studies/:id/:tab": Scene.Study,
-    "/insights": Scene.Insights,
-    "/reports": Scene.Reports,
-    "/reports/:reportId": Scene.Reports,
-    "/interview/:sessionId": Scene.InterviewRoom,
-    "/sessions/:sessionId/transcript": Scene.SessionTranscript,
-    "/i/:slug": Scene.ParticipantEntry,
-    "/login": Scene.Login,
-    "/welcome": Scene.Welcome,
-    "/404": Scene.Error404,
-}
+  "/": Scene.Home,
+  "/ask": Scene.Ask,
+  "/inbox": Scene.Inbox,
+  "/repository": Scene.Repository,
+  "/decisions": Scene.Decisions,
+  "/settings": Scene.Settings,
+  "/settings/:section": Scene.Settings,
+  "/studies/:id": Scene.Study,
+  "/studies/:id/:tab": Scene.Study,
+  "/insights": Scene.Insights,
+  "/reports": Scene.Reports,
+  "/reports/:reportId": Scene.Reports,
+  "/interview/:sessionId": Scene.InterviewRoom,
+  "/sessions/:sessionId/transcript": Scene.SessionTranscript,
+  "/i/:slug": Scene.ParticipantEntry,
+  "/login": Scene.Login,
+  "/welcome": Scene.Welcome,
+  "/404": Scene.Error404,
+};

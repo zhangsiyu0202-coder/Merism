@@ -1,5 +1,5 @@
-export { AudioCapture } from "./AudioCapture"
-export type { AudioCaptureCallbacks, AudioCaptureStats } from "./AudioCapture"
-export { AudioPlayback } from "./AudioPlayback"
-export { MicCheck } from "./MicCheck"
-export type { MicCheckProps } from "./MicCheck"
+export { AudioCapture } from "./AudioCapture";
+export type { AudioCaptureCallbacks, AudioCaptureStats } from "./AudioCapture";
+export { AudioPlayback } from "./AudioPlayback";
+export { MicCheck } from "./MicCheck";
+export type { MicCheckProps } from "./MicCheck";

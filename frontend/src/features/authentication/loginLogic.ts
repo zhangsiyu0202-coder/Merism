@@ -1,15 +1,15 @@
-import { connect, kea, listeners, path } from "kea"
-import { forms } from "kea-forms"
-import { router } from "kea-router"
+import { connect, kea, listeners, path } from "kea";
+import { forms } from "kea-forms";
+import { router } from "kea-router";
 
-import { urls } from "~/app/routes"
-import { csrfFetch } from "~/lib/hooks/useCSRFToken"
+import { urls } from "~/app/routes";
+import { csrfFetch } from "~/lib/hooks/useCSRFToken";
 
-import type { loginLogicType } from './loginLogicType'
+import type { loginLogicType } from "./loginLogicType";
 
 export interface LoginFormValues {
-    email: string
-    password: string
+  email: string;
+  password: string;
 }
 
 /**
@@ -21,51 +21,59 @@ export interface LoginFormValues {
  * then navigate into the app.
  */
 export const loginLogic = kea<loginLogicType>([
-    path(["features", "authentication", "loginLogic"]),
+  path(["features", "authentication", "loginLogic"]),
 
-    connect({ actions: [router, ["push"]] }),
+  connect({ actions: [router, ["push"]] }),
 
-    forms(() => ({
-        login: {
-            defaults: { email: "", password: "" } as LoginFormValues,
-            errors: ({ email, password }) => ({
-                email: !email.includes("@") ? "Enter a valid email" : undefined,
-                password: password.length < 4 ? "Password is too short" : undefined,
-            }),
-            submit: async (formValues) => {
-                const body = new URLSearchParams()
-                body.set("login", formValues.email)
-                body.set("password", formValues.password)
-                const response = await csrfFetch("/accounts/login/", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "X-Requested-With": "XMLHttpRequest",
-                    },
-                    body: body.toString(),
-                    redirect: "manual",
-                })
-                // allauth returns 302 on success. ``redirect: "manual"`` makes
-                // fetch surface the 302 without auto-following (would try to
-                // hit the internal redirect URL cross-origin).
-                if (response.status !== 302 && response.status !== 200) {
-                    throw new Error(
-                        response.status === 400
-                            ? "Invalid email or password."
-                            : `Login failed (${response.status}).`,
-                    )
-                }
-                window.location.href = urls.ask()
-            },
-        },
-    })),
+  forms(() => ({
+    login: {
+      defaults: { email: "", password: "" } as LoginFormValues,
+      errors: ({ email, password }) => ({
+        // Empty fields are caught by the HTML5 ``required`` attribute on
+        // the inputs; we only flag them once the user submits with bad
+        // values to avoid the "errors flash on first paint" UX. The
+        // server is the authoritative validator anyway.
+        email:
+          email && !email.includes("@") ? "Enter a valid email" : undefined,
+        password:
+          password && password.length < 4
+            ? "Password is too short"
+            : undefined,
+      }),
+      submit: async (formValues) => {
+        const body = new URLSearchParams();
+        body.set("login", formValues.email);
+        body.set("password", formValues.password);
+        const response = await csrfFetch("/accounts/login/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: body.toString(),
+          redirect: "manual",
+        });
+        // allauth returns 302 on success. ``redirect: "manual"`` makes
+        // fetch surface the 302 without auto-following (would try to
+        // hit the internal redirect URL cross-origin).
+        if (response.status !== 302 && response.status !== 200) {
+          throw new Error(
+            response.status === 400
+              ? "Invalid email or password."
+              : `Login failed (${response.status}).`,
+          );
+        }
+        window.location.href = urls.ask();
+      },
+    },
+  })),
 
-    listeners(() => ({
-        submitLoginFailure: ({ error }) => {
-            // Errors surface automatically in ``loginHasErrors``; we log so
-            // devtools has a trace.
-            // eslint-disable-next-line no-console
-            console.warn("[login] submit failed", error)
-        },
-    })),
-])
+  listeners(() => ({
+    submitLoginFailure: ({ error }) => {
+      // Errors surface automatically in ``loginHasErrors``; we log so
+      // devtools has a trace.
+      // eslint-disable-next-line no-console
+      console.warn("[login] submit failed", error);
+    },
+  })),
+]);

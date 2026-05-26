@@ -1,11 +1,12 @@
 # Static public assets.
 #
-# @ricky0123/vad-web ships its ONNX model + worklet via CDN by default.
-# If you want to self-host (required for offline-first / behind corporate
-# firewalls), copy the following files here from the node_modules:
+# Voice interview is push-to-talk only — no client-side VAD.
+# The previous Silero ONNX integration (@ricky0123/vad-web) was
+# removed: 13 MB of wasm + an onnxruntime-web dep-optimizer skirmish
+# with Vite, replaced by an AudioWorklet-only PCM capture pipeline
+# in src/features/interview/voice/AudioCapture.ts.
 #
-#   - silero_vad.onnx
-#   - vad.worklet.bundle.min.js
-#
-# Then set the `modelURL` / `workletURL` options when initialising MicVAD
-# in src/interview_room/voice/SileroVad.ts.
+# Server-side VAD on Paraformer is also disabled — the STT client is
+# constructed with use_server_vad=False in
+# merism/voice/setup.py. Turn boundaries are explicit: PTT press
+# → talk → PTT release.

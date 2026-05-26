@@ -1,10 +1,14 @@
-import { render, type RenderOptions, type RenderResult } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { type ReactElement, type ReactNode } from "react"
+import {
+  render,
+  type RenderOptions,
+  type RenderResult,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { type ReactElement, type ReactNode } from "react";
 
-import "~/i18n"
-import { initKea } from "~/initKea"
-import { TooltipProvider } from "~/lib/merism"
+import "~/i18n";
+import { initKea } from "~/initKea";
+import { TooltipProvider } from "~/lib/merism";
 
 /**
  * Shared test `render()` — wraps the UI in every provider a Merism
@@ -21,26 +25,26 @@ import { TooltipProvider } from "~/lib/merism"
  */
 
 interface MerismRenderResult extends RenderResult {
-    user: ReturnType<typeof userEvent.setup>
+  user: ReturnType<typeof userEvent.setup>;
 }
 
 function Providers({ children }: { children: ReactNode }): ReactElement {
-    // Match the real app bootstrap so tests exercise router/forms/loaders
-    // the same way the app does in the browser.
-    initKea()
+  // Match the real app bootstrap so tests exercise router/forms/loaders
+  // the same way the app does in the browser.
+  initKea();
 
-    return <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
+  return <TooltipProvider delayDuration={0}>{children}</TooltipProvider>;
 }
 
 export function renderWithProviders(
-    ui: ReactElement,
-    options?: Omit<RenderOptions, "wrapper">,
+  ui: ReactElement,
+  options?: Omit<RenderOptions, "wrapper">,
 ): MerismRenderResult {
-    const user = userEvent.setup()
-    const result = render(ui, { wrapper: Providers, ...options })
-    return { ...result, user }
+  const user = userEvent.setup();
+  const result = render(ui, { wrapper: Providers, ...options });
+  return { ...result, user };
 }
 
 // Re-export the RTL surface so test files only import from here.
-export * from "@testing-library/react"
-export { renderWithProviders as render }
+export * from "@testing-library/react";
+export { renderWithProviders as render };

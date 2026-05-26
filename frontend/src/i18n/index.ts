@@ -16,44 +16,47 @@
  * call ``i18n.t("...")``. See react-i18next docs for full API.
  */
 
-import i18n from "i18next"
-import { initReactI18next } from "react-i18next"
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
 
-import en from "./locales/en.json"
-import zhCN from "./locales/zh-CN.json"
+import en from "./locales/en.json";
+import zhCN from "./locales/zh-CN.json";
 
-const LOCAL_STORAGE_KEY = "merism-locale"
+const LOCAL_STORAGE_KEY = "merism-locale";
 
-export type MerismLocale = "en" | "zh-CN"
+export type MerismLocale = "en" | "zh-CN";
 
-export const SUPPORTED_LOCALES: readonly MerismLocale[] = ["en", "zh-CN"] as const
+export const SUPPORTED_LOCALES: readonly MerismLocale[] = [
+  "en",
+  "zh-CN",
+] as const;
 
 function detectInitialLocale(): MerismLocale {
-    if (typeof window === "undefined") return "zh-CN"
-    const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY)
-    if (stored && SUPPORTED_LOCALES.includes(stored as MerismLocale)) {
-        return stored as MerismLocale
-    }
-    return "zh-CN"
+  if (typeof window === "undefined") return "zh-CN";
+  const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (stored && SUPPORTED_LOCALES.includes(stored as MerismLocale)) {
+    return stored as MerismLocale;
+  }
+  return "zh-CN";
 }
 
 void i18n.use(initReactI18next).init({
-    resources: {
-        en: { translation: en },
-        "zh-CN": { translation: zhCN },
-    },
-    lng: detectInitialLocale(),
-    fallbackLng: "en",
-    interpolation: { escapeValue: false },
-    returnNull: false,
-})
+  resources: {
+    en: { translation: en },
+    "zh-CN": { translation: zhCN },
+  },
+  lng: detectInitialLocale(),
+  fallbackLng: "en",
+  interpolation: { escapeValue: false },
+  returnNull: false,
+});
 
 export function setLocale(locale: MerismLocale): void {
-    void i18n.changeLanguage(locale)
-    if (typeof window !== "undefined") {
-        window.localStorage.setItem(LOCAL_STORAGE_KEY, locale)
-    }
+  void i18n.changeLanguage(locale);
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(LOCAL_STORAGE_KEY, locale);
+  }
 }
 
-export { i18n }
-export default i18n
+export { i18n };
+export default i18n;

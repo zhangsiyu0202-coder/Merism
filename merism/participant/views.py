@@ -41,9 +41,7 @@ COOKIE_NAME = "merism_browser_token"
 COOKIE_MAX_AGE = 30 * 24 * 3600  # 30 days
 
 
-def _resolve_invitation(
-    link: StudyLink, token: str | None
-) -> tuple[Invitation | None, str | None]:
+def _resolve_invitation(link: StudyLink, token: str | None) -> tuple[Invitation | None, str | None]:
     """Return (invitation, error_code).
 
     - link.require_invitation=False + no token → (None, None) — open flow
@@ -69,13 +67,25 @@ def _resolve_invitation(
 # ── Helpers ──────────────────────────────────────────────
 
 
-def _resolve_link(
-    slug: str, *, is_preview: bool = False
-) -> tuple[StudyLink | None, str | None]:
+def _resolve_link(slug: str, *, is_preview: bool = False) -> tuple[StudyLink | None, str | None]:
     """Return (link, error_code) for the given slug.
 
-    ``is_preview=True`` bypasses ``link_closed`` / ``study_closed`` /
-    ``study_full`` errors so researchers can preview a closed study.
+    Access control philosophy (per the 2026-05-23 simplification): the
+    link is open by default. The researcher controls access via two
+    explicit toggles:
+
+    - ``StudyLink.is_active``: the "Accepting responses" switch on the
+      Recruit tab. Researcher flips it off to stop new participants.
+    - ``StudyLink.expires_at``: optional hard deadline.
+
+    ``Study.status == CLOSED`` is **metadata only** — it doesn't auto-
+    block the link. A study can be marked closed for analytics /
+    inbox purposes while still accepting walk-ins (e.g. a long-tail
+    pilot). If the researcher wants to fully close it, they flip
+    ``is_active`` off.
+
+    ``is_preview=True`` bypasses ``link_closed`` so researchers can
+    preview a deactivated study.
     """
     try:
         link = StudyLink.objects.select_related("study", "team").get(slug=slug)
@@ -95,12 +105,6 @@ def _resolve_link(
         return link, "link_closed"
     if link.expires_at and link.expires_at < timezone.now():
         return link, "link_expired"
-
-    study = link.study
-    if study.status == Study.Status.CLOSED:
-        if study.actual_completed_count >= study.target_completed_count:
-            return link, "study_full"
-        return link, "study_closed"
 
     return link, None
 
@@ -124,9 +128,7 @@ def _get_or_create_participation(
     if raw_token:
         try:
             token = uuid.UUID(raw_token)
-            existing = Participation.objects.filter(
-                study=link.study, browser_token=token
-            ).first()
+            existing = Participation.objects.filter(study=link.study, browser_token=token).first()
         except (ValueError, TypeError):
             pass
 
@@ -168,9 +170,7 @@ def _get_or_create_participation(
     return new, True
 
 
-def _maybe_bind_invitation(
-    participation: Participation, invitation: Invitation | None
-) -> None:
+def _maybe_bind_invitation(participation: Participation, invitation: Invitation | None) -> None:
     if invitation is None or invitation.participation_id == participation.id:
         return
     invitation.participation = participation
@@ -349,6 +349,7 @@ def post_consent(request: HttpRequest, slug: str) -> JsonResponse:
     # For named links, save participant info
     if link.link_mode == StudyLink.LinkMode.NAMED:
         import json
+
         try:
             body = json.loads(request.body or b"{}")
         except Exception:
@@ -409,14 +410,8 @@ def screener(request: HttpRequest, slug: str) -> JsonResponse:
 
     score, passed = _grade_screener(screener_obj, answers)
     participation.screener_score = score
-    participation.status = (
-        Participation.Status.SCREENED
-        if passed
-        else Participation.Status.DROPPED
-    )
-    participation.save(
-        update_fields=["screener_score", "status", "updated_at"]
-    )
+    participation.status = Participation.Status.SCREENED if passed else Participation.Status.DROPPED
+    participation.save(update_fields=["screener_score", "status", "updated_at"])
 
     return _ok(
         participation,
@@ -444,6 +439,7 @@ def share_link(request: HttpRequest, slug: str) -> JsonResponse:
     participation = _participation_from_cookie(request, link)
 
     import json
+
     try:
         body = json.loads(request.body or b"{}")
     except Exception:
@@ -480,9 +476,7 @@ def start_session(request: HttpRequest, slug: str) -> JsonResponse:
     if participation.consented_at is None:
         return _err("consent_required", http_status=412)
 
-    guide = InterviewGuide.objects.filter(
-        study=link.study, is_current=True
-    ).order_by("-created_at").first()
+    guide = InterviewGuide.objects.filter(study=link.study, is_current=True).order_by("-created_at").first()
     if guide is None:
         guide = InterviewGuide.objects.create(
             team=link.team,
@@ -494,10 +488,14 @@ def start_session(request: HttpRequest, slug: str) -> JsonResponse:
         )
 
     # Reuse existing session if already interviewing.
-    existing = InterviewSession.objects.filter(
-        participation=participation,
-        status__in=[InterviewSession.Status.PENDING, InterviewSession.Status.ACTIVE],
-    ).order_by("-created_at").first()
+    existing = (
+        InterviewSession.objects.filter(
+            participation=participation,
+            status__in=[InterviewSession.Status.PENDING, InterviewSession.Status.ACTIVE],
+        )
+        .order_by("-created_at")
+        .first()
+    )
 
     if existing is not None:
         return _ok(
@@ -512,9 +510,7 @@ def start_session(request: HttpRequest, slug: str) -> JsonResponse:
         # Lock the Study row so concurrent /start/ calls serialise here.
         study = Study.objects.select_for_update().get(id=link.study_id)
         next_number = (
-            InterviewSession.objects.filter(study=study)
-            .aggregate(max_n=models.Max("interview_number"))
-            .get("max_n")
+            InterviewSession.objects.filter(study=study).aggregate(max_n=models.Max("interview_number")).get("max_n")
             or 0
         ) + 1
 
@@ -523,6 +519,7 @@ def start_session(request: HttpRequest, slug: str) -> JsonResponse:
             study=study,
             participation=participation,
             guide=guide,
+            guide_snapshot=guide.sections,
             mode=study.interview_mode,
             status=InterviewSession.Status.PENDING,
             trace_id=participation.trace_id,
@@ -542,9 +539,7 @@ def start_session(request: HttpRequest, slug: str) -> JsonResponse:
 # ── Helpers ──────────────────────────────────────────────
 
 
-def _participation_from_cookie(
-    request: HttpRequest, link: StudyLink
-) -> Participation | None:
+def _participation_from_cookie(request: HttpRequest, link: StudyLink) -> Participation | None:
     raw_token = request.COOKIES.get(COOKIE_NAME)
     if not raw_token:
         return None
@@ -552,14 +547,10 @@ def _participation_from_cookie(
         token = uuid.UUID(raw_token)
     except (ValueError, TypeError):
         return None
-    return Participation.objects.filter(
-        study=link.study, browser_token=token
-    ).first()
+    return Participation.objects.filter(study=link.study, browser_token=token).first()
 
 
-def _grade_screener(
-    screener_obj: Screener, answers: dict[str, Any]
-) -> tuple[float, bool]:
+def _grade_screener(screener_obj: Screener, answers: dict[str, Any]) -> tuple[float, bool]:
     """Grade screener answers against the pass_logic.
 
     Shape of ``screener_obj.pass_logic`` (minimal for now)::
@@ -584,8 +575,7 @@ def _grade_screener(
 
     if not pass_logic:
         passed = bool(questions) and all(
-            answers.get(q.get("id") or str(i)) not in (None, "", [])
-            for i, q in enumerate(questions)
+            answers.get(q.get("id") or str(i)) not in (None, "", []) for i, q in enumerate(questions)
         )
         return (1.0 if passed else 0.0), passed
 

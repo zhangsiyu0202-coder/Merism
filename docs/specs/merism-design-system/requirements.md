@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Sprint 0.5 为 Merism 前端建立设计系统基座,确保后续 Ask / Interview Room / Wizard / Inbox / Repository / Decisions 等 sprint 直接消费 tokens / primitives / patterns,而不重复决策"按钮长什么样"。
+Sprint 0.5 为 Merism 前端建立设计系统基座,确保后续 Ask / Interview Room / Wizard / Inbox / Repository / Assistant 等 sprint 直接消费 tokens / primitives / patterns,而不重复决策"按钮长什么样"。
 
 本 spec 在 Sprint 0.5 技术设计已大部分落地后,把剩余未完成项(breakpoints token、TabBar pattern、fontsource 自托管、Plex Mono 懒加载、字体预加载、测试覆盖、size-limit、Select 清理、AGENTS.md 指引)补齐,并把整份 Sprint 0.5 工件形式化为可追溯的 spec。
 

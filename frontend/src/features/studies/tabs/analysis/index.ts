@@ -1,2 +1,5 @@
-export { CustomReportSidebar } from "./CustomReportSidebar"
-export { customReportLogic, type CustomReportMessage } from "./customReportLogic"
+export { CustomReportSidebar } from "./CustomReportSidebar";
+export {
+  customReportLogic,
+  type CustomReportMessage,
+} from "./customReportLogic";

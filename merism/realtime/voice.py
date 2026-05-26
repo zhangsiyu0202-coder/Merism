@@ -54,10 +54,10 @@ from merism.realtime.voice_protocol import (
     ErrorMessage,
     InterruptionMessage,
     PongMessage,
+    PttSpeakingStartMessage,
     ServerMessage,
     SessionReadyMessage,
     TextInputMessage,
-    PttSpeakingStartMessage,
     parse_client_message,
 )
 from merism.voice import (
@@ -66,22 +66,11 @@ from merism.voice import (
     InputAudioRawFrame,
     InterruptionFrame,
     MetricsObserver,
-    Pipeline,
-    PipelineTask,
-    TranscriptRecorder,
     TranscriptionFrame,
+    TranscriptRecorder,
     UserStartedSpeakingFrame,
     UserStoppedSpeakingFrame,
 )
-from merism.voice.processors import (
-    ConversationState,
-    LLMProcessor,
-    STTProcessor,
-    TTSProcessor,
-    UserIdleDetector,
-)
-from merism.voice.processors.moderator import ModeratorLLMProcessor
-from merism.stt import ParaformerClient
 
 logger = logging.getLogger(__name__)
 
@@ -103,9 +92,11 @@ class VoiceConsumer(AsyncWebsocketConsumer):
             await self.close(code=4404)
             return
 
-        self.barge_in_enabled: bool = await database_sync_to_async(
-            lambda: self.session.study.barge_in_enabled
-        )()
+        # Barge-in is disabled product-wide (2026-05-25): the AI is
+        # never interrupted by an in-flight PTT press. We still
+        # accept ``ptt_speaking_start`` to track signal counts for
+        # diagnostics, but it never fires an ``InterruptionFrame``.
+        # See `_handle_ptt_start` below.
 
         self._metrics = MetricsObserver()
         self._recorder = TranscriptRecorder()
@@ -118,23 +109,17 @@ class VoiceConsumer(AsyncWebsocketConsumer):
             self._audio_recorder,
         )
 
-        self._conversation_state = ConversationState()
-        stt_client = ParaformerClient(language="zh", use_server_vad=False)
-        llm_processor = (
-            ModeratorLLMProcessor(session_id=self.session_id)
-            if self.session.guide_id is not None
-            else LLMProcessor(system_prompt=_DEFAULT_SYSTEM_PROMPT)
+        # Pipeline construction is fully owned by ``merism.voice.setup``.
+        # This consumer only wires the WebSocket transport — the moderator
+        # / engine choice, the processor order, the v3-vs-ad-hoc branch
+        # all live in one place. Decouples voice mode from changes to
+        # ``conductor`` internals (per the 2026-05-23 refactor).
+        from merism.voice.setup import build_voice_pipeline
+
+        self._task, self._conversation_state = build_voice_pipeline(
+            session=self.session,
+            observer=composite,
         )
-        pipeline = Pipeline(
-            [
-                STTProcessor(client=stt_client),
-                llm_processor,
-                TTSProcessor(),
-                self._conversation_state,
-                UserIdleDetector(idle_seconds=12.0),
-            ]
-        )
-        self._task = PipelineTask(pipeline, observer=composite, sample_rate=16000)
 
         self._ptt_signals = 0
         self._barge_in_fires = 0
@@ -143,7 +128,6 @@ class VoiceConsumer(AsyncWebsocketConsumer):
         await self._send(
             SessionReadyMessage(
                 session_id=self.session_id,
-                barge_in_enabled=self.barge_in_enabled,
             )
         )
         await self._task.start()
@@ -152,7 +136,6 @@ class VoiceConsumer(AsyncWebsocketConsumer):
             "voice.session.start",
             extra={
                 "session_id": self.session_id,
-                "barge_in_enabled": self.barge_in_enabled,
             },
         )
 
@@ -177,13 +160,9 @@ class VoiceConsumer(AsyncWebsocketConsumer):
 
         await self._persist_session_artifacts()
 
-    async def receive(
-        self, text_data: str | None = None, bytes_data: bytes | None = None
-    ) -> None:
+    async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
         if bytes_data is not None:
-            await self._task.queue_frame(
-                InputAudioRawFrame(audio=bytes_data, sample_rate=16000)
-            )
+            await self._task.queue_frame(InputAudioRawFrame(audio=bytes_data, sample_rate=16000))
             return
 
         if text_data is None:
@@ -228,30 +207,20 @@ class VoiceConsumer(AsyncWebsocketConsumer):
             return
 
     async def _handle_ptt_start(self, message: PttSpeakingStartMessage) -> None:
+        # Always queue UserStartedSpeakingFrame so STT opens its turn.
+        # We never fire an InterruptionFrame from a PTT press — barge-in
+        # is disabled product-wide. The frontend disables the PTT
+        # button while the bot is speaking, so this branch is mostly
+        # for diagnostics. The ``audio_played_ms`` field is kept for
+        # parity with the explicit-interrupt path.
         self._ptt_signals += 1
         await self._task.queue_frame(UserStartedSpeakingFrame())
-        if not self.barge_in_enabled:
-            logger.info(
-                "voice.barge_in.ignored",
-                extra={
-                    "session_id": self.session_id,
-                    "trigger": "ptt",
-                    "audio_played_ms": int(getattr(message, "audio_played_ms", 0) or 0),
-                    "total_ptt_signals": self._ptt_signals,
-                },
-            )
-            return
-        self._barge_in_fires += 1
-        played_ms = int(getattr(message, "audio_played_ms", 0) or 0)
-        await self._task.queue_frame(InterruptionFrame(audio_played_ms=played_ms))
         logger.info(
-            "voice.barge_in.accepted",
+            "voice.ptt.accepted",
             extra={
                 "session_id": self.session_id,
-                "trigger": "ptt",
-                "audio_played_ms": played_ms,
+                "audio_played_ms": int(getattr(message, "audio_played_ms", 0) or 0),
                 "total_ptt_signals": self._ptt_signals,
-                "total_barge_ins": self._barge_in_fires,
             },
         )
 
@@ -284,10 +253,7 @@ class VoiceConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def _load_session(self, session_id: str) -> InterviewSession | None:
         try:
-            return (
-                InterviewSession.objects.select_related("study", "guide", "participation")
-                .get(id=session_id)
-            )
+            return InterviewSession.objects.select_related("study", "guide", "participation").get(id=session_id)
         except InterviewSession.DoesNotExist:
             return None
 
@@ -329,9 +295,7 @@ class VoiceConsumer(AsyncWebsocketConsumer):
                 )
 
         try:
-            await self._write_session(
-                session.id, updates, transcript_additions, audio_keys
-            )
+            await self._write_session(session.id, updates, transcript_additions, audio_keys)
         except Exception as exc:
             logger.warning(
                 "voice.session.persist_failed",

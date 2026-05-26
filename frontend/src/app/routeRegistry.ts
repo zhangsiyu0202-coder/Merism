@@ -5,69 +5,71 @@
  * Keep dynamic imports here so each feature ships in its own chunk.
  */
 
-import { Scene } from "./routes"
-import type { SceneConfigMap, SceneImportMap } from "./sceneTypes"
+import { Scene } from "./routes";
+import type { SceneConfigMap, SceneImportMap } from "./sceneTypes";
 
 export const sceneImports: SceneImportMap = {
-    [Scene.Home]: () => import("~/features/home/HomePage"),
-    [Scene.Ask]: () => import("~/features/ask/AskPage"),
-    [Scene.Inbox]: () => import("~/features/inbox/InboxPage"),
-    [Scene.Repository]: () => import("~/features/repository/RepositoryPage"),
-    [Scene.Decisions]: () => import("~/features/decisions/DecisionsPage"),
-    [Scene.Settings]: () => import("~/features/settings/SettingsPage"),
-    [Scene.Study]: () => import("~/features/studies/StudyPage"),
-    [Scene.Insights]: () => import("~/features/analysis/InsightsPage"),
-    [Scene.Reports]: () => import("~/features/analysis/ReportsPage"),
-    [Scene.InterviewRoom]: () => import("~/features/interview/InterviewRoomPage"),
-    [Scene.SessionTranscript]: () => import("~/features/sessions/SessionTranscriptPage"),
-    [Scene.ParticipantEntry]: () => import("~/features/participant/ParticipantEntryPage"),
-    [Scene.Login]: () => import("~/features/authentication/LoginPage"),
-    [Scene.Welcome]: () => import("~/features/welcome/WelcomePage"),
-    [Scene.Error404]: () => import("~/layout/Error404"),
-}
+  [Scene.Home]: () => import("~/features/home/HomePage"),
+  [Scene.Ask]: () => import("~/features/ask/AskPage"),
+  [Scene.Inbox]: () => import("~/features/inbox/InboxPage"),
+  [Scene.Repository]: () => import("~/features/repository/RepositoryPage"),
+  [Scene.Decisions]: () => import("~/features/decisions/DecisionsPage"),
+  [Scene.Settings]: () => import("~/features/settings/SettingsPage"),
+  [Scene.Study]: () => import("~/features/studies/StudyPage"),
+  [Scene.Insights]: () => import("~/features/analysis/InsightsPage"),
+  [Scene.Reports]: () => import("~/features/analysis/ReportsPage"),
+  [Scene.InterviewRoom]: () => import("~/features/interview/InterviewRoomPage"),
+  [Scene.SessionTranscript]: () =>
+    import("~/features/sessions/SessionTranscriptPage"),
+  [Scene.ParticipantEntry]: () =>
+    import("~/features/participant/ParticipantEntryPage"),
+  [Scene.Login]: () => import("~/features/authentication/LoginPage"),
+  [Scene.Welcome]: () => import("~/features/welcome/WelcomePage"),
+  [Scene.Error404]: () => import("~/layout/Error404"),
+};
 
 export const sceneConfigs: SceneConfigMap = {
-    [Scene.Home]: { name: "Home" },
-    [Scene.Ask]: { name: "Ask Merism" },
-    [Scene.Inbox]: { name: "Inbox" },
-    [Scene.Repository]: { name: "Repository" },
-    [Scene.Decisions]: { name: "Ask Merism" },
-    [Scene.Settings]: { name: "Settings" },
-    [Scene.Study]: { name: "Study", hideFromNav: true },
-    [Scene.Insights]: { name: "Insights" },
-    [Scene.Reports]: { name: "Reports" },
-    [Scene.InterviewRoom]: {
-        name: "Interview",
-        layout: "participant",
-        allowUnauthenticated: true,
-        hideFromNav: true,
-    },
-    [Scene.SessionTranscript]: {
-        name: "Transcript",
-        hideFromNav: true,
-    },
-    [Scene.ParticipantEntry]: {
-        name: "Invitation",
-        layout: "plain",
-        allowUnauthenticated: true,
-        hideFromNav: true,
-    },
-    [Scene.Login]: {
-        name: "Log in",
-        layout: "plain",
-        allowUnauthenticated: true,
-        hideFromNav: true,
-    },
-    [Scene.Welcome]: {
-        name: "Welcome",
-        layout: "plain",
-        allowUnauthenticated: true,
-        hideFromNav: true,
-    },
-    [Scene.Error404]: {
-        name: "Not found",
-        layout: "plain",
-        allowUnauthenticated: true,
-        hideFromNav: true,
-    },
-}
+  [Scene.Home]: { name: "Home" },
+  [Scene.Ask]: { name: "Ask Merism" },
+  [Scene.Inbox]: { name: "Inbox" },
+  [Scene.Repository]: { name: "Repository" },
+  [Scene.Decisions]: { name: "Ask Merism" },
+  [Scene.Settings]: { name: "Settings" },
+  [Scene.Study]: { name: "Study", hideFromNav: true },
+  [Scene.Insights]: { name: "Insights" },
+  [Scene.Reports]: { name: "Reports" },
+  [Scene.InterviewRoom]: {
+    name: "Interview",
+    layout: "participant",
+    allowUnauthenticated: true,
+    hideFromNav: true,
+  },
+  [Scene.SessionTranscript]: {
+    name: "Transcript",
+    hideFromNav: true,
+  },
+  [Scene.ParticipantEntry]: {
+    name: "Invitation",
+    layout: "plain",
+    allowUnauthenticated: true,
+    hideFromNav: true,
+  },
+  [Scene.Login]: {
+    name: "Log in",
+    layout: "plain",
+    allowUnauthenticated: true,
+    hideFromNav: true,
+  },
+  [Scene.Welcome]: {
+    name: "Welcome",
+    layout: "plain",
+    allowUnauthenticated: true,
+    hideFromNav: true,
+  },
+  [Scene.Error404]: {
+    name: "Not found",
+    layout: "plain",
+    allowUnauthenticated: true,
+    hideFromNav: true,
+  },
+};

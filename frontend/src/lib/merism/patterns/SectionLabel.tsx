@@ -1,6 +1,6 @@
-import type { HTMLAttributes } from "react"
+import type { HTMLAttributes } from "react";
 
-import { cn } from "../utils/cn"
+import { cn } from "../utils/cn";
 
 /**
  * SectionLabel — the small uppercase / mono-tracked label that
@@ -13,16 +13,16 @@ import { cn } from "../utils/cn"
  */
 
 export function SectionLabel({
-    className,
-    ...props
+  className,
+  ...props
 }: HTMLAttributes<HTMLDivElement>): JSX.Element {
-    return (
-        <div
-            {...props}
-            className={cn(
-                "font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle",
-                className,
-            )}
-        />
-    )
+  return (
+    <div
+      {...props}
+      className={cn(
+        "font-mono text-merism-caption uppercase tracking-merism-caps text-merism-text-subtle",
+        className,
+      )}
+    />
+  );
 }

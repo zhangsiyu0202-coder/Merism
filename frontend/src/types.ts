@@ -14,163 +14,167 @@
 // ── identity ────────────────────────────────────────────
 
 export interface User {
-    id: string
-    email: string
-    first_name: string
-    last_name: string
-    is_superuser?: boolean
-    organization: Organization | null
-    team: Team | null
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_superuser?: boolean;
+  organization: Organization | null;
+  team: Team | null;
 }
 
 export interface Organization {
-    id: string
-    name: string
-    slug: string
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export interface Team {
-    id: string
-    name: string
-    organization: string
+  id: string;
+  name: string;
+  organization: string;
 }
 
 // ── study ───────────────────────────────────────────────
 
 export enum StudyFormat {
-    Voice = "voice",
-    Video = "video",
-    Text = "text",
-    Offline = "offline",
+  Voice = "voice",
+  Video = "video",
+  Text = "text",
+  Offline = "offline",
 }
 
 export enum StudyStatus {
-    Draft = "draft",
-    Live = "live",
-    Closed = "closed",
+  Draft = "draft",
+  Live = "live",
+  Closed = "closed",
 }
 
 export interface Study {
-    id: string
-    name: string
-    research_goal: string
-    research_objectives: string[]
-    interview_mode: StudyFormat
-    status: StudyStatus
-    estimated_minutes: number
-    barge_in_enabled: boolean
-    target_audience?: string
-    target_completed_count?: number
-    recruitment_quotas?: RecruitmentQuota[]
-    codebook?: CodebookEntry[]
-    /** Auto-generated share URL pointing at the primary StudyLink. */
-    share_url?: string | null
-    /** The single canonical share link for this study (auto-created on Study save). */
-    primary_link?: {
-        id: string
-        slug: string
-        is_active: boolean
-        url_path: string
-        full_url: string
-    } | null
-    created_at: string
-    updated_at: string
+  id: string;
+  name: string;
+  research_goal: string;
+  research_objectives: string[];
+  interview_mode: StudyFormat;
+  status: StudyStatus;
+  estimated_minutes: number;
+  target_audience?: string;
+  target_completed_count?: number;
+  recruitment_quotas?: RecruitmentQuota[];
+  codebook?: CodebookEntry[];
+  /** Auto-generated share URL pointing at the primary StudyLink. */
+  share_url?: string | null;
+  /** The single canonical share link for this study (auto-created on Study save). */
+  primary_link?: {
+    id: string;
+    slug: string;
+    is_active: boolean;
+    url_path: string;
+    full_url: string;
+  } | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface RecruitmentQuotaSegment {
-    label: string
-    target: number
+  label: string;
+  target: number;
 }
 
 export interface RecruitmentQuota {
-    dimension: string           // "age" | "gender" | custom key
-    label: string                // display name
-    segments: RecruitmentQuotaSegment[]
+  dimension: string; // "age" | "gender" | custom key
+  label: string; // display name
+  segments: RecruitmentQuotaSegment[];
 }
 
 export interface CodebookEntry {
-    code_id: string
-    name: string
-    description: string
-    examples: string[]
-    source: "seeded" | "inductive" | "manual"
+  code_id: string;
+  name: string;
+  description: string;
+  examples: string[];
+  source: "seeded" | "inductive" | "manual";
 }
 
 // ── interview session ───────────────────────────────────
 
 export enum SessionStatus {
-    Scheduled = "scheduled",
-    InProgress = "in_progress",
-    Completed = "completed",
-    Abandoned = "abandoned",
-    Excluded = "excluded",
+  Scheduled = "scheduled",
+  InProgress = "in_progress",
+  Completed = "completed",
+  Abandoned = "abandoned",
+  Excluded = "excluded",
 }
 
 export interface InterviewSession {
-    id: string
-    study: string
-    participant: string | null
-    status: SessionStatus
-    started_at: string | null
-    ended_at: string | null
-    /** Per-Study sequential number (1, 2, 3, ...). Renders as #1 in the list. */
-    interview_number?: number
-    /** Participant's display name from the named-link intake form (empty for anonymous). */
-    participant_name?: string
-    /** Number of transcript turns. */
-    turn_count?: number
-    /** Session length in seconds. */
-    duration_seconds?: number | null
+  id: string;
+  study: string;
+  participant: string | null;
+  status: SessionStatus;
+  started_at: string | null;
+  ended_at: string | null;
+  /** Per-Study sequential number (1, 2, 3, ...). Renders as #1 in the list. */
+  interview_number?: number;
+  /** Participant's display name from the named-link intake form (empty for anonymous). */
+  participant_name?: string;
+  /** Number of transcript turns. */
+  turn_count?: number;
+  /** Session length in seconds. */
+  duration_seconds?: number | null;
 }
 
 export interface SessionInsight {
-    id: string
-    session: string
-    summary: string
-    tags: Record<string, unknown>
-    highlights: Array<{ text: string; ts_start: number; ts_end: number; importance: number }>
-    extracted_tasks: Array<{
-        title: string
-        category: string
-        priority: string
-        evidence_quote_id?: string
-    }>
+  id: string;
+  session: string;
+  summary: string;
+  tags: Record<string, unknown>;
+  highlights: Array<{
+    text: string;
+    ts_start: number;
+    ts_end: number;
+    importance: number;
+  }>;
+  extracted_tasks: Array<{
+    title: string;
+    category: string;
+    priority: string;
+    evidence_quote_id?: string;
+  }>;
 }
 
 // ── participant + recruitment ───────────────────────────
 
 export enum ChannelType {
-    Feishu = "feishu",
-    WeCom = "wecom",
-    QQ = "qq",
-    Email = "email",
+  Feishu = "feishu",
+  WeCom = "wecom",
+  QQ = "qq",
+  Email = "email",
 }
 
 export interface ChannelConfig {
-    id: string
-    channel_type: ChannelType
-    display_name: string
-    is_active: boolean
+  id: string;
+  channel_type: ChannelType;
+  display_name: string;
+  is_active: boolean;
 }
 
 export interface Participant {
-    id: string
-    external_id: string
-    display_name: string
-    channel_type: ChannelType
-    created_at: string
+  id: string;
+  external_id: string;
+  display_name: string;
+  channel_type: ChannelType;
+  created_at: string;
 }
 
 // ── api envelope ────────────────────────────────────────
 
 export interface Paginated<T> {
-    count: number
-    next: string | null
-    previous: string | null
-    results: T[]
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 export interface ApiError {
-    detail: string
-    code?: string
+  detail: string;
+  code?: string;
 }

@@ -2,8 +2,14 @@
 
 When a :class:`Participation` transitions to ``COMPLETED``, check whether
 the study has hit its ``target_completed_count``. If so, flip the Study
-status to ``CLOSED`` and mark every active StudyLink inactive so new
-participants hit ``link_closed`` at ``/i/<slug>/``.
+status to ``CLOSED`` so the inbox + analytics surfaces show the study as
+closed.
+
+Per the 2026-05-23 access-control simplification, this signal does
+**not** flip ``StudyLink.is_active``. The "accepting responses" toggle
+is researcher-controlled — automatic closure is metadata only. If a
+researcher wants to fully stop participation, they flip ``is_active``
+off in the Recruit tab.
 
 Single transaction, idempotent. Safe under concurrent signal fires via
 ``select_for_update`` on the Study row.
@@ -17,14 +23,14 @@ from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from merism.models import Participation, Study, StudyLink
+from merism.models import Participation, Study
 
 logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=Participation)
 def _close_study_when_target_reached(
-    sender,  # noqa: ARG001
+    sender,
     instance: Participation,
     update_fields=None,
     **kwargs,
@@ -42,9 +48,6 @@ def _close_study_when_target_reached(
             if study.actual_completed_count >= study.target_completed_count:
                 study.status = Study.Status.CLOSED
                 study.save(update_fields=["status", "updated_at"])
-                StudyLink.objects.filter(study=study, is_active=True).update(
-                    is_active=False
-                )
                 logger.info(
                     "study.auto_closed_on_target",
                     extra={

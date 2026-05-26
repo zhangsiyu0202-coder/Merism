@@ -58,3 +58,21 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Skip email verification in dev — no SMTP configured locally.
 ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Disable allauth rate-limiting in dev. Otherwise repeated test logins
+# (Playwright + manual smoke + curl) trip "登录失败次数过多，请稍后重试"
+# and the demo recording stalls. Setting any rate to ``None`` disables it.
+# https://docs.allauth.org/en/dev/account/configuration.html#rate-limits
+ACCOUNT_RATE_LIMITS = {
+    "login": None,
+    "login_failed": None,
+    "signup": None,
+    "confirm_email": None,
+    "send_email": None,
+    "change_email": None,
+    "reset_password": None,
+    "reset_password_email": None,
+    "reset_password_from_key": None,
+    "manage_email": None,
+    "reauthenticate": None,
+}

@@ -93,7 +93,9 @@ export const participantEntryLogic = kea<participantEntryLogicType>([
 
   actions({
     setSlug: (slug: string) => ({ slug }),
-    submitConsent: (data?: { name?: string; contact?: string }) => ({ data: data ?? {} }),
+    submitConsent: (data?: { name?: string; contact?: string }) => ({
+      data: data ?? {},
+    }),
     submitScreener: (answers: Record<string, unknown>) => ({ answers }),
     startSession: true,
   }),

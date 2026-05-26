@@ -1,446 +1,445 @@
 {
-    "common": {
-        "search": "搜索",
-        "loading": "加载中…",
-        "save": "保存",
-        "cancel": "取消",
-        "create": "创建",
-        "edit": "编辑",
-        "delete": "删除",
-        "remove": "移除",
-        "archive": "归档",
-        "back": "返回",
-        "next": "下一步",
-        "previous": "上一步",
-        "continue": "继续",
-        "yes": "是",
-        "no": "否",
-        "open": "打开",
-        "close": "关闭",
-        "sign_out": "退出登录",
-        "sections": "分区",
-        "draft": "草稿",
-        "coming_soon": "即将上线"
+  "common": {
+    "search": "搜索",
+    "loading": "加载中…",
+    "save": "保存",
+    "cancel": "取消",
+    "create": "创建",
+    "edit": "编辑",
+    "delete": "删除",
+    "remove": "移除",
+    "archive": "归档",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "continue": "继续",
+    "yes": "是",
+    "no": "否",
+    "open": "打开",
+    "close": "关闭",
+    "sign_out": "退出登录",
+    "sections": "分区",
+    "draft": "草稿",
+    "coming_soon": "即将上线"
+  },
+  "nav": {
+    "home": "首页",
+    "studies": "研究",
+    "insights": "洞察",
+    "reports": "报告",
+    "ask": "问答",
+    "inbox": "收件箱",
+    "repository": "资料库",
+    "decisions": "AI 助手",
+    "settings": "设置",
+    "admin": "后台",
+    "pinned": "置顶",
+    "pin_study": "置顶常用研究以便快速打开。",
+    "workspace": "工作区",
+    "search_hint": "搜索"
+  },
+  "pagination": {
+    "range": "第 {{start}}–{{end}} 条，共 {{total}} 条",
+    "per_page": "每页 {{n}} 条",
+    "prev": "上一页",
+    "next": "下一页",
+    "page_of": "第 {{page}} / {{count}} 页"
+  },
+  "home": {
+    "title": "首页",
+    "lede": "所有正在进行的研究、草稿与决策都汇聚于此。",
+    "tabs": {
+      "overview": "总览",
+      "drafts": "草稿",
+      "inbox": "收件箱"
     },
+    "kpi": {
+      "active_studies": "进行中的研究",
+      "sessions_week": "本周访谈场次",
+      "insights": "洞察",
+      "participants": "参与者",
+      "open_decisions": "待决策"
+    },
+    "first_study_hero": {
+      "title": "开启你的第一项研究。",
+      "body": "Merism 会围绕一个聚焦的研究问题，完成招募、访谈、编码与报告全流程。",
+      "cta": "创建研究"
+    },
+    "section": {
+      "active_studies": "进行中的研究",
+      "recent_decisions": "最近的决策",
+      "see_all": "查看全部"
+    },
+    "new_study_card": {
+      "title": "新建研究",
+      "body": "从空白画布开始。"
+    }
+  },
+  "studies": {
+    "title": "研究",
+    "lede": "你对用户的持续洞察都汇聚于此。",
+    "new_study": "新建研究",
+    "empty_hero_title": "开始你的第一项研究",
+    "empty_hero_body": "一项研究聚焦一个问题。Merism 负责招募、访谈、编码与报告的全流程。",
+    "empty_tab_body": "暂无{{tab}}研究。",
+    "tabs": {
+      "all": "全部",
+      "active": "进行中",
+      "drafts": "草稿",
+      "archived": "已结束"
+    },
+    "status": {
+      "draft": "草稿",
+      "live": "进行中",
+      "closed": "已结束"
+    }
+  },
+  "study": {
+    "tabs": {
+      "outline": "大纲",
+      "screener": "筛选",
+      "stimuli": "刺激物",
+      "recruit": "招募",
+      "analysis": "分析",
+      "report": "报告",
+      "sessions": "访谈",
+      "settings": "设置"
+    },
+    "mode": {
+      "voice": "语音",
+      "video": "视频",
+      "text": "文字",
+      "offline": "离线"
+    }
+  },
+  "ask": {
+    "title": "问答 Merism",
+    "lede": "跨整个工作区的对话式研究助手。",
+    "tabs": {
+      "chat": "对话",
+      "history": "历史",
+      "saved": "收藏"
+    },
+    "empty_hero_title": "你想了解什么？",
+    "empty_hero_body": "对所有研究、访谈、引语提问。Merism 会搜索知识库并在答案中引用来源。",
+    "suggestions_label": "试着问问",
+    "suggestions": [
+      "参与者对定价有什么看法？",
+      "本季度浮现了哪些主题？",
+      "对比不同方案下的 onboarding 反馈。"
+    ],
+    "placeholder": "向 Merism 提问任何关于你的研究的问题…",
+    "history_coming_soon": "最近的提问会出现在这里。",
+    "saved_coming_soon": "把喜欢的回答置顶，随时可以再次执行。"
+  },
+  "inbox": {
+    "title": "收件箱",
+    "lede": "所有研究中的新回复、通知与信号。",
+    "empty_title": "全部处理完毕。",
+    "empty_body": "新完成的访谈、通道告警和 @ 提醒会出现在这里。"
+  },
+  "repository": {
+    "title": "资料库",
+    "lede": "每一条引语、主题与制品 —— 跨研究可搜索。",
+    "empty_title": "暂无制品。",
+    "empty_body": "研究完成后，Merism 会为每条引语和编码建立索引，支持跨研究搜索。"
+  },
+  "decisions": {
+    "title": "AI 助手",
+    "lede": "从研究中抽取的行动项，跟踪至关闭。",
+    "empty_title": "暂无待决策。",
+    "empty_body": "已完成访谈中的行动项会出现在这里，并附上证据链接。"
+  },
+  "settings": {
+    "title": "设置",
+    "lede": "工作区、团队与你的账户偏好。",
     "nav": {
-        "home": "首页",
-        "studies": "研究",
-        "insights": "洞察",
-        "reports": "报告",
-        "ask": "问答",
-        "inbox": "收件箱",
-        "repository": "资料库",
-        "decisions": "AI 助手",
-        "settings": "设置",
-        "admin": "后台",
-        "pinned": "置顶",
-        "pin_study": "置顶常用研究以便快速打开。",
-        "workspace": "工作区",
-        "search_hint": "搜索"
+      "profile": "个人资料",
+      "workspace": "工作区"
     },
-    "pagination": {
-        "range": "第 {{start}}–{{end}} 条，共 {{total}} 条",
-        "per_page": "每页 {{n}} 条",
-        "prev": "上一页",
-        "next": "下一页",
-        "page_of": "第 {{page}} / {{count}} 页"
+    "profile": {
+      "title": "个人资料",
+      "loading": "正在加载你的资料…",
+      "security_title": "安全",
+      "security_description": "登录与认证。",
+      "active_session": "当前会话"
     },
-    "home": {
-        "title": "首页",
-        "lede": "所有正在进行的研究、草稿与决策都汇聚于此。",
-        "tabs": {
-            "overview": "总览",
-            "drafts": "草稿",
-            "inbox": "收件箱"
-        },
-        "kpi": {
-            "active_studies": "进行中的研究",
-            "sessions_week": "本周访谈场次",
-            "insights": "洞察",
-            "participants": "参与者",
-            "open_decisions": "待决策"
-        },
-        "first_study_hero": {
-            "title": "开启你的第一项研究。",
-            "body": "Merism 会围绕一个聚焦的研究问题，完成招募、访谈、编码与报告全流程。",
-            "cta": "创建研究"
-        },
-        "section": {
-            "active_studies": "进行中的研究",
-            "recent_decisions": "最近的决策",
-            "see_all": "查看全部"
-        },
-        "new_study_card": {
-            "title": "新建研究",
-            "body": "从空白画布开始。"
-        }
+    "workspace": {
+      "title": "工作区详情",
+      "organisation": "所属组织：{{name}}",
+      "members_title": "成员",
+      "members_description": "拥有当前工作区访问权限的团队成员。",
+      "members_body": "成员管理将随首个多租户版本上线。",
+      "language_title": "界面语言",
+      "language_description": "切换后立即生效。",
+      "compliance_title": "合规",
+      "compliance_description": "数据驻留与审计日志。",
+      "compliance_body": "符合个人信息保护法。原始访谈在服务端留存；任意访谈均可导出整洁化文稿。"
+    }
+  },
+  "login": {
+    "eyebrow": "MERISM",
+    "heading": "欢迎回来。",
+    "sub": "登录你的研究工作区。",
+    "email": "工作邮箱",
+    "password": "密码",
+    "forgot": "忘记密码？",
+    "continue": "继续",
+    "submitting": "登录中…",
+    "new_workspace_prompt": "初次使用 Merism？",
+    "new_workspace_cta": "创建工作区",
+    "dev_hint": "开发账号：admin@merism.local / admin"
+  },
+  "interview": {
+    "loading": "正在准备访谈…",
+    "start_cta": "开始",
+    "session_ended": "感谢参与，访谈已结束。",
+    "session_ended_body": "你的回答已保存。可以关闭此窗口。"
+  },
+  "command_palette": {
+    "placeholder": "输入命令或搜索…",
+    "no_matches": "未找到 “{{query}}” 的相关结果。",
+    "hint_esc": "ESC",
+    "hint_navigate": "选择",
+    "hint_run": "执行",
+    "footer": "Merism · 快捷操作",
+    "sections": {
+      "go_to": "跳转到",
+      "actions": "操作",
+      "studies": "研究"
     },
-    "studies": {
-        "title": "研究",
-        "lede": "你对用户的持续洞察都汇聚于此。",
-        "new_study": "新建研究",
-        "empty_hero_title": "开始你的第一项研究",
-        "empty_hero_body": "一项研究聚焦一个问题。Merism 负责招募、访谈、编码与报告的全流程。",
-        "empty_tab_body": "暂无{{tab}}研究。",
-        "tabs": {
-            "all": "全部",
-            "active": "进行中",
-            "drafts": "草稿",
-            "archived": "已结束"
-        },
-        "status": {
-            "draft": "草稿",
-            "live": "进行中",
-            "closed": "已结束"
-        }
-    },
-    "study": {
-        "tabs": {
-            "brief": "简介",
-            "outline": "大纲",
-            "screener": "筛选",
-            "stimuli": "刺激物",
-            "recruit": "招募",
-            "analysis": "分析",
-            "report": "报告",
-            "sessions": "访谈",
-            "settings": "设置"
-        },
-        "mode": {
-            "voice": "语音",
-            "video": "视频",
-            "text": "文字",
-            "offline": "离线"
-        }
-    },
-    "ask": {
-        "title": "问答 Merism",
-        "lede": "跨整个工作区的对话式研究助手。",
-        "tabs": {
-            "chat": "对话",
-            "history": "历史",
-            "saved": "收藏"
-        },
-        "empty_hero_title": "你想了解什么？",
-        "empty_hero_body": "对所有研究、访谈、引语提问。Merism 会搜索知识库并在答案中引用来源。",
-        "suggestions_label": "试着问问",
-        "suggestions": [
-            "参与者对定价有什么看法？",
-            "本季度浮现了哪些主题？",
-            "对比不同方案下的 onboarding 反馈。"
-        ],
-        "placeholder": "向 Merism 提问任何关于你的研究的问题…",
-        "history_coming_soon": "最近的提问会出现在这里。",
-        "saved_coming_soon": "把喜欢的回答置顶，随时可以再次执行。"
-    },
-    "inbox": {
-        "title": "收件箱",
-        "lede": "所有研究中的新回复、通知与信号。",
-        "empty_title": "全部处理完毕。",
-        "empty_body": "新完成的访谈、通道告警和 @ 提醒会出现在这里。"
-    },
-    "repository": {
-        "title": "资料库",
-        "lede": "每一条引语、主题与制品 —— 跨研究可搜索。",
-        "empty_title": "暂无制品。",
-        "empty_body": "研究完成后，Merism 会为每条引语和编码建立索引，支持跨研究搜索。"
-    },
-    "decisions": {
-        "title": "AI 助手",
-        "lede": "从研究中抽取的行动项，跟踪至关闭。",
-        "empty_title": "暂无待决策。",
-        "empty_body": "已完成访谈中的行动项会出现在这里，并附上证据链接。"
-    },
-    "settings": {
-        "title": "设置",
-        "lede": "工作区、团队与你的账户偏好。",
-        "nav": {
-            "profile": "个人资料",
-            "workspace": "工作区"
-        },
-        "profile": {
-            "title": "个人资料",
-            "loading": "正在加载你的资料…",
-            "security_title": "安全",
-            "security_description": "登录与认证。",
-            "active_session": "当前会话"
-        },
-        "workspace": {
-            "title": "工作区详情",
-            "organisation": "所属组织：{{name}}",
-            "members_title": "成员",
-            "members_description": "拥有当前工作区访问权限的团队成员。",
-            "members_body": "成员管理将随首个多租户版本上线。",
-            "language_title": "界面语言",
-            "language_description": "切换后立即生效。",
-            "compliance_title": "合规",
-            "compliance_description": "数据驻留与审计日志。",
-            "compliance_body": "符合个人信息保护法。原始访谈在服务端留存；任意访谈均可导出整洁化文稿。"
-        }
-    },
-    "login": {
-        "eyebrow": "MERISM",
-        "heading": "欢迎回来。",
-        "sub": "登录你的研究工作区。",
-        "email": "工作邮箱",
-        "password": "密码",
-        "forgot": "忘记密码？",
-        "continue": "继续",
-        "submitting": "登录中…",
-        "new_workspace_prompt": "初次使用 Merism？",
-        "new_workspace_cta": "创建工作区",
-        "dev_hint": "开发账号：admin@merism.local / admin"
-    },
-    "interview": {
-        "loading": "正在准备访谈…",
-        "start_cta": "开始",
-        "session_ended": "感谢参与，访谈已结束。",
-        "session_ended_body": "你的回答已保存。可以关闭此窗口。"
-    },
-    "command_palette": {
-        "placeholder": "输入命令或搜索…",
-        "no_matches": "未找到 “{{query}}” 的相关结果。",
-        "hint_esc": "ESC",
-        "hint_navigate": "选择",
-        "hint_run": "执行",
-        "footer": "Merism · 快捷操作",
-        "sections": {
-            "go_to": "跳转到",
-            "actions": "操作",
-            "studies": "研究"
-        },
-        "commands": {
-            "go_home": "跳转到首页",
-            "go_studies": "跳转到研究",
-            "go_ask": "跳转到问答",
-            "go_inbox": "跳转到收件箱",
-            "go_repository": "跳转到资料库",
-            "go_decisions": "跳转到 Ask Merism",
-            "go_settings": "跳转到设置",
-            "new_study": "新建研究",
-            "reload": "重新加载研究列表",
-            "open_admin": "打开 Django 后台",
-            "open_admin_hint": "仅限员工"
-        }
-    },
+    "commands": {
+      "go_home": "跳转到首页",
+      "go_studies": "跳转到研究",
+      "go_ask": "跳转到问答",
+      "go_inbox": "跳转到收件箱",
+      "go_repository": "跳转到资料库",
+      "go_decisions": "跳转到 Ask Merism",
+      "go_settings": "跳转到设置",
+      "new_study": "新建研究",
+      "reload": "重新加载研究列表",
+      "open_admin": "打开 Django 后台",
+      "open_admin_hint": "仅限员工"
+    }
+  },
+  "errors": {
+    "not_found_title": "页面未找到",
+    "not_found_body": "你访问的页面不存在或已迁移。",
+    "not_found_cta": "返回首页"
+  },
+  "insights": {
+    "title": "洞察",
+    "select_study": "选择研究",
+    "select_study_desc": "选择一项研究以查看 AI 生成的研究洞察。",
+    "loading": "正在加载洞察…",
+    "no_insights": "暂无洞察",
+    "no_insights_desc": "访谈完成后将自动生成洞察。",
+    "generate": "生成洞察",
+    "rerun": "重新生成",
+    "kpi_interviews": "访谈数",
+    "kpi_avg_session": "平均时长",
+    "kpi_topics": "话题数",
+    "kpi_last_updated": "最后更新",
+    "executive_summary": "摘要总结",
+    "based_on": "基于 {{count}} 场访谈",
+    "highlights": "核心发现",
+    "findings": "详细发现",
+    "themes": "主题",
+    "supporting_evidence": "支撑证据"
+  },
+  "reports": {
+    "title": "报告",
+    "select_study": "选择研究",
+    "select_study_desc": "选择一项研究以创建和查看自定义 AI 研究报告。",
+    "loading": "正在加载报告…",
+    "no_reports": "暂无报告",
+    "no_reports_desc": "创建自定义报告，对访谈数据提出新的研究问题。",
+    "create_report": "创建报告",
+    "report_title_placeholder": "报告标题…",
+    "loading_report": "正在加载报告…",
+    "generating": "正在生成报告分析",
+    "not_generated": "未生成",
+    "not_yet_generated": "尚未生成",
+    "back_to_reports": "返回报告列表",
+    "share": "分享",
+    "unshare": "取消分享",
+    "public_link_active": "公开链接已启用",
+    "question_placeholder": "研究问题…",
+    "question_types": {
+      "open_ended": "开放式问题",
+      "multi_select": "多选题",
+      "single_select": "单选题",
+      "rating": "评分题",
+      "ranking": "排序题"
+    }
+  },
+  "participant": {
+    "invalid_link": "链接无效",
+    "something_wrong": "出了点问题",
+    "something_wrong_desc": "此邀请链接可能已过期或研究已关闭。",
+    "thank_you": "感谢参与",
+    "thanks_interest": "感谢你的关注",
     "errors": {
-        "not_found_title": "页面未找到",
-        "not_found_body": "你访问的页面不存在或已迁移。",
-        "not_found_cta": "返回首页"
-    },
-    "insights": {
-        "title": "洞察",
-        "select_study": "选择研究",
-        "select_study_desc": "选择一项研究以查看 AI 生成的研究洞察。",
-        "loading": "正在加载洞察…",
-        "no_insights": "暂无洞察",
-        "no_insights_desc": "访谈完成后将自动生成洞察。",
-        "generate": "生成洞察",
-        "rerun": "重新生成",
-        "kpi_interviews": "访谈数",
-        "kpi_avg_session": "平均时长",
-        "kpi_topics": "话题数",
-        "kpi_last_updated": "最后更新",
-        "executive_summary": "摘要总结",
-        "based_on": "基于 {{count}} 场访谈",
-        "highlights": "核心发现",
-        "findings": "详细发现",
-        "themes": "主题",
-        "supporting_evidence": "支撑证据"
-    },
-    "reports": {
-        "title": "报告",
-        "select_study": "选择研究",
-        "select_study_desc": "选择一项研究以创建和查看自定义 AI 研究报告。",
-        "loading": "正在加载报告…",
-        "no_reports": "暂无报告",
-        "no_reports_desc": "创建自定义报告，对访谈数据提出新的研究问题。",
-        "create_report": "创建报告",
-        "report_title_placeholder": "报告标题…",
-        "loading_report": "正在加载报告…",
-        "generating": "正在生成报告分析",
-        "not_generated": "未生成",
-        "not_yet_generated": "尚未生成",
-        "back_to_reports": "返回报告列表",
-        "share": "分享",
-        "unshare": "取消分享",
-        "public_link_active": "公开链接已启用",
-        "question_placeholder": "研究问题…",
-        "question_types": {
-            "open_ended": "开放式问题",
-            "multi_select": "多选题",
-            "single_select": "单选题",
-            "rating": "评分题",
-            "ranking": "排序题"
-        }
-    },
-    "participant": {
-        "invalid_link": "链接无效",
-        "something_wrong": "出了点问题",
-        "something_wrong_desc": "此邀请链接可能已过期或研究已关闭。",
-        "thank_you": "感谢参与",
-        "thanks_interest": "感谢你的关注",
-        "errors": {
-            "link_invalid": "链接无效",
-            "study_closed": "研究已关闭",
-            "study_full": "名额已满",
-            "link_expired": "链接已过期",
-            "invitation_required": "需要邀请",
-            "invitation_invalid": "邀请无效",
-            "invitation_revoked": "邀请已撤销",
-            "invitation_expired": "邀请已过期",
-            "session_missing": "会话不存在",
-            "consent_required": "需要同意",
-            "interview_not_ready": "访谈未就绪",
-            "generic": "出了点问题"
-        }
-    },
-    "interview_room": {
-        "voice_only": "仅语音",
-        "voice_only_desc": "仅使用麦克风，无摄像头。",
-        "voice_video": "语音 + 视频",
-        "voice_video_desc": "开启摄像头，反馈更丰富。",
-        "text_placeholder": "不方便说话？可以打字…",
-        "text_answer_placeholder": "输入你的回答…"
-    },
-    "analysis": {
-        "title": "分析",
-        "sessions": "访谈场次",
-        "quotes": "引语",
-        "insights_label": "洞察",
-        "insights_subtitle": "每场访谈生成",
-        "talk_time": "对话时长",
-        "talk_time_subtitle": "已完成访谈",
-        "sentiment_over_time": "情感趋势",
-        "action_items": "行动项",
-        "top_themes": "热门主题",
-        "concept_comparison": "概念对比",
-        "sessions_seen": "已查看场次",
-        "custom_report": "自定义报告",
-        "custom_report_desc": "对这项研究提出任何问题",
-        "custom_report_placeholder": "你想了解什么？",
-        "pinned": "已置顶",
-        "pin_to_dashboard": "置顶到面板"
-    },
-    "outline": {
-        "question_text": "问题文本",
-        "task_text": "任务文本",
-        "question_text_helper": "展示给参与者的主要文本。",
-        "question_text_placeholder": "编写参与者将看到或听到的提示语。",
-        "question_type": "问题类型",
-        "question_type_helper": "切换类型会更换下方的配置区块。",
-        "probing_amount": "追问程度",
-        "probing_instructions": "追问指引",
-        "probing_placeholder": "访谈员应追问什么？",
-        "allow_skip": "允许访谈员跳过此问题",
-        "allow_skip_helper": "当参与者已在其他地方回答过时使用。",
-        "allow_dynamic_probe": "允许访谈员在任务完成后动态追问",
-        "allow_dynamic_probe_helper": "让主持人在完成后提出后续问题。",
-        "selection_type": "选择类型",
-        "single_select": "单选",
-        "multi_select": "多选",
-        "randomize_options": "随机选项顺序",
-        "randomize_options_helper": "在重复访谈中保持选项列表新鲜。",
-        "other_option_helper": "当列出的选项不适用时，添加自定义回答路径。",
-        "allow_skip_select": "允许访谈员跳过此问题",
-        "allow_skip_select_helper": "当问题在实际访谈中应为可选时使用。",
-        "scale_range": "量表范围",
-        "low_label": "低分标签",
-        "middle_label": "中间标签",
-        "high_label": "高分标签",
-        "ask_explanation": "评分后追问原因",
-        "ask_explanation_helper": "主持人会询问参与者为何选择该分数。",
-        "allow_skip_rating_helper": "使评分在实际主持中为可选。",
-        "placeholder_label": "占位文本",
-        "unit_suffix": "单位 / 后缀",
-        "min_value": "最小值",
-        "max_value": "最大值",
-        "allow_decimal": "允许小数",
-        "allow_decimal_helper": "当答案可能包含分数或百分比时使用。",
-        "allow_skip_number_helper": "使数字问题在实际访谈中为可选。",
-        "add_section_randomization": "添加章节随机化",
-        "add_section_randomization_helper": "开启章节级别的排序控制。",
-        "randomization_mode": "随机化模式",
-        "shuffle_sections": "打乱章节",
-        "shuffle_questions": "打乱问题",
-        "save_failed": "保存失败",
-        "unsaved_changes": "有未保存的更改",
-        "duplicate_section": "复制章节",
-        "delete_section": "删除章节",
-        "review_title": "让 AI 审查你的大纲",
-        "review_desc": "六个维度：隐私 · 顺序 · 结构 · 偏见 · 对齐 · 追问深度",
-        "review_placeholder": "让我审查任何具体内容…"
-    },
-    "brief": {
-        "research_goal": "研究目标",
-        "research_goal_placeholder": "为什么高级用户在第 14 天后取消？",
-        "background": "背景（可选）",
-        "hypothesis": "假设（可选）",
-        "duration": "预计时长（分钟）",
-        "review_mode": "模式",
-        "review_duration": "时长",
-        "review_barge_in": "打断"
-    },
-    "recruit": {
-        "target_sessions": "目标场次",
-        "target_sessions_subtitle": "期望完成的访谈数",
-        "quotas": "配额",
-        "quota_sum": "配额总计",
-        "criteria_placeholder": "例如：25-40 岁的中国职场人士，每天使用效率工具，过去 6 个月使用过至少 2 款竞品。",
-        "copy_link": "复制链接",
-        "show_qr": "显示二维码",
-        "quota_name_placeholder": "例如：年龄段",
-        "segment_label_placeholder": "分组标签"
-    },
-    "screener": {
-        "question_placeholder": "筛选问题…",
-        "summary_title": "筛选摘要",
-        "summary_subtitle": "保存前确认通过条件已闭环。",
-        "with_pass_logic": "已设置通过逻辑",
-        "missing_logic": "缺少逻辑"
-    },
-    "sessions_tab": {
-        "search_placeholder": "搜索 ID、状态…"
-    },
-    "study_settings": {
-        "project_details": "项目详情",
-        "study_name_placeholder": "研究名称",
-        "research_objectives": "研究目标",
-        "research_objectives_desc": "本研究旨在回答的具体问题。",
-        "add_objective": "添加目标",
-        "objective_placeholder": "例如：了解结账流程中哪些地方让人困惑…"
-    },
-    "stimuli": {
-        "label_placeholder": "标签（例如：概念 A）",
-        "no_stimuli": "暂无刺激物 — 请先上传"
-    },
-    "glossary": {
-        "title": "术语表",
-        "description": "转录清洗时应用的术语替换。适用于 ASR 容易误识别的产品名、人名或术语。",
-        "correct_placeholder": "例如：Merism",
-        "variants_placeholder": "例如：米瑞姆, merism, meriism"
-    },
-    "llm_gateway": {
-        "providers_title": "供应商",
-        "providers_desc": "团队可用的 LLM 供应商。凭证已加密存储。",
-        "routes_title": "路由",
-        "routes_desc": "将逻辑能力映射到供应商。",
-        "select_provider": "选择供应商",
-        "no_providers": "暂无可用供应商",
-        "budget_title": "预算",
-        "budget_desc": "团队月度开支追踪。"
-    },
-    "side_panel": {
-        "ask_merism": "问答 Merism",
-        "close": "关闭"
-    },
-    "home_kpi": {
-        "talk_time": "对话时长",
-        "talk_time_subtitle": "累计访谈时间",
-        "sessions_subtitle": "过去 7 天完成",
-        "participants_subtitle": "所有研究合计",
-        "insights_subtitle": "已捕获"
-    },
-    "select_study_placeholder": "选择研究…",
-    "untitled": "未命名"
+      "link_invalid": "链接无效",
+      "study_closed": "研究已关闭",
+      "study_full": "名额已满",
+      "link_expired": "链接已过期",
+      "invitation_required": "需要邀请",
+      "invitation_invalid": "邀请无效",
+      "invitation_revoked": "邀请已撤销",
+      "invitation_expired": "邀请已过期",
+      "session_missing": "会话不存在",
+      "consent_required": "需要同意",
+      "interview_not_ready": "访谈未就绪",
+      "generic": "出了点问题"
+    }
+  },
+  "interview_room": {
+    "voice_only": "仅语音",
+    "voice_only_desc": "仅使用麦克风，无摄像头。",
+    "voice_video": "语音 + 视频",
+    "voice_video_desc": "开启摄像头，反馈更丰富。",
+    "text_placeholder": "不方便说话？可以打字…",
+    "text_answer_placeholder": "输入你的回答…"
+  },
+  "analysis": {
+    "title": "分析",
+    "sessions": "访谈场次",
+    "quotes": "引语",
+    "insights_label": "洞察",
+    "insights_subtitle": "每场访谈生成",
+    "talk_time": "对话时长",
+    "talk_time_subtitle": "已完成访谈",
+    "sentiment_over_time": "情感趋势",
+    "action_items": "行动项",
+    "top_themes": "热门主题",
+    "concept_comparison": "概念对比",
+    "sessions_seen": "已查看场次",
+    "custom_report": "自定义报告",
+    "custom_report_desc": "对这项研究提出任何问题",
+    "custom_report_placeholder": "你想了解什么？",
+    "pinned": "已置顶",
+    "pin_to_dashboard": "置顶到面板"
+  },
+  "outline": {
+    "question_text": "问题文本",
+    "task_text": "任务文本",
+    "question_text_helper": "展示给参与者的主要文本。",
+    "question_text_placeholder": "编写参与者将看到或听到的提示语。",
+    "question_type": "问题类型",
+    "question_type_helper": "切换类型会更换下方的配置区块。",
+    "probing_amount": "追问程度",
+    "probing_instructions": "追问指引",
+    "probing_placeholder": "访谈员应追问什么？",
+    "allow_skip": "允许访谈员跳过此问题",
+    "allow_skip_helper": "当参与者已在其他地方回答过时使用。",
+    "allow_dynamic_probe": "允许访谈员在任务完成后动态追问",
+    "allow_dynamic_probe_helper": "让主持人在完成后提出后续问题。",
+    "selection_type": "选择类型",
+    "single_select": "单选",
+    "multi_select": "多选",
+    "randomize_options": "随机选项顺序",
+    "randomize_options_helper": "在重复访谈中保持选项列表新鲜。",
+    "other_option_helper": "当列出的选项不适用时，添加自定义回答路径。",
+    "allow_skip_select": "允许访谈员跳过此问题",
+    "allow_skip_select_helper": "当问题在实际访谈中应为可选时使用。",
+    "scale_range": "量表范围",
+    "low_label": "低分标签",
+    "middle_label": "中间标签",
+    "high_label": "高分标签",
+    "ask_explanation": "评分后追问原因",
+    "ask_explanation_helper": "主持人会询问参与者为何选择该分数。",
+    "allow_skip_rating_helper": "使评分在实际主持中为可选。",
+    "placeholder_label": "占位文本",
+    "unit_suffix": "单位 / 后缀",
+    "min_value": "最小值",
+    "max_value": "最大值",
+    "allow_decimal": "允许小数",
+    "allow_decimal_helper": "当答案可能包含分数或百分比时使用。",
+    "allow_skip_number_helper": "使数字问题在实际访谈中为可选。",
+    "add_section_randomization": "添加章节随机化",
+    "add_section_randomization_helper": "开启章节级别的排序控制。",
+    "randomization_mode": "随机化模式",
+    "shuffle_sections": "打乱章节",
+    "shuffle_questions": "打乱问题",
+    "save_failed": "保存失败",
+    "unsaved_changes": "有未保存的更改",
+    "duplicate_section": "复制章节",
+    "delete_section": "删除章节",
+    "review_title": "让 AI 审查你的大纲",
+    "review_desc": "六个维度：隐私 · 顺序 · 结构 · 偏见 · 对齐 · 追问深度",
+    "review_placeholder": "让我审查任何具体内容…"
+  },
+  "brief": {
+    "research_goal": "研究目标",
+    "research_goal_placeholder": "为什么高级用户在第 14 天后取消？",
+    "background": "背景（可选）",
+    "hypothesis": "假设（可选）",
+    "duration": "预计时长（分钟）",
+    "review_mode": "模式",
+    "review_duration": "时长",
+    "review_barge_in": "打断"
+  },
+  "recruit": {
+    "target_sessions": "目标场次",
+    "target_sessions_subtitle": "期望完成的访谈数",
+    "quotas": "配额",
+    "quota_sum": "配额总计",
+    "criteria_placeholder": "例如：25-40 岁的中国职场人士，每天使用效率工具，过去 6 个月使用过至少 2 款竞品。",
+    "copy_link": "复制链接",
+    "show_qr": "显示二维码",
+    "quota_name_placeholder": "例如：年龄段",
+    "segment_label_placeholder": "分组标签"
+  },
+  "screener": {
+    "question_placeholder": "筛选问题…",
+    "summary_title": "筛选摘要",
+    "summary_subtitle": "保存前确认通过条件已闭环。",
+    "with_pass_logic": "已设置通过逻辑",
+    "missing_logic": "缺少逻辑"
+  },
+  "sessions_tab": {
+    "search_placeholder": "搜索 ID、状态…"
+  },
+  "study_settings": {
+    "project_details": "项目详情",
+    "study_name_placeholder": "研究名称",
+    "research_objectives": "研究目标",
+    "research_objectives_desc": "本研究旨在回答的具体问题。",
+    "add_objective": "添加目标",
+    "objective_placeholder": "例如：了解结账流程中哪些地方让人困惑…"
+  },
+  "stimuli": {
+    "label_placeholder": "标签（例如：概念 A）",
+    "no_stimuli": "暂无刺激物 — 请先上传"
+  },
+  "glossary": {
+    "title": "术语表",
+    "description": "转录清洗时应用的术语替换。适用于 ASR 容易误识别的产品名、人名或术语。",
+    "correct_placeholder": "例如：Merism",
+    "variants_placeholder": "例如：米瑞姆, merism, meriism"
+  },
+  "llm_gateway": {
+    "providers_title": "供应商",
+    "providers_desc": "团队可用的 LLM 供应商。凭证已加密存储。",
+    "routes_title": "路由",
+    "routes_desc": "将逻辑能力映射到供应商。",
+    "select_provider": "选择供应商",
+    "no_providers": "暂无可用供应商",
+    "budget_title": "预算",
+    "budget_desc": "团队月度开支追踪。"
+  },
+  "side_panel": {
+    "ask_merism": "问答 Merism",
+    "close": "关闭"
+  },
+  "home_kpi": {
+    "talk_time": "对话时长",
+    "talk_time_subtitle": "累计访谈时间",
+    "sessions_subtitle": "过去 7 天完成",
+    "participants_subtitle": "所有研究合计",
+    "insights_subtitle": "已捕获"
+  },
+  "select_study_placeholder": "选择研究…",
+  "untitled": "未命名"
 }

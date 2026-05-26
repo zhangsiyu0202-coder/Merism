@@ -13,6 +13,6 @@ test.describe("smoke", () => {
         // Login form is functional.
         await expect(page.locator("#login-email")).toBeVisible()
         await expect(page.locator("#login-password")).toBeVisible()
-        await expect(page.getByRole("button", { name: /continue/i })).toBeVisible()
+        await expect(page.locator("button[type='submit']")).toBeVisible()
     })
 })

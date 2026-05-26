@@ -5,17 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Merism</title>
         <!--
-            Font preload per design-system spec Req 4.
-            Inter + Geist load eagerly (variable weight). IBM Plex Mono is
-            lazy-loaded only on the Ask Merism surface via loadPlexMono().
+            Fonts are loaded via @fontsource-variable/inter+geist CSS
+            imports in src/lib/merism/fonts/fonts.css. We do NOT use a
+            <link rel="preload"> here because Vite rewrites woff2 URLs
+            on the fly and the preload URL would never match the actual
+            fetched URL — browser would log "preloaded but not used".
+            font-display: swap on the @font-face rules handles FOIT.
         -->
-        <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossorigin
-            href="/node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2"
-        />
     </head>
     <body class="h-full bg-merism-bg text-merism-text font-merism-sans antialiased">
         <div id="root" class="h-full"></div>

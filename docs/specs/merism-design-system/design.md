@@ -164,7 +164,7 @@ New or expanded cases per primitive:
 - `frontend/src/lib/merism/README.md` becomes a full usage doc: 3-layer diagram, import examples,
   token cheatsheet, Storybook pointer, DoD status.
 - Repo-root `AGENTS.md` gains one rule line under the "Merism-specific architecture rules" section:
-  *"All new Merism frontend (Ask / Interview / Wizard / Inbox / Repository / Decisions) imports
+  *"All new Merism frontend (Ask / Interview / Wizard / Inbox / Repository / Assistant) imports
   primitives, patterns, and tokens from `~/lib/merism`. Do not introduce LemonUI components in new
   Merism surfaces."*
 

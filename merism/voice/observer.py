@@ -18,7 +18,6 @@ import time
 from typing import TYPE_CHECKING
 
 from .frames import (
-    BotStartedSpeakingFrame,
     BotStoppedSpeakingFrame,
     Frame,
     LLMFullResponseEndFrame,
@@ -46,9 +45,9 @@ class Observer:
     async def on_frame(
         self,
         frame: Frame,
-        src: "FrameProcessor",
-        dst: "FrameProcessor | None",
-        direction: "FrameDirection",
+        src: FrameProcessor,
+        dst: FrameProcessor | None,
+        direction: FrameDirection,
     ) -> None:  # pragma: no cover — base does nothing
         pass
 
@@ -78,9 +77,9 @@ class MetricsObserver(Observer):
     async def on_frame(
         self,
         frame: Frame,
-        src: "FrameProcessor",
-        dst: "FrameProcessor | None",
-        direction: "FrameDirection",
+        src: FrameProcessor,
+        dst: FrameProcessor | None,
+        direction: FrameDirection,
     ) -> None:
         now = time.monotonic()
 
@@ -151,9 +150,9 @@ class StructlogObserver(Observer):
     async def on_frame(
         self,
         frame: Frame,
-        src: "FrameProcessor",
-        dst: "FrameProcessor | None",
-        direction: "FrameDirection",
+        src: FrameProcessor,
+        dst: FrameProcessor | None,
+        direction: FrameDirection,
     ) -> None:
         logger.debug(
             "voice.frame",
@@ -171,6 +170,17 @@ class TranscriptRecorder(Observer):
 
     Pairs well with ``InterviewSession.transcript`` — at EndFrame, call
     :meth:`drain` and save the returned list to the session row.
+
+    **Why dst-is-None gating**: ``Pipeline.set_observer`` attaches the
+    same observer to every processor in the chain. A single frame
+    flowing Moderator → TTS → ConvState fires ``on_frame`` 3 times —
+    once per ``push_frame`` call along the way. Without dedup,
+    ``_pending_bot`` accumulated each text 3 times and the resulting
+    transcript turn looked like ``"X X X"`` (same text repeated).
+
+    The observer fires with ``dst=None`` exactly once per frame, when
+    the last processor in the pipeline pushes downstream into nothing.
+    Counting only that terminal observation gives one append per frame.
     """
 
     def __init__(self) -> None:
@@ -181,10 +191,15 @@ class TranscriptRecorder(Observer):
     async def on_frame(
         self,
         frame: Frame,
-        src: "FrameProcessor",
-        dst: "FrameProcessor | None",
-        direction: "FrameDirection",
+        src: FrameProcessor,
+        dst: FrameProcessor | None,
+        direction: FrameDirection,
     ) -> None:
+        # Only count the terminal observation of each frame (see class
+        # docstring). Without this gate, frames are recorded once per
+        # processor hop, producing repeated text in the transcript.
+        if dst is not None:
+            return
         if isinstance(frame, TranscriptionFrame):
             self._pending_user = frame.text
             return
@@ -215,9 +230,9 @@ class CompositeObserver(Observer):
     async def on_frame(
         self,
         frame: Frame,
-        src: "FrameProcessor",
-        dst: "FrameProcessor | None",
-        direction: "FrameDirection",
+        src: FrameProcessor,
+        dst: FrameProcessor | None,
+        direction: FrameDirection,
     ) -> None:
         for obs in self._observers:
             await obs.on_frame(frame, src, dst, direction)

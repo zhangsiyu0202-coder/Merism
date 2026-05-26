@@ -9,8 +9,26 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load .env from project root (dev convenience; prod uses real env vars).
+#
+# ``override=False`` is intentional: shell-set env always wins over .env.
+# This matches industry convention (12-factor / docker / cookiecutter-django)
+# and keeps ``export POSTGRES_HOST=...`` for one-off debugging working.
+#
+# Special case: protect ``DJANGO_SETTINGS_MODULE`` and ``TEST`` even when
+# they're already in os.environ — pytest.ini's ``env =`` block sets
+# DJANGO_SETTINGS_MODULE before this code runs, but `.env` may have an
+# older value. With override=False this is now a no-op (shell wins
+# already), but we keep the dance defensive in case anyone flips the flag.
+_PROTECTED_BEFORE_DOTENV = {k: os.environ[k] for k in ("DJANGO_SETTINGS_MODULE", "TEST") if k in os.environ}
+load_dotenv(BASE_DIR / ".env", override=False)
+for _k, _v in _PROTECTED_BEFORE_DOTENV.items():
+    os.environ[_k] = _v
+del _PROTECTED_BEFORE_DOTENV
 
 # ── Core ───────────────────────────────────────────────────
 SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-merism-dev-only")
@@ -26,12 +44,10 @@ INSTALLED_APPS = [
     "unfold",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
-
     # daphne must come BEFORE django.contrib.staticfiles so its
     # runserver command takes precedence in dev.
     "daphne",
     "channels",
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -39,25 +55,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
-
     # third-party — auth (ADR 0001)
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-
     # third-party — API
     "rest_framework",
     "drf_spectacular",
     "corsheaders",
-
     # third-party — ops
     "anymail",
-
     # observability — Prometheus /metrics endpoint.
     # Needs matching middleware entries (PrometheusBeforeMiddleware must be
     # first, PrometheusAfterMiddleware must be last).
     "django_prometheus",
-
     # merism
     "merism.apps.MerismConfig",
 ]
@@ -180,8 +191,8 @@ REST_FRAMEWORK = {
         # Scoped rates — set ``throttle_scope = "<scope>"`` on a view to
         # apply one of these instead of the per-user default.
         "interview_turn": "120/minute",  # participant → moderator text turns
-        "ask_stream": "30/minute",        # Ask Merism SSE LLM calls
-        "auth": "10/minute",              # login / signup / password reset
+        "ask_stream": "30/minute",  # Ask Merism SSE LLM calls
+        "auth": "10/minute",  # login / signup / password reset
         "recruitment_dispatch": "100/hour",  # outbound IM/email broadcast
     },
 }

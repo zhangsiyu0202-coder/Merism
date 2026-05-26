@@ -113,10 +113,15 @@ class Study(TimestampedModel):
     estimated_minutes = models.PositiveIntegerField(default=20)
     # Section count heuristic (None = let AI decide from estimated_minutes).
     section_count_override = models.PositiveIntegerField(null=True, blank=True)
-    # Voice barge-in (ADR 0002). When True, the participant can interrupt
-    # the AI mid-sentence; cancels the current TTS + moderator stream.
-    # Default off to preserve research data quality.
-    barge_in_enabled = models.BooleanField(default=False)
+    # Voice barge-in was previously per-study (ADR 0002 era); the
+    # ``barge_in_enabled`` field was dropped on 2026-05-25 after a
+    # product decision to standardize on strict push-to-talk: the AI
+    # can never be interrupted mid-utterance. The frontend disables
+    # the PTT button while the bot is speaking (no exceptions). If
+    # the future requires interruptible voice, reintroduce as a
+    # global setting, not per-study — the per-study toggle was
+    # confusing for researchers and yielded inconsistent participant
+    # UX across studies in the same org.
 
     # ── Completion tracking (aggregate, not counter) ──
     # ``actual_completed_count`` is a **property**, not a stored field.

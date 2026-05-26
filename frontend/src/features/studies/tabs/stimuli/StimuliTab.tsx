@@ -15,12 +15,23 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useActions, useMountedLogic, useValues } from "kea";
-import { GripVertical, Plus, Shuffle, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  FileImage,
+  FileText,
+  Film,
+  GripVertical,
+  Link2,
+  Plus,
+  Shuffle,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { studyLogic } from "~/features/studies/studyLogic";
 import { api } from "~/lib/api";
 import { Button, Input, SectionLabel, Select, Tag } from "~/lib/merism";
+import { useCSRFToken } from "~/lib/hooks/useCSRFToken";
 
 import {
   conceptBlocksLogic,
@@ -29,65 +40,79 @@ import {
   type Rotation,
 } from "./conceptBlocksLogic";
 
-/**
- * StimuliTab — concept block management (Concept Testing 2.0).
- *
- * A study can host multiple concept blocks. Each block is a comparison
- * set of N concepts with its own rotation strategy. Concepts inside a
- * block are drag-to-reorder; the backend is patched on drop.
- *
- * Classic single-stimulus studies (no concept blocks) work unchanged —
- * the AI moderator only expands per_concept sections when the linked
- * block has concepts in it.
- */
+// ── Stimulus Library types ────────────────────────────────────
+
+interface StimulusRecord {
+  id: string;
+  kind: string;
+  title: string;
+  description: string;
+  content: { url?: string; content_type?: string; size?: number };
+  created_at: string;
+}
+
+const KIND_ICONS: Record<string, JSX.Element> = {
+  image: <FileImage className="h-4 w-4" />,
+  video: <Film className="h-4 w-4" />,
+  pdf: <FileText className="h-4 w-4" />,
+  text: <FileText className="h-4 w-4" />,
+  link: <Link2 className="h-4 w-4" />,
+};
+
 export default function StimuliTab(): JSX.Element {
   useMountedLogic(conceptBlocksLogic);
   const { blocks, blocksLoading, error } = useValues(conceptBlocksLogic);
   const { createBlock, setError } = useActions(conceptBlocksLogic);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex items-center justify-between">
-        <SectionLabel>Concept blocks</SectionLabel>
-        <Button
-          variant="primary"
-          size="sm"
-          iconLeft={<Plus className="h-4 w-4" />}
-          onClick={() => createBlock("New concept block")}
-        >
-          New block
-        </Button>
-      </header>
+    <div className="flex flex-col gap-10">
+      {/* Stimulus Library — upload + list */}
+      <StimulusLibrary />
 
-      {error && (
-        <div className="flex items-center justify-between rounded-merism-md border border-merism-danger/30 bg-merism-danger/5 px-4 py-2 text-sm text-merism-danger">
-          <span>{error}</span>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="text-merism-danger/70 hover:text-merism-danger"
+      {/* Concept Blocks — existing functionality */}
+      <section className="flex flex-col gap-6">
+        <header className="flex items-center justify-between">
+          <SectionLabel>Concept blocks</SectionLabel>
+          <Button
+            variant="primary"
+            size="sm"
+            iconLeft={<Plus className="h-4 w-4" />}
+            onClick={() => createBlock("New concept block")}
           >
-            dismiss
-          </button>
-        </div>
-      )}
+            New block
+          </Button>
+        </header>
 
-      {blocksLoading && blocks.length === 0 ? (
-        <div className="rounded-merism-lg border border-dashed border-merism-border bg-merism-surface p-10 text-center text-sm text-merism-text-muted">
-          Loading concept blocks…
-        </div>
-      ) : blocks.length === 0 ? (
-        <div className="rounded-merism-lg border border-dashed border-merism-border bg-merism-surface p-10 text-center text-sm text-merism-text-muted">
-          No concept blocks yet. Create one to run side-by-side comparative
-          concept testing.
-        </div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          {blocks.map((block) => (
-            <BlockCard key={block.id} block={block} />
-          ))}
-        </div>
-      )}
+        {error && (
+          <div className="flex items-center justify-between rounded-merism-md border border-merism-danger/30 bg-merism-danger/5 px-4 py-2 text-sm text-merism-danger">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="text-merism-danger/70 hover:text-merism-danger"
+            >
+              dismiss
+            </button>
+          </div>
+        )}
+
+        {blocksLoading && blocks.length === 0 ? (
+          <div className="rounded-merism-lg border border-dashed border-merism-border bg-merism-surface p-10 text-center text-sm text-merism-text-muted">
+            Loading concept blocks…
+          </div>
+        ) : blocks.length === 0 ? (
+          <div className="rounded-merism-lg border border-dashed border-merism-border bg-merism-surface p-10 text-center text-sm text-merism-text-muted">
+            No concept blocks yet. Create one to run side-by-side comparative
+            concept testing.
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {blocks.map((block) => (
+              <BlockCard key={block.id} block={block} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -324,5 +349,131 @@ function AddConceptForm({ blockId }: { blockId: string }) {
         Add concept
       </Button>
     </form>
+  );
+}
+
+// ── Stimulus Library ───────────────────────────────────────────
+
+function StimulusLibrary(): JSX.Element {
+  const { study } = useValues(studyLogic);
+  const [stimuli, setStimuli] = useState<StimulusRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const csrfToken = useCSRFToken();
+
+  const loadStimuli = useCallback(() => {
+    if (!study?.id) return;
+    setLoading(true);
+    api
+      .list<StimulusRecord>("/api/stimuli/", { study: study.id })
+      .then((res) => setStimuli(res.results ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [study?.id]);
+
+  useEffect(() => {
+    loadStimuli();
+  }, [loadStimuli]);
+
+  const handleUpload = async (file: File): Promise<void> => {
+    if (!study?.id) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("study", study.id);
+      formData.append("title", file.name);
+
+      const res = await fetch("/api/stimuli/upload/", {
+        method: "POST",
+        body: formData,
+        headers: csrfToken ? { "X-CSRFToken": csrfToken } : {},
+        credentials: "include",
+      });
+      if (res.ok) {
+        loadStimuli();
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (id: string): Promise<void> => {
+    await api.delete(`/api/stimuli/${id}/`);
+    setStimuli((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  return (
+    <section className="flex flex-col gap-4">
+      <header className="flex items-center justify-between">
+        <SectionLabel>Stimulus Library</SectionLabel>
+        <Button
+          variant="secondary"
+          size="sm"
+          iconLeft={<Upload className="h-4 w-4" />}
+          onClick={() => fileInputRef.current?.click()}
+          isLoading={uploading}
+        >
+          Upload
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*,application/pdf"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleUpload(file);
+            e.target.value = "";
+          }}
+        />
+      </header>
+
+      {loading && stimuli.length === 0 ? (
+        <div className="rounded-merism-lg border border-dashed border-merism-border bg-merism-surface p-8 text-center text-sm text-merism-text-muted">
+          Loading…
+        </div>
+      ) : stimuli.length === 0 ? (
+        <div
+          className="flex flex-col items-center gap-3 rounded-merism-lg border border-dashed border-merism-border bg-merism-surface p-10 text-center cursor-pointer hover:border-merism-accent/50 transition-colors"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="h-8 w-8 text-merism-text-subtle" />
+          <p className="text-sm text-merism-text-muted">
+            Drop files here or click to upload images, videos, or PDFs
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {stimuli.map((s) => (
+            <div
+              key={s.id}
+              className="group flex items-center gap-3 rounded-merism-md bg-merism-surface px-4 py-3 ring-1 ring-[color:var(--merism-hairline)] transition-shadow hover:shadow-merism-card"
+            >
+              <span className="text-merism-text-muted">
+                {KIND_ICONS[s.kind] ?? <FileText className="h-4 w-4" />}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-merism-text">
+                  {s.title}
+                </p>
+                <p className="text-xs text-merism-text-muted">
+                  {s.kind} · {new Date(s.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDelete(s.id)}
+                className="text-merism-text-subtle opacity-0 group-hover:opacity-100 hover:text-merism-danger transition-opacity"
+                aria-label="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

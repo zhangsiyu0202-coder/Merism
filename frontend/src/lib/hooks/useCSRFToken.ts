@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 /**
  * React hook — exposes the Django CSRF token for fetch-based POSTs.
@@ -25,38 +25,42 @@ import { useEffect, useState } from "react"
  *   })
  */
 export function useCSRFToken(): string | null {
-    const [token, setToken] = useState<string | null>(() => readCookie("csrftoken"))
+  const [token, setToken] = useState<string | null>(() =>
+    readCookie("csrftoken"),
+  );
 
-    useEffect(() => {
-        if (token) return
-        const controller = new AbortController()
-        void primeToken(controller.signal).then((value) => {
-            if (value) setToken(value)
-        })
-        return () => controller.abort()
-    }, [token])
+  useEffect(() => {
+    if (token) return;
+    const controller = new AbortController();
+    void primeToken(controller.signal).then((value) => {
+      if (value) setToken(value);
+    });
+    return () => controller.abort();
+  }, [token]);
 
-    return token
+  return token;
 }
 
 /** Read a cookie value, or ``null`` if absent. */
 export function readCookie(name: string): string | null {
-    const prefix = `${name}=`
-    const cookie = document.cookie.split(";").find((c) => c.trim().startsWith(prefix))
-    return cookie ? decodeURIComponent(cookie.trim().slice(prefix.length)) : null
+  const prefix = `${name}=`;
+  const cookie = document.cookie
+    .split(";")
+    .find((c) => c.trim().startsWith(prefix));
+  return cookie ? decodeURIComponent(cookie.trim().slice(prefix.length)) : null;
 }
 
 async function primeToken(signal: AbortSignal): Promise<string | null> {
-    try {
-        await fetch("/accounts/login/", {
-            method: "GET",
-            credentials: "include",
-            signal,
-        })
-    } catch {
-        return null
-    }
-    return readCookie("csrftoken")
+  try {
+    await fetch("/accounts/login/", {
+      method: "GET",
+      credentials: "include",
+      signal,
+    });
+  } catch {
+    return null;
+  }
+  return readCookie("csrftoken");
 }
 
 /**
@@ -64,19 +68,19 @@ async function primeToken(signal: AbortSignal): Promise<string | null> {
  * already set. Use for any unsafe-method request.
  */
 export async function csrfFetch(
-    input: RequestInfo | URL,
-    init: RequestInit = {},
+  input: RequestInfo | URL,
+  init: RequestInit = {},
 ): Promise<Response> {
-    let token = readCookie("csrftoken")
-    if (!token) {
-        await primeToken(AbortSignal.timeout(5000))
-        token = readCookie("csrftoken")
-    }
-    const headers = new Headers(init.headers)
-    headers.set("X-CSRFToken", token ?? "")
-    return fetch(input, {
-        ...init,
-        credentials: init.credentials ?? "include",
-        headers,
-    })
+  let token = readCookie("csrftoken");
+  if (!token) {
+    await primeToken(AbortSignal.timeout(5000));
+    token = readCookie("csrftoken");
+  }
+  const headers = new Headers(init.headers);
+  headers.set("X-CSRFToken", token ?? "");
+  return fetch(input, {
+    ...init,
+    credentials: init.credentials ?? "include",
+    headers,
+  });
 }

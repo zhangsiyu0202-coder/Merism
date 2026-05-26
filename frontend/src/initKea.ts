@@ -12,32 +12,32 @@
  * Call exactly once at app startup (see :file:`index.tsx`).
  */
 
-import { resetContext } from "kea"
-import { formsPlugin } from "kea-forms"
-import { loadersPlugin } from "kea-loaders"
-import { localStoragePlugin } from "kea-localstorage"
-import { routerPlugin } from "kea-router"
-import { subscriptionsPlugin } from "kea-subscriptions"
-import { waitForPlugin } from "kea-waitfor"
+import { resetContext } from "kea";
+import { formsPlugin } from "kea-forms";
+import { loadersPlugin } from "kea-loaders";
+import { localStoragePlugin } from "kea-localstorage";
+import { routerPlugin } from "kea-router";
+import { subscriptionsPlugin } from "kea-subscriptions";
+import { waitForPlugin } from "kea-waitfor";
 
 export function initKea(): void {
-    resetContext({
-        plugins: [
-            localStoragePlugin(),
-            routerPlugin({
-                urlPatternOptions: {
-                    segmentValueCharset: "a-zA-Z0-9-_~ %.@()!'|:",
-                },
-            }),
-            formsPlugin,
-            loadersPlugin({
-                onFailure: ({ error, logic, actionKey }) => {
-                    // eslint-disable-next-line no-console
-                    console.warn(`[kea] ${logic.pathString}.${actionKey} failed:`, error)
-                },
-            }),
-            subscriptionsPlugin,
-            waitForPlugin,
-        ],
-    })
+  resetContext({
+    plugins: [
+      localStoragePlugin(),
+      routerPlugin({
+        urlPatternOptions: {
+          segmentValueCharset: "a-zA-Z0-9-_~ %.@()!'|:",
+        },
+      }),
+      formsPlugin,
+      loadersPlugin({
+        onFailure: ({ error, logic, actionKey }) => {
+          // eslint-disable-next-line no-console
+          console.warn(`[kea] ${logic.pathString}.${actionKey} failed:`, error);
+        },
+      }),
+      subscriptionsPlugin,
+      waitForPlugin,
+    ],
+  });
 }

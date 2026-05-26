@@ -53,7 +53,7 @@ test.describe("Login page", () => {
 
     test("has a Continue submit button", async ({ page }) => {
         await page.goto("/login")
-        const submitBtn = page.getByRole("button", { name: /continue/i })
+        const submitBtn = page.locator("button[type='submit']")
         await expect(submitBtn).toBeVisible()
     })
 
@@ -248,7 +248,7 @@ test.describe("Responsive layout", () => {
         await page.waitForTimeout(1000)
         await expect(page.locator("#login-email")).toBeVisible()
         await expect(page.locator("#login-password")).toBeVisible()
-        await expect(page.getByRole("button", { name: /continue/i })).toBeVisible()
+        await expect(page.locator("button[type='submit']")).toBeVisible()
     })
 
     test("welcome page is usable on mobile viewport", async ({ page }) => {

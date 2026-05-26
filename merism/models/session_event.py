@@ -34,6 +34,7 @@ class SessionEvent(models.Model):
     """An append-only log entry recording one turn-level fact."""
 
     class Kind(models.TextChoices):
+        # v1 kinds (legacy ``merism.conductor`` runtime)
         USER_TURN = "user_turn", "user_turn"
         MODEL_REPLY = "model_reply", "model_reply"
         DECISION = "decision", "decision"
@@ -41,6 +42,15 @@ class SessionEvent(models.Model):
         INTERRUPTION = "interruption", "interruption"
         ERROR = "error", "error"
         SESSION_LIFECYCLE = "session_lifecycle", "session_lifecycle"
+        # v2 list-interpreter kinds (see ADR 0009 + requirements.md Req 10)
+        QUESTION_ENTERED = "question_entered", "question_entered"
+        SLOTS_EXTRACTED = "slots_extracted", "slots_extracted"
+        PROBE_STARTED = "probe_started", "probe_started"
+        SILENCE_OBSERVED = "silence_observed", "silence_observed"
+        SESSION_COMPLETED = "session_completed", "session_completed"
+        SESSION_INTERRUPTED = "session_interrupted", "session_interrupted"
+        # ``error`` is shared with v1; v2 emits it via the engine's
+        # try/except wrappers around AI extract / generate calls.
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     session = models.ForeignKey(

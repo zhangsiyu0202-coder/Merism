@@ -1,40 +1,43 @@
-"""Merism interview conductor.
+"""Merism interview conductor — single LangGraph engine.
 
-2-node moderator (decide → generate) per PRODUCT.md §5.2 / ``merism-platform``
-Req 14. The first call (``coverage_steer``) returns a structured
-``ModeratorDecision`` via function calling; the second call streams the
-spoken reply token-by-token. Both run sequentially inside one
-``stream_turn`` coroutine — no graph, no policy layer, no macro/meso/micro
-split.
+Per ADR 0012 (LangGraph engine, 2026-05-22) and ADR 0013 (v1 retirement,
+2026-05-23). The conductor_v3 package was merged in here on 2026-05-24,
+so this directory now holds **everything** moderator-related:
 
-Public surface:
+Engine (``ask → judge → advance`` graph)
+    - ``schema``     — Outline / Section / Question / Turn Pydantic + helpers
+    - ``state``      — LangGraph TypedDict + reducer
+    - ``configuration`` — runtime knobs (model / temperature / deep multiplier)
+    - ``tools_and_schemas`` — Pydantic contracts for LLM structured output
+    - ``prompts``    — module-level prompt templates
+    - ``llm``        — ChatOpenAI factory with DeepSeek json_mode
+    - ``nodes``      — prepare_session / ask_and_wait / judge_off / judge_standard /
+                       judge_deep / advance_cursor / finish_interview
+    - ``graph``      — StateGraph wiring + PostgresSaver
+    - ``runner``     — start_interview / answer_interview / get_interrupt_payload
+    - ``persistence`` — bridge: final transcript → InterviewSession.transcript
+    - ``factory``    — process-wide compiled graph + checkpointer
+    - ``text_adapter`` — HTTP one-turn-per-request adapter
+    - ``session_outline`` — guide_snapshot accessor
+    - ``configuration`` — runtime config
 
-- :class:`~merism.conductor.state.ExecutionState` — per-session state
-- :class:`~merism.conductor.prompts.ModeratorDecision` — function-call schema
-- :func:`~merism.conductor.prompts.build_system_prompt` — prompt builder
-- :func:`~merism.conductor.moderator.stream_turn` — async streaming runner
-- :mod:`~merism.conductor.guide_cursor` — pure guide-traversal helpers
+Post-processing (orchestrators that run **after** a session completes)
+    - ``post_session`` — async insight + cleaning orchestration
+    - ``transcript_helpers`` — used by quote_extractor + post_session
+    - ``llm_polish`` — transcript polishing
+    - ``rule_clean`` — non-LLM cleanup rules
+
+Django glue (always imported via ``apps.MerismConfig.ready``)
+    - ``signals`` — InterviewSession.completed → enqueue post-session chain
+    - ``study_closure_signal`` — Participation.completed → maybe close Study
+    - ``inbox_signals`` — fan-out new completions to the inbox
+    - ``tasks`` — Celery tasks for transcript polishing + post-session
+
+There is no engine selector. ``Outline.version: Literal["v3"]`` is a
+**content-schema discriminator** kept for forward compatibility (a v4
+shape could be introduced later); it is not an engine version.
 """
 
 from __future__ import annotations
 
-from merism.conductor.prompts import (
-    ModeratorDecision,
-    build_system_prompt,
-)
-from merism.conductor.state import ExecutionState
-
-__all__ = [
-    "ExecutionState",
-    "ModeratorDecision",
-    "build_system_prompt",
-    "stream_turn",
-]
-
-
-def __getattr__(name: str):
-    if name == "stream_turn":
-        from merism.conductor.moderator import stream_turn
-
-        return stream_turn
-    raise AttributeError(name)
+__all__: list[str] = []

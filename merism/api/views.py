@@ -64,7 +64,6 @@ from merism.models import (
     StudyTrigger,
 )
 
-
 # ── Study ──────────────────────────────────────────────────
 
 
@@ -169,15 +168,100 @@ class StudyViewSet(TeamScopedModelViewSet):
         )
         return Response(response.model_dump())
 
+    @action(detail=True, methods=["get", "put"], url_path="outline")
+    def outline_action(self, request: Request, pk: str | None = None) -> Response:
+        """Read or write the v3 outline for a study.
+
+        ``GET``: returns the current outline (v3 dict shape) or empty
+        default when the study has no current guide. v1 list-shape guides
+        (legacy) return ``{"outline": null, "legacy_sections": [...]}``.
+
+        ``PUT``: receives ``{"outline": {...}}``, validates via Pydantic
+        :class:`~merism.conductor.schema.Outline` + ``validate_outline``,
+        persists as a new :class:`InterviewGuide` row with
+        ``sections.version == "v3"``. Returns the persisted guide. On
+        validation failure: 422 with ``{"outline_errors": [str, ...]}``.
+        """
+        from pydantic import ValidationError as PydanticValidationError
+
+        from merism.conductor.schema import Outline, OutlineError, validate_outline
+
+        study = self.get_object()
+        team = self.get_team()
+
+        if request.method == "GET":
+            current = InterviewGuide.objects.filter(study=study, is_current=True).first()
+            if current is None:
+                return Response({"outline": Outline().model_dump(mode="json")})
+            sections = current.sections
+            if isinstance(sections, dict) and sections.get("version") == "v3":
+                return Response({"outline": sections})
+            # Legacy v1 list-shape — surface so the editor can render
+            return Response({"outline": None, "legacy_sections": sections})
+
+        # PUT
+        body = request.data
+        if not isinstance(body, dict):
+            return Response(
+                {"outline_errors": ["request body must be a JSON object"]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        outline_payload = body.get("outline")
+        if not isinstance(outline_payload, dict):
+            return Response(
+                {"outline_errors": ["request body must contain an 'outline' object"]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            outline = Outline.model_validate(outline_payload)
+            validate_outline(outline)
+        except PydanticValidationError as exc:
+            return Response(
+                {"outline_errors": [str(e) for e in exc.errors()]},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        except OutlineError as exc:
+            return Response(
+                {"outline_errors": [str(exc)]},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        # Atomic flip: previous current → not current, new row inserted as current.
+        from django.db import transaction
+
+        with transaction.atomic():
+            InterviewGuide.objects.filter(study=study, is_current=True).update(is_current=False)
+            previous = InterviewGuide.objects.filter(study=study).order_by("-created_at").first()
+            new_version = _bump_semver(previous.version if previous else "0.0.0")
+            guide = InterviewGuide.objects.create(
+                team=team,
+                study=study,
+                version=new_version,
+                is_current=True,
+                sections=outline.model_dump(mode="json"),
+            )
+        return Response(InterviewGuideSerializer(guide).data, status=status.HTTP_200_OK)
+
+
+def _bump_semver(version: str) -> str:
+    """Bump the patch component of a semver string (``"1.0.0"`` → ``"1.0.1"``)."""
+    parts = version.split(".")
+    if len(parts) != 3:
+        return "1.0.0"
+    try:
+        major, minor, patch = (int(p) for p in parts)
+    except ValueError:
+        return "1.0.0"
+    return f"{major}.{minor}.{patch + 1}"
+
 
 class StudyLinkViewSet(TeamScopedModelViewSet):
     queryset = StudyLink.objects.all()
     serializer_class = StudyLinkSerializer
 
 
-class StudyTemplateViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
+class StudyTemplateViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """Read-only: templates are seeded as system rows or created via admin."""
 
     queryset = StudyTemplate.objects.all()
@@ -197,6 +281,56 @@ class ScreenerViewSet(TeamScopedModelViewSet):
 class StimulusViewSet(TeamScopedModelViewSet):
     queryset = Stimulus.objects.all()
     serializer_class = StimulusSerializer
+
+    @action(detail=False, methods=["post"], url_path="upload")
+    def upload(self, request: Request) -> Response:
+        """Upload a file and create a Stimulus record.
+
+        Accepts multipart/form-data with:
+          - file: the uploaded file
+          - study: study UUID
+          - title: optional title
+          - kind: auto-detected from content_type if omitted
+        """
+        from merism.storage import upload_stimulus_file
+
+        file = request.FILES.get("file")
+        if not file:
+            return Response({"detail": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        study_id = request.data.get("study")
+        if not study_id:
+            return Response({"detail": "study is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Auto-detect kind from content type
+        content_type = file.content_type or "application/octet-stream"
+        kind = request.data.get("kind")
+        if not kind:
+            if content_type.startswith("image/"):
+                kind = "image"
+            elif content_type.startswith("video/"):
+                kind = "video"
+            elif content_type == "application/pdf":
+                kind = "pdf"
+            else:
+                kind = "link"
+
+        url = upload_stimulus_file(
+            file,
+            study_id=str(study_id),
+            filename=file.name,
+            content_type=content_type,
+        )
+
+        stimulus = Stimulus.objects.create(
+            team=request.user.team,
+            study_id=study_id,
+            kind=kind,
+            title=request.data.get("title", file.name),
+            content={"url": url, "content_type": content_type, "size": file.size},
+        )
+
+        return Response(StimulusSerializer(stimulus).data, status=status.HTTP_201_CREATED)
 
 
 # ── Concept Testing 2.0 ────────────────────────────────────
@@ -225,9 +359,7 @@ class ConceptBlockViewSet(TeamScopedModelViewSet):
         from merism.concept.dimensions import aggregate_concept_dimensions
 
         block = self.get_object()
-        sessions = list(
-            InterviewSession.objects.filter(study=block.study, status="completed")
-        )
+        sessions = list(InterviewSession.objects.filter(study=block.study, status="completed"))
         transcripts = [s.transcript or [] for s in sessions]
 
         rows: list[dict] = []
@@ -355,9 +487,7 @@ class InterviewSessionViewSet(TeamScopedModelViewSet):
             text,
             content_type="text/plain; charset=utf-8",
             headers={
-                "Content-Disposition": (
-                    f'attachment; filename="session-{session.id}-{mode}.txt"'
-                ),
+                "Content-Disposition": (f'attachment; filename="session-{session.id}-{mode}.txt"'),
             },
         )
 
@@ -383,11 +513,7 @@ def _transcript_to_srt(transcript: list[dict]) -> str:
             continue
         start = float(turn.get("ts") or 0)
         nxt = next(
-            (
-                float(t.get("ts") or 0)
-                for t in transcript[i + 1 :]
-                if t.get("role") in {"agent", "participant"}
-            ),
+            (float(t.get("ts") or 0) for t in transcript[i + 1 :] if t.get("role") in {"agent", "participant"}),
             start + 5.0,
         )
         text = get_turn_text(turn, "clean")
@@ -403,9 +529,7 @@ def _transcript_to_srt(transcript: list[dict]) -> str:
 # ── Knowledge ──────────────────────────────────────────────
 
 
-class KnowledgeChunkViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
+class KnowledgeChunkViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = KnowledgeChunk.objects.select_related("document").all()
     serializer_class = KnowledgeChunkSerializer
 
@@ -420,18 +544,10 @@ class KnowledgeChunkViewSet(
         query = request.data.get("query", "").strip()
         limit = int(request.data.get("limit", 7))
         chunks = chunk_search_team(team_id=team.id, query=query, limit=limit)
-        return Response(
-            {
-                "results": [
-                    self.get_serializer(c).data for c in chunks
-                ]
-            }
-        )
+        return Response({"results": [self.get_serializer(c).data for c in chunks]})
 
 
-class KnowledgeDocumentViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
+class KnowledgeDocumentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = KnowledgeDocument.objects.all()
     serializer_class = KnowledgeDocumentSerializer
 
@@ -502,9 +618,7 @@ class RecruitmentBroadcastViewSet(TeamScopedModelViewSet):
         return Response({"queued": True})
 
 
-class DeliveryRecordViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
+class DeliveryRecordViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = DeliveryRecord.objects.all()
     serializer_class = DeliveryRecordSerializer
 
@@ -518,9 +632,7 @@ class DeliveryRecordViewSet(
 # ── Report ─────────────────────────────────────────────────
 
 
-class SessionInsightViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
+class SessionInsightViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = SessionInsight.objects.all()
     serializer_class = SessionInsightSerializer
 
@@ -594,6 +706,7 @@ def _choose_winner(rows: list[dict]) -> str | None:
     Returns ``None`` when no concept has any signal (e.g. no completed
     sessions yet).
     """
+
     def dim(row: dict, name: str) -> float:
         for d in row.get("dimensions", []):
             if d.get("name") == name:
@@ -630,11 +743,13 @@ class InboxItemViewSet(TeamScopedModelViewSet):
 
     def get_queryset(self):
         from merism.models import InboxItem
+
         team = _team_from_request(self.request)
         return InboxItem.objects.filter(team=team).order_by("-created_at")
 
     def get_serializer_class(self):
         from merism.api.serializers import InboxItemSerializer
+
         return InboxItemSerializer
 
     def perform_create(self, serializer):

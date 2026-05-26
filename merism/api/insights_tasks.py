@@ -122,7 +122,8 @@ def generate_insights_task(self, insights_id: str) -> None:
         insights.status = StudyInsights.Status.FAILED
         insights.error_message = str(exc)[:500]
         insights.save(update_fields=["status", "error_message", "updated_at"])
-        raise self.retry(exc=exc) from exc
+        if self.request.retries < self.max_retries:
+            raise self.retry(exc=exc) from exc
 
 
 @shared_task(bind=True, max_retries=2, default_retry_delay=30)
@@ -210,7 +211,8 @@ def generate_report_task(self, report_id: str) -> None:
         report.status = CustomReport.Status.FAILED
         report.error_message = str(exc)[:500]
         report.save(update_fields=["status", "error_message", "updated_at"])
-        raise self.retry(exc=exc) from exc
+        if self.request.retries < self.max_retries:
+            raise self.retry(exc=exc) from exc
 
 
 def _build_insights_prompt(

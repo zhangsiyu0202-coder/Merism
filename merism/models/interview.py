@@ -197,6 +197,20 @@ class InterviewSession(TimestampedModel):
     moderator_state = models.JSONField(default=dict, blank=True)
     # Persisted decision log (used by analysis + debugging).
     decision_log = models.JSONField(default=list, blank=True)
+    # Snapshot of guide.sections at session creation time. Moderator reads
+    # this instead of the live guide so in-progress sessions are unaffected
+    # by later outline edits.
+    guide_snapshot = models.JSONField(default=list, blank=True)
+    # ── Conductor v3 (LangGraph) only ──
+    # Per ADR 0012. Set at session start, immutable for the session.
+    # ``off`` skips judge LLM calls; ``standard`` uses lenient probing;
+    # ``deep`` uses strict probing with budget × multiplier. Ignored by v1
+    # sessions (they keep their own probe_policy on the question schema).
+    follow_up_mode = models.CharField(
+        max_length=16,
+        choices=[("off", "off"), ("standard", "standard"), ("deep", "deep")],
+        default="standard",
+    )
 
     class Meta:
         db_table = "merism_interview_session"

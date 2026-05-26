@@ -1,57 +1,72 @@
-import { useState } from "react"
-import { useValues, useActions, useMountedLogic } from "kea"
-import { useTranslation } from "react-i18next"
+import { useState } from "react";
+import { useValues, useActions, useMountedLogic } from "kea";
+import { useTranslation } from "react-i18next";
 
-import { Select } from "~/lib/merism"
-import { studiesLogic } from "~/features/studies/studiesLogic"
+import { Select } from "~/lib/merism";
+import { studiesLogic } from "~/features/studies/studiesLogic";
 
-import { ReportsListPage } from "./ReportsListPage"
-import { ReportDetailPage } from "./ReportDetailPage"
-import { reportsLogic } from "./reportsLogic"
-import { reportDetailLogic } from "./reportDetailLogic"
-import { EmptyState } from "./StateComponents"
-import { FileText } from "lucide-react"
+import { ReportsListPage } from "./ReportsListPage";
+import { ReportDetailPage } from "./ReportDetailPage";
+import { reportsLogic } from "./reportsLogic";
+import { reportDetailLogic } from "./reportDetailLogic";
+import { EmptyState } from "./StateComponents";
+import { FileText } from "lucide-react";
 
 export function ReportsPage(): JSX.Element {
-    const { t } = useTranslation()
-    useMountedLogic(studiesLogic)
-    const { studies } = useValues(studiesLogic)
-    const { studyId } = useValues(reportsLogic)
-    const { setStudyId } = useActions(reportsLogic)
-    const { setReportId } = useActions(reportDetailLogic)
-    const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
+  const { t } = useTranslation();
+  useMountedLogic(studiesLogic);
+  const { studies } = useValues(studiesLogic);
+  const { studyId } = useValues(reportsLogic);
+  const { setStudyId } = useActions(reportsLogic);
+  const { setReportId } = useActions(reportDetailLogic);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
 
-    const studyOptions = (studies ?? []).map((s: { id: string; name: string }) => ({ value: s.id, label: s.name || t("untitled") }))
+  const studyOptions = (studies ?? []).map(
+    (s: { id: string; name: string }) => ({
+      value: s.id,
+      label: s.name || t("untitled"),
+    }),
+  );
 
-    const handleSelectReport = (reportId: string): void => {
-        setSelectedReportId(reportId)
-        setReportId(reportId)
-    }
+  const handleSelectReport = (reportId: string): void => {
+    setSelectedReportId(reportId);
+    setReportId(reportId);
+  };
 
-    return (
-        <div className="flex flex-col gap-6 p-6">
-            <div className="flex items-center gap-4">
-                <h1 className="text-merism-h2 font-display font-[450] text-merism-text">{t("reports.title")}</h1>
-                <Select options={studyOptions} value={studyId || ""} onValueChange={(val) => setStudyId(val)} placeholder={t("select_study_placeholder")} />
-            </div>
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      <div className="flex items-center gap-4">
+        <h1 className="text-merism-h2 font-display font-[450] text-merism-text">
+          {t("reports.title")}
+        </h1>
+        <Select
+          options={studyOptions}
+          value={studyId || ""}
+          onValueChange={(val) => setStudyId(val)}
+          placeholder={t("select_study_placeholder")}
+        />
+      </div>
 
-            {!studyId && (
-                <EmptyState
-                    icon={<FileText className="h-6 w-6" />}
-                    title={t("reports.select_study")}
-                    description={t("reports.select_study_desc")}
-                />
-            )}
+      {!studyId && (
+        <EmptyState
+          icon={<FileText className="h-6 w-6" />}
+          title={t("reports.select_study")}
+          description={t("reports.select_study_desc")}
+        />
+      )}
 
-            {studyId && !selectedReportId && (
-                <ReportsListPage onSelectReport={handleSelectReport} />
-            )}
+      {studyId && !selectedReportId && (
+        <ReportsListPage onSelectReport={handleSelectReport} />
+      )}
 
-            {studyId && selectedReportId && (
-                <ReportDetailPage reportId={selectedReportId} onBack={() => setSelectedReportId(null)} />
-            )}
-        </div>
-    )
+      {studyId && selectedReportId && (
+        <ReportDetailPage
+          reportId={selectedReportId}
+          onBack={() => setSelectedReportId(null)}
+        />
+      )}
+    </div>
+  );
 }
 
-export default ReportsPage
+export default ReportsPage;

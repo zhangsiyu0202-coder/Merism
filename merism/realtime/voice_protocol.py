@@ -32,9 +32,10 @@ class SessionStartMessage(BaseModel):
     """First message from client after WS handshake.
 
     The server resolves the session from the URL path, so this message
-    only carries participant-specific preferences. ``barge_in`` is a
-    hint; the server still checks ``session.study.barge_in_enabled``
-    (ADR 0002 — researcher flag wins).
+    only carries participant-specific preferences. ``client_prefers_barge_in``
+    is now a no-op — barge-in is disabled product-wide (2026-05-25,
+    superseding ADR 0002). Kept on the wire for protocol stability;
+    the server ignores its value.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -136,7 +137,12 @@ class SessionReadyMessage(BaseModel):
     type: Literal["session_ready"] = "session_ready"
     session_id: str
     output_sample_rate: int = 24000  # CosyVoice native
-    barge_in_enabled: bool
+    # ``barge_in_enabled`` was previously sent here to let the client
+    # gate its PTT button. The field was removed on 2026-05-25 when
+    # we standardized on strict push-to-talk: the AI is never
+    # interrupted. The frontend hardcodes the equivalent of
+    # ``barge_in_enabled=False`` and disables the PTT button while
+    # the bot is speaking.
 
 
 class PartialTranscriptMessage(BaseModel):

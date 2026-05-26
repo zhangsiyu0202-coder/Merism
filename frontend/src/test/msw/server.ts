@@ -1,6 +1,6 @@
-import { setupServer } from "msw/node"
+import { setupServer } from "msw/node";
 
-import { handlers } from "./handlers"
+import { handlers } from "./handlers";
 
 /**
  * MSW test server. Mocks Django REST API calls for unit and integration tests.
@@ -13,4 +13,4 @@ import { handlers } from "./handlers"
  *         http.get("/api/studies/", () => HttpResponse.json({ results: [] })),
  *     )
  */
-export const server = setupServer(...handlers)
+export const server = setupServer(...handlers);

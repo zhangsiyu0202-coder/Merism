@@ -1,24 +1,24 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
-import { useEffect, useState } from "react"
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useEffect, useState } from "react";
 
-import { StreamingMarkdown } from "~/lib/merism"
+import { StreamingMarkdown } from "~/lib/merism";
 
 const meta: Meta<typeof StreamingMarkdown> = {
-    title: "patterns/StreamingMarkdown",
-    component: StreamingMarkdown,
-    parameters: {
-        docs: {
-            description: {
-                component:
-                    "Renders LLM output as Merism-styled Markdown. GFM tables + lists + blockquotes + code. `streaming={true}` adds a blinking cursor for in-progress responses.",
-            },
-        },
-        layout: "padded",
+  title: "patterns/StreamingMarkdown",
+  component: StreamingMarkdown,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Renders LLM output as Merism-styled Markdown. GFM tables + lists + blockquotes + code. `streaming={true}` adds a blinking cursor for in-progress responses.",
+      },
     },
-}
+    layout: "padded",
+  },
+};
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 const SAMPLE_RICH = `## Key findings
 
@@ -52,39 +52,38 @@ function analyze(session: Session) {
 \`\`\`
 
 Inline \`code\` keeps the mono treatment.
-`
+`;
 
 export const Rich: Story = {
-    args: { text: SAMPLE_RICH },
-}
+  args: { text: SAMPLE_RICH },
+};
 
 export const Streaming: Story = {
-    render: () => {
-        function Demo(): JSX.Element {
-            const [text, setText] = useState("")
-            useEffect(() => {
-                let i = 0
-                const id = window.setInterval(() => {
-                    i = Math.min(SAMPLE_RICH.length, i + 12)
-                    setText(SAMPLE_RICH.slice(0, i))
-                    if (i >= SAMPLE_RICH.length) window.clearInterval(id)
-                }, 30)
-                return () => window.clearInterval(id)
-            }, [])
-            return (
-                <StreamingMarkdown
-                    text={text}
-                    streaming={text.length < SAMPLE_RICH.length}
-                />
-            )
-        }
-        return <Demo />
-    },
-}
+  render: () => {
+    function Demo(): JSX.Element {
+      const [text, setText] = useState("");
+      useEffect(() => {
+        let i = 0;
+        const id = window.setInterval(() => {
+          i = Math.min(SAMPLE_RICH.length, i + 12);
+          setText(SAMPLE_RICH.slice(0, i));
+          if (i >= SAMPLE_RICH.length) window.clearInterval(id);
+        }, 30);
+        return () => window.clearInterval(id);
+      }, []);
+      return (
+        <StreamingMarkdown
+          text={text}
+          streaming={text.length < SAMPLE_RICH.length}
+        />
+      );
+    }
+    return <Demo />;
+  },
+};
 
 export const Plain: Story = {
-    args: {
-        text:
-            "A single paragraph of plain prose, no markdown, renders as merism body text with proper leading.",
-    },
-}
+  args: {
+    text: "A single paragraph of plain prose, no markdown, renders as merism body text with proper leading.",
+  },
+};

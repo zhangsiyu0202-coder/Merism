@@ -131,7 +131,10 @@ async def test_tags_with_deductive_and_inductive():
             "action_type": "complaint",
         }
     )
-    with patch("merism.memai.agents.quote_tagger.get_llm", return_value=_FakeClient(body)):
+    with (
+        patch("merism.llm_gateway.client.get_client", return_value=None),
+        patch("merism.memai.agents.quote_tagger.get_llm", return_value=_FakeClient(body)),
+    ):
         tags = await tag_quote(quote, study)
 
     assert tags["sentiment"] == "negative"
@@ -157,7 +160,10 @@ async def test_unknown_deductive_code_filtered_out():
             "action_type": None,
         }
     )
-    with patch("merism.memai.agents.quote_tagger.get_llm", return_value=_FakeClient(body)):
+    with (
+        patch("merism.llm_gateway.client.get_client", return_value=None),
+        patch("merism.memai.agents.quote_tagger.get_llm", return_value=_FakeClient(body)),
+    ):
         tags = await tag_quote(quote, study)
 
     # Only the known code survives.
@@ -188,7 +194,8 @@ async def test_idempotent_when_already_tagged():
     fake = _FakeClient("")
     fake.chat.completions = _Counting()  # type: ignore[assignment]
 
-    with patch("merism.memai.agents.quote_tagger.get_llm", return_value=fake):
+    with patch("merism.llm_gateway.client.get_client", return_value=None), \
+         patch("merism.memai.agents.quote_tagger.get_llm", return_value=fake):
         tags = await tag_quote(quote, study)
 
     assert called["n"] == 0
@@ -235,7 +242,8 @@ async def test_llm_failure_preserves_existing_tags():
     fake = _FakeClient("")
     fake.chat.completions = _Exploding()  # type: ignore[assignment]
 
-    with patch("merism.memai.agents.quote_tagger.get_llm", return_value=fake):
+    with patch("merism.llm_gateway.client.get_client", return_value=None), \
+         patch("merism.memai.agents.quote_tagger.get_llm", return_value=fake):
         tags = await tag_quote(quote, study)
 
     # Existing tag preserved, no deductive key added.

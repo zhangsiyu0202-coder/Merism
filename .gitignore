@@ -55,3 +55,4 @@ site/
 # Raw illustration packs — only the processed SVGs in
 # frontend/src/lib/merism/illustrations/svg/ are tracked.
 /Notioly-Free-Pack/
+.pids/

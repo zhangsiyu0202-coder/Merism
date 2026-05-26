@@ -20,105 +20,102 @@
  */
 
 :root {
-    /* ── typography families ─────────────────────────── */
-    --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
-        "Segoe UI", sans-serif;
-    --font-display: "Geist Variable", "Inter Variable", ui-sans-serif,
-        system-ui, sans-serif;
-    --font-mono: "Geist Mono Variable", "IBM Plex Mono", ui-monospace,
-        SFMono-Regular, "SF Mono", Menlo, monospace;
+  /* ── typography families ─────────────────────────── */
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-display:
+    "Geist Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    "Geist Mono Variable", "IBM Plex Mono", ui-monospace, SFMono-Regular,
+    "SF Mono", Menlo, monospace;
 
-    /* ── Slate ladder (cool near-neutral, Outset-aligned) ── */
-    --merism-bg: oklch(0.9809 0.0027 247.86);        /* #F9FAFB */
-    --merism-surface: #ffffff;                        /* card face */
-    --merism-bg-subtle: oklch(0.9649 0.0045 247.86); /* #F1F5F9 slate-100 */
-    --merism-bg-inverse: oklch(0.2028 0.0417 265.75);/* #0F172A slate-900 */
-    --merism-text: oklch(0.2028 0.0417 265.75);      /* #0F172A slate-900 */
-    --merism-text-muted: oklch(0.5536 0.0307 253.04);/* #64748B slate-500 */
-    --merism-text-subtle: oklch(0.7085 0.0209 253.41);/* #94A3B8 slate-400 */
-    --merism-text-inverse: oklch(0.9809 0.0027 247.86);
-    --merism-border: oklch(0.9288 0.0126 255.51);    /* #E2E8F0 slate-200 */
-    --merism-border-strong: oklch(0.8697 0.0176 252.66);/* #CBD5E1 slate-300 */
+  /* ── Slate ladder (cool near-neutral, Outset-aligned) ── */
+  --merism-bg: oklch(0.9809 0.0027 247.86); /* #F9FAFB */
+  --merism-surface: #ffffff; /* card face */
+  --merism-bg-subtle: oklch(0.9649 0.0045 247.86); /* #F1F5F9 slate-100 */
+  --merism-bg-inverse: oklch(0.2028 0.0417 265.75); /* #0F172A slate-900 */
+  --merism-text: oklch(0.2028 0.0417 265.75); /* #0F172A slate-900 */
+  --merism-text-muted: oklch(0.5536 0.0307 253.04); /* #64748B slate-500 */
+  --merism-text-subtle: oklch(0.7085 0.0209 253.41); /* #94A3B8 slate-400 */
+  --merism-text-inverse: oklch(0.9809 0.0027 247.86);
+  --merism-border: oklch(0.9288 0.0126 255.51); /* #E2E8F0 slate-200 */
+  --merism-border-strong: oklch(0.8697 0.0176 252.66); /* #CBD5E1 slate-300 */
 
-    /* hairline = near-invisible edge for "no-border" cards */
-    --merism-hairline: rgba(15, 23, 42, 0.06);
-    --merism-hairline-strong: rgba(15, 23, 42, 0.1);
+  /* hairline = near-invisible edge for "no-border" cards */
+  --merism-hairline: rgba(15, 23, 42, 0.06);
+  --merism-hairline-strong: rgba(15, 23, 42, 0.1);
 
-    /* glassmorphism — translucent surface over a blurred backdrop */
-    --merism-glass-surface: rgba(255, 255, 255, 0.72);
-    --merism-glass-edge: rgba(255, 255, 255, 0.6);
-    --merism-glass-blur: 16px;
+  /* glassmorphism — translucent surface over a blurred backdrop */
+  --merism-glass-surface: rgba(255, 255, 255, 0.72);
+  --merism-glass-edge: rgba(255, 255, 255, 0.6);
+  --merism-glass-blur: 16px;
 
-    /* ── Coral accent (brand — used sparingly) ────────── */
-    --merism-accent: oklch(0.69 0.17 28);
-    --merism-accent-hover: oklch(0.63 0.18 26);
-    --merism-accent-active: oklch(0.58 0.19 24);
-    --merism-accent-soft: oklch(0.69 0.17 28 / 0.1);
-    --merism-accent-outline: oklch(0.69 0.17 28 / 0.35);
-    --merism-accent-ink: #ffffff;
+  /* ── Coral accent (brand — used sparingly) ────────── */
+  --merism-accent: oklch(0.69 0.17 28);
+  --merism-accent-hover: oklch(0.63 0.18 26);
+  --merism-accent-active: oklch(0.58 0.19 24);
+  --merism-accent-soft: oklch(0.69 0.17 28 / 0.1);
+  --merism-accent-outline: oklch(0.69 0.17 28 / 0.35);
+  --merism-accent-ink: #ffffff;
 
-    /* ── semantic state ──────────────────────────────── */
-    --merism-success: oklch(0.58 0.12 155);
-    --merism-warning: oklch(0.72 0.14 75);
-    --merism-danger: oklch(0.56 0.19 20);
-    --merism-info: oklch(0.60 0.11 220);
+  /* ── semantic state ──────────────────────────────── */
+  --merism-success: oklch(0.58 0.12 155);
+  --merism-warning: oklch(0.72 0.14 75);
+  --merism-danger: oklch(0.56 0.19 20);
+  --merism-info: oklch(0.6 0.11 220);
 
-    /* ── radii (8pt grid) ─────────────────────────────── */
-    --radius-merism-xs: 4px;
-    --radius-merism-sm: 6px;
-    --radius-merism-md: 8px;
-    --radius-merism-lg: 12px;
-    --radius-merism-xl: 16px;
-    --radius-merism-2xl: 24px;
-    --radius-merism-full: 9999px;
+  /* ── radii (8pt grid) ─────────────────────────────── */
+  --radius-merism-xs: 4px;
+  --radius-merism-sm: 6px;
+  --radius-merism-md: 8px;
+  --radius-merism-lg: 12px;
+  --radius-merism-xl: 16px;
+  --radius-merism-2xl: 24px;
+  --radius-merism-full: 9999px;
 
-    /* ── spacing helpers (8pt grid) ──────────────────── */
-    --spacing-merism-sidebar: 15rem;              /* 240px (expanded) */
-    --spacing-merism-sidebar-collapsed: 3.25rem;  /* 52px (collapsed) */
-    --spacing-merism-side-panel-default: 30rem;   /* 480px default */
-    --spacing-merism-side-panel-min: 20rem;       /* 320px min */
-    --spacing-merism-side-panel-max: 56.25rem;    /* 900px max */
-    --spacing-merism-topbar: 3.5rem;
-    --spacing-merism-gutter: 2rem;
-    --spacing-merism-section-y: 4rem;
-    --spacing-merism-section-xl: 6rem;
-    --spacing-merism-page-top: 4.5rem;
-    --spacing-merism-card-pad: 1.5rem;
-    --spacing-merism-card-pad-lg: 2rem;
-    --spacing-merism-content-max: 75rem;
-    --spacing-merism-reading-max: 43.75rem;
-    /* Fluid gutter — marketing hero / landing pages only. App chrome
+  /* ── spacing helpers (8pt grid) ──────────────────── */
+  --spacing-merism-sidebar: 15rem; /* 240px (expanded) */
+  --spacing-merism-sidebar-collapsed: 3.25rem; /* 52px (collapsed) */
+  --spacing-merism-side-panel-default: 30rem; /* 480px default */
+  --spacing-merism-side-panel-min: 20rem; /* 320px min */
+  --spacing-merism-side-panel-max: 56.25rem; /* 900px max */
+  --spacing-merism-topbar: 3.5rem;
+  --spacing-merism-gutter: 2rem;
+  --spacing-merism-section-y: 4rem;
+  --spacing-merism-section-xl: 6rem;
+  --spacing-merism-page-top: 4.5rem;
+  --spacing-merism-card-pad: 1.5rem;
+  --spacing-merism-card-pad-lg: 2rem;
+  --spacing-merism-content-max: 75rem;
+  --spacing-merism-reading-max: 43.75rem;
+  /* Fluid gutter — marketing hero / landing pages only. App chrome
      * keeps --spacing-merism-gutter (fixed 32px) because predictable
      * rhythm beats elastic scaling in dense product UI. */
-    --spacing-merism-fluid-gutter: clamp(1rem, 4vw, 2rem);
+  --spacing-merism-fluid-gutter: clamp(1rem, 4vw, 2rem);
 
-    /* ── elevation (diffuse shadows — Outset aesthetic) ── */
-    --merism-shadow-xs:
-        0 1px 2px rgba(15, 23, 42, 0.04);
-    --merism-shadow-sm:
-        0 1px 2px rgba(15, 23, 42, 0.04),
-        0 1px 1px rgba(15, 23, 42, 0.03);
-    --merism-shadow-card:
-        0 1px 2px rgba(15, 23, 42, 0.04),
-        0 4px 12px -2px rgba(15, 23, 42, 0.06);
-    --merism-shadow-float:
-        0 2px 4px rgba(15, 23, 42, 0.05),
-        0 8px 24px -4px rgba(15, 23, 42, 0.08);
-    --merism-shadow-pop:
-        0 4px 8px rgba(15, 23, 42, 0.06),
-        0 24px 48px -12px rgba(15, 23, 42, 0.18);
-    /* kept for back-compat */
-    --merism-shadow-md: var(--merism-shadow-card);
-    --merism-shadow-lg: var(--merism-shadow-float);
+  /* ── elevation (diffuse shadows — Outset aesthetic) ── */
+  --merism-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --merism-shadow-sm:
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
+  --merism-shadow-card:
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --merism-shadow-float:
+    0 2px 4px rgba(15, 23, 42, 0.05), 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  --merism-shadow-pop:
+    0 4px 8px rgba(15, 23, 42, 0.06), 0 24px 48px -12px rgba(15, 23, 42, 0.18);
+  /* kept for back-compat */
+  --merism-shadow-md: var(--merism-shadow-card);
+  --merism-shadow-lg: var(--merism-shadow-float);
 
-    /* ── motion ──────────────────────────────────────── */
-    --merism-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-    --merism-duration-fast: 120ms;
-    --merism-duration-base: 200ms;
-    --merism-duration-slow: 300ms;
-    --merism-duration-layout: 100ms;  /* sidebar/panel collapse — snappy */
+  /* ── motion ──────────────────────────────────────── */
+  --merism-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --merism-duration-fast: 120ms;
+  --merism-duration-base: 200ms;
+  --merism-duration-slow: 300ms;
+  --merism-duration-layout: 100ms; /* sidebar/panel collapse — snappy */
 
-    /* ── Tag / status palettes ───────────────────────────
+  /* ── Tag / status palettes ───────────────────────────
      * One "core" colour per variant (deep, low-L, high-C),
      * plus a matching ``-bg`` which is the same core at 8-9 %
      * alpha. This is the ONLY way to get Stripe / Linear-grade
@@ -133,88 +130,86 @@
      * Success hue 160 = forest (not mint);
      * etc. — these are intentionally "grown-up" tones.
      */
-    --merism-status-neutral: oklch(0.37 0.028 258);
-    --merism-status-neutral-bg: oklch(0.37 0.028 258 / 0.08);
+  --merism-status-neutral: oklch(0.37 0.028 258);
+  --merism-status-neutral-bg: oklch(0.37 0.028 258 / 0.08);
 
-    --merism-status-accent: oklch(0.55 0.175 28);
-    --merism-status-accent-bg: oklch(0.55 0.175 28 / 0.09);
+  --merism-status-accent: oklch(0.55 0.175 28);
+  --merism-status-accent-bg: oklch(0.55 0.175 28 / 0.09);
 
-    --merism-status-success: oklch(0.42 0.125 160);
-    --merism-status-success-bg: oklch(0.42 0.125 160 / 0.09);
+  --merism-status-success: oklch(0.42 0.125 160);
+  --merism-status-success-bg: oklch(0.42 0.125 160 / 0.09);
 
-    --merism-status-warning: oklch(0.48 0.13 65);
-    --merism-status-warning-bg: oklch(0.48 0.13 65 / 0.09);
+  --merism-status-warning: oklch(0.48 0.13 65);
+  --merism-status-warning-bg: oklch(0.48 0.13 65 / 0.09);
 
-    --merism-status-danger: oklch(0.48 0.18 22);
-    --merism-status-danger-bg: oklch(0.48 0.18 22 / 0.08);
+  --merism-status-danger: oklch(0.48 0.18 22);
+  --merism-status-danger-bg: oklch(0.48 0.18 22 / 0.08);
 
-    --merism-status-info: oklch(0.45 0.14 225);
-    --merism-status-info-bg: oklch(0.45 0.14 225 / 0.09);
+  --merism-status-info: oklch(0.45 0.14 225);
+  --merism-status-info-bg: oklch(0.45 0.14 225 / 0.09);
 
-    /* Inset physical edge (unified across ALL variants). */
-    --merism-status-edge: inset 0 0 0 1px rgba(15, 23, 42, 0.04);
+  /* Inset physical edge (unified across ALL variants). */
+  --merism-status-edge: inset 0 0 0 1px rgba(15, 23, 42, 0.04);
 
-    /* ── Scrollbar (thin / invisible track) ──────────────
+  /* ── Scrollbar (thin / invisible track) ──────────────
      * Global override applied in globals.css. Idle thumb is nearly
      * transparent; on hover it darkens via a 200ms ease.
      */
-    --merism-scrollbar-thumb: rgba(15, 23, 42, 0.1);
-    --merism-scrollbar-thumb-hover: rgba(15, 23, 42, 0.25);
+  --merism-scrollbar-thumb: rgba(15, 23, 42, 0.1);
+  --merism-scrollbar-thumb-hover: rgba(15, 23, 42, 0.25);
 }
 
 html.dark {
-    --merism-bg: oklch(0.2028 0.0417 265.75);        /* #0F172A slate-900 */
-    --merism-surface: oklch(0.2686 0.0424 265.75);   /* #1E293B slate-800 */
-    --merism-bg-subtle: oklch(0.3181 0.0369 262.9);  /* #334155 slate-700 */
-    --merism-bg-inverse: oklch(0.9809 0.0027 247.86);
-    --merism-text: oklch(0.9809 0.0027 247.86);      /* slate-50 */
-    --merism-text-muted: oklch(0.7085 0.0209 253.41);/* slate-400 */
-    --merism-text-subtle: oklch(0.5536 0.0307 253.04);/* slate-500 */
-    --merism-text-inverse: oklch(0.2028 0.0417 265.75);
-    --merism-border: rgba(255, 255, 255, 0.08);
-    --merism-border-strong: rgba(255, 255, 255, 0.14);
+  --merism-bg: oklch(0.2028 0.0417 265.75); /* #0F172A slate-900 */
+  --merism-surface: oklch(0.2686 0.0424 265.75); /* #1E293B slate-800 */
+  --merism-bg-subtle: oklch(0.3181 0.0369 262.9); /* #334155 slate-700 */
+  --merism-bg-inverse: oklch(0.9809 0.0027 247.86);
+  --merism-text: oklch(0.9809 0.0027 247.86); /* slate-50 */
+  --merism-text-muted: oklch(0.7085 0.0209 253.41); /* slate-400 */
+  --merism-text-subtle: oklch(0.5536 0.0307 253.04); /* slate-500 */
+  --merism-text-inverse: oklch(0.2028 0.0417 265.75);
+  --merism-border: rgba(255, 255, 255, 0.08);
+  --merism-border-strong: rgba(255, 255, 255, 0.14);
 
-    --merism-hairline: rgba(255, 255, 255, 0.08);
-    --merism-hairline-strong: rgba(255, 255, 255, 0.14);
+  --merism-hairline: rgba(255, 255, 255, 0.08);
+  --merism-hairline-strong: rgba(255, 255, 255, 0.14);
 
-    --merism-glass-surface: rgba(30, 41, 59, 0.72);
-    --merism-glass-edge: rgba(255, 255, 255, 0.08);
+  --merism-glass-surface: rgba(30, 41, 59, 0.72);
+  --merism-glass-edge: rgba(255, 255, 255, 0.08);
 
-    --merism-accent: oklch(0.74 0.16 30);
-    --merism-accent-hover: oklch(0.78 0.15 32);
-    --merism-accent-active: oklch(0.70 0.17 28);
-    --merism-accent-soft: oklch(0.74 0.16 30 / 0.16);
-    --merism-accent-outline: oklch(0.74 0.16 30 / 0.45);
-    --merism-accent-ink: oklch(0.2028 0.0417 265.75);
+  --merism-accent: oklch(0.74 0.16 30);
+  --merism-accent-hover: oklch(0.78 0.15 32);
+  --merism-accent-active: oklch(0.7 0.17 28);
+  --merism-accent-soft: oklch(0.74 0.16 30 / 0.16);
+  --merism-accent-outline: oklch(0.74 0.16 30 / 0.45);
+  --merism-accent-ink: oklch(0.2028 0.0417 265.75);
 
-    --merism-shadow-card:
-        0 1px 2px rgba(0, 0, 0, 0.24),
-        0 4px 12px -2px rgba(0, 0, 0, 0.32);
-    --merism-shadow-float:
-        0 2px 4px rgba(0, 0, 0, 0.3),
-        0 8px 24px -4px rgba(0, 0, 0, 0.38);
+  --merism-shadow-card:
+    0 1px 2px rgba(0, 0, 0, 0.24), 0 4px 12px -2px rgba(0, 0, 0, 0.32);
+  --merism-shadow-float:
+    0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 24px -4px rgba(0, 0, 0, 0.38);
 
-    /* Tag palettes (dark) — lift L, keep hue, widen alpha to 10-12% */
-    --merism-status-neutral: oklch(0.82 0.018 253);
-    --merism-status-neutral-bg: oklch(0.82 0.018 253 / 0.1);
+  /* Tag palettes (dark) — lift L, keep hue, widen alpha to 10-12% */
+  --merism-status-neutral: oklch(0.82 0.018 253);
+  --merism-status-neutral-bg: oklch(0.82 0.018 253 / 0.1);
 
-    --merism-status-accent: oklch(0.82 0.135 28);
-    --merism-status-accent-bg: oklch(0.82 0.135 28 / 0.12);
+  --merism-status-accent: oklch(0.82 0.135 28);
+  --merism-status-accent-bg: oklch(0.82 0.135 28 / 0.12);
 
-    --merism-status-success: oklch(0.80 0.11 160);
-    --merism-status-success-bg: oklch(0.80 0.11 160 / 0.12);
+  --merism-status-success: oklch(0.8 0.11 160);
+  --merism-status-success-bg: oklch(0.8 0.11 160 / 0.12);
 
-    --merism-status-warning: oklch(0.83 0.115 70);
-    --merism-status-warning-bg: oklch(0.83 0.115 70 / 0.12);
+  --merism-status-warning: oklch(0.83 0.115 70);
+  --merism-status-warning-bg: oklch(0.83 0.115 70 / 0.12);
 
-    --merism-status-danger: oklch(0.80 0.14 22);
-    --merism-status-danger-bg: oklch(0.80 0.14 22 / 0.12);
+  --merism-status-danger: oklch(0.8 0.14 22);
+  --merism-status-danger-bg: oklch(0.8 0.14 22 / 0.12);
 
-    --merism-status-info: oklch(0.80 0.11 225);
-    --merism-status-info-bg: oklch(0.80 0.11 225 / 0.12);
+  --merism-status-info: oklch(0.8 0.11 225);
+  --merism-status-info-bg: oklch(0.8 0.11 225 / 0.12);
 
-    --merism-status-edge: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --merism-status-edge: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 
-    --merism-scrollbar-thumb: rgba(255, 255, 255, 0.1);
-    --merism-scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
+  --merism-scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --merism-scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
 }

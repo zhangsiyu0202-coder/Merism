@@ -44,13 +44,13 @@ class TestFactory:
     def test_create_tts(self):
         from merism.services.configuration.factory import create_tts_service
 
-        with patch("merism.services.configuration.factory.CosyVoiceClient") as m:
+        with patch("merism.tts.CosyVoiceClient") as m:
             create_tts_service(TTSConfig(api_key="sk-test"))
             m.assert_called_once()
 
     def test_create_stt(self):
         from merism.services.configuration.factory import create_stt_service
 
-        with patch("merism.services.configuration.factory.ParaformerClient") as m:
+        with patch("merism.stt.ParaformerClient") as m:
             create_stt_service(STTConfig(api_key="sk-test"))
             m.assert_called_once()

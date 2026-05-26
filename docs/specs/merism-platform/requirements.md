@@ -335,7 +335,7 @@ Merism 是一个 AI 驱动的用户研究平台。研究者写一个研究目标
 
 #### Acceptance Criteria
 
-1. THE 所有新 Merism 前端代码(Ask / Interview Room / Wizard / Inbox / Repository / Decisions / Analysis / Knowledge) SHALL 从 `~/lib/merism` 引用 primitives / patterns / tokens。
+1. THE 所有新 Merism 前端代码(Ask / Interview Room / Wizard / Inbox / Repository / Assistant / Analysis / Knowledge) SHALL 从 `~/lib/merism` 引用 primitives / patterns / tokens。
 2. THE 所有新 Merism 前端代码 SHALL NOT 引入 LemonUI 组件。
 3. WHERE 存在 kea logic 文件, THE 业务逻辑 SHALL 写入 kea logic(不得用 React hooks 替代)。
 4. THE 前端 CSS SHALL 使用 Tailwind 工具类,不使用内联 style。

@@ -149,7 +149,7 @@ class StudyAdmin(ModelAdmin):
         ),
         (
             "Conductor config",
-            {"fields": ("estimated_minutes", "section_count_override", "barge_in_enabled")},
+            {"fields": ("estimated_minutes", "section_count_override")},
         ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )

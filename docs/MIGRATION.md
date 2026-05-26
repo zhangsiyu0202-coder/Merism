@@ -182,7 +182,7 @@ R15 之后又陆续加了一批新功能。完整迁移清单（0014-0032）：
 | `merism/memai/agents/{outline_review,recruitment_message,quote_extractor,quote_tagger,session_insight_generator,study_narrative_summary,inductive_code_suggester,codebook_seeder,codebook_reviewer,analysis}.py` | 全新（R12-R25）| 12+ agents |
 | `merism/memai/title_generator.py` | 全新（R25）| Conversation 异步起标题 |
 | `merism/memai/graph/` | 全新 | LangGraph 风格 graph helpers |
-| `frontend/src/features/{home,studies,ask,inbox,repository,decisions,analysis,interview,participant,sessions,settings,authentication,welcome}/` | 全新（R9 + R14）| 14 个 Scene |
+| `frontend/src/features/{home,studies,ask,inbox,repository,assistant,analysis,interview,participant,sessions,settings,authentication,welcome}/` | 全新（R9 + R14）| 14 个 Scene |
 | `frontend/src/lib/merism/{primitives,patterns,tokens,illustrations,fonts}/` | 全新（R14）| Outset-grade 设计系统 |
 
 ## 与 PRODUCT.md 不再冲突的描述

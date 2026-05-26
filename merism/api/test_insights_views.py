@@ -74,6 +74,124 @@ class TestInsightsAPI(MerismAPITestCase):
         self.insights.refresh_from_db()
         assert self.insights.status == "generating"
 
+    def test_status_derived_from_data_when_field_is_stale(self):
+        """The serializer should report ``ready`` when the data is fully
+        populated, even if the status column is stuck at ``generating``.
+
+        This guards against the stuck-task race: a worker dies after
+        finishing data writes but before its successful ``status=READY``
+        save commits, OR a rerun() races with the task's final save.
+        Either way, the user shouldn't see "generating" forever when
+        the report is actually done.
+        """
+        from django.utils import timezone
+
+        # Use a separate study — StudyInsights has a unique constraint
+        # on study_id, and setUpTestData already wired one to cls.study.
+        study = Study.objects.create(
+            team=self.team,
+            created_by=self.user,
+            name="Stale Status Study",
+            research_goal="goal",
+            status=Study.Status.DRAFT,
+        )
+        si = StudyInsights.objects.create(
+            team=self.team,
+            study=study,
+            status=StudyInsights.Status.GENERATING,
+            executive_summary="A real summary",
+            completed_interviews=9,
+            generated_at=timezone.now(),
+        )
+        InsightHighlight.objects.create(
+            team=self.team,
+            insights=si,
+            headline="h",
+            summary="s",
+            display_order=0,
+        )
+        InsightFinding.objects.create(
+            team=self.team,
+            insights=si,
+            title="t",
+            summary="s",
+            display_order=0,
+        )
+
+        response = self.client.get(f"/api/study-insights/?study={study.id}")
+        assert response.status_code == 200
+        results = response.json().get("results", response.json())
+        assert len(results) == 1
+        # The stuck row appears with status=ready (derived) even though
+        # the DB column still says generating.
+        assert results[0]["status"] == "ready"
+        # Confirm the DB column is unchanged — the fix is read-side only.
+        si.refresh_from_db()
+        assert si.status == "generating"
+
+    def test_status_passes_through_when_data_incomplete(self):
+        """If data isn't complete BUT generation is still possible
+        (the study has at least one completed participation), pass
+        through the column value — protect the legitimate fresh
+        in-flight state where the worker is still chewing.
+        """
+        from merism.models import Participation
+
+        study = Study.objects.create(
+            team=self.team,
+            created_by=self.user,
+            name="No Data Study",
+            research_goal="goal",
+            status=Study.Status.DRAFT,
+        )
+        # Add a completed participation so ``actual_completed_count`` > 0
+        # — without this, the new rule "no sessions ⇒ status=failed"
+        # short-circuits the in-flight state.
+        Participation.objects.create(
+            team=self.team,
+            study=study,
+            status=Participation.Status.COMPLETED,
+        )
+        StudyInsights.objects.create(
+            team=self.team,
+            study=study,
+            status=StudyInsights.Status.GENERATING,
+            executive_summary="",
+        )
+        response = self.client.get(f"/api/study-insights/?study={study.id}")
+        results = response.json().get("results", response.json())
+        assert len(results) == 1
+        assert results[0]["status"] == "generating"
+
+    def test_status_failed_when_stuck_with_no_completed_interviews(self):
+        """A StudyInsights record stuck at ``generating`` for a study
+        that has no completed participations is reported as
+        ``failed`` — the underlying task can never succeed (it would
+        bail with "No completed interviews to analyze") so polling
+        the row forever is pointless. The frontend sees ``failed``,
+        surfaces the empty state + re-run button, and the user can
+        actually do something.
+        """
+        study = Study.objects.create(
+            team=self.team,
+            created_by=self.user,
+            name="No Sessions Study",
+            research_goal="goal",
+            status=Study.Status.DRAFT,
+        )
+        # No Participation at all — actual_completed_count == 0.
+        StudyInsights.objects.create(
+            team=self.team,
+            study=study,
+            status=StudyInsights.Status.GENERATING,
+            executive_summary="",
+        )
+        response = self.client.get(f"/api/study-insights/?study={study.id}")
+        results = response.json().get("results", response.json())
+        assert len(results) == 1
+        assert results[0]["status"] == "failed"
+        assert "无已完成的访谈" in results[0]["error_message"]
+
 
 class TestCustomReportAPI(MerismAPITestCase):
     @classmethod

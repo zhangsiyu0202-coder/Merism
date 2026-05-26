@@ -103,7 +103,8 @@ async def test_seeds_from_research_goal_and_objectives():
     )
     fake = _FakeClient(_SEED_RESPONSE)
 
-    with patch("merism.memai.agents.codebook_seeder.get_llm", return_value=fake):
+    with patch("merism.llm_gateway.client.get_client", return_value=None), \
+         patch("merism.memai.agents.codebook_seeder.get_llm", return_value=fake):
         codes = await seed_codebook(study)
 
     assert len(codes) == 3
@@ -135,7 +136,8 @@ async def test_existing_codebook_preserved():
     )
     fake = _FakeClient(_SEED_RESPONSE)
 
-    with patch("merism.memai.agents.codebook_seeder.get_llm", return_value=fake):
+    with patch("merism.llm_gateway.client.get_client", return_value=None), \
+         patch("merism.memai.agents.codebook_seeder.get_llm", return_value=fake):
         codes = await seed_codebook(study)
 
     # LLM not called, returns existing.
@@ -164,7 +166,8 @@ async def test_llm_failure_returns_empty():
     fake = _FakeClient("")
     fake.chat.completions = _ExplodingCompletions()  # type: ignore[assignment]
 
-    with patch("merism.memai.agents.codebook_seeder.get_llm", return_value=fake):
+    with patch("merism.llm_gateway.client.get_client", return_value=None), \
+         patch("merism.memai.agents.codebook_seeder.get_llm", return_value=fake):
         codes = await seed_codebook(study)
 
     assert codes == []

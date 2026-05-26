@@ -16,7 +16,6 @@ from merism.models import (
     Team,
 )
 
-
 pytestmark = pytest.mark.django_db
 
 
@@ -37,8 +36,11 @@ def _boot(target=2):
 def _add_participation(team, study, *, status, is_preview=False):
     participant = Participant.objects.create(team=team)
     return Participation.objects.create(
-        study=study, team=team, participant=participant,
-        status=status, is_preview=is_preview,
+        study=study,
+        team=team,
+        participant=participant,
+        status=status,
+        is_preview=is_preview,
     )
 
 
@@ -78,8 +80,12 @@ def test_auto_close_when_target_reached():
     p2.save()
     study.refresh_from_db()
     link.refresh_from_db()
+    # Auto-close flips the Study.status (metadata for inbox / analytics)
+    # but does NOT deactivate the link. Link access is researcher-
+    # controlled per the 2026-05-23 simplification (link.is_active toggle
+    # in the Recruit tab).
     assert study.status == Study.Status.CLOSED
-    assert link.is_active is False
+    assert link.is_active is True
 
 
 def test_auto_close_ignores_preview_completions():

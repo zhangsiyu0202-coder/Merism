@@ -9,6 +9,24 @@
 # are unchanged (5432 / 6379) — Django reads POSTGRES_PORT / REDIS_URL
 # from .env to pick up the custom host port.
 
+# ── Shared env block for backend containers ────────────────
+# Anchor + alias so every container that runs Django/Celery code gets
+# the **identical** set of env vars. Avoids the class of bug where one
+# service has CELERY_RESULT_BACKEND but another doesn't (which made
+# celery-beat silently fall back to localhost:6379 and never recover).
+x-merism-backend-env: &merism-backend-env
+  DJANGO_SETTINGS_MODULE: merism.settings.dev
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: merism
+  POSTGRES_USER: merism
+  POSTGRES_PASSWORD: merism
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/1
+  REDIS_URL: redis://redis:6379/2
+  MERISM_LLM_API_KEY: ${MERISM_LLM_API_KEY:-}
+  MERISM_LLM_BASE_URL: ${MERISM_LLM_BASE_URL:-https://api.deepseek.com}
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -70,16 +88,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    environment:
-      DJANGO_SETTINGS_MODULE: merism.settings.dev
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: merism
-      POSTGRES_USER: merism
-      POSTGRES_PASSWORD: merism
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      REDIS_URL: redis://redis:6379/2
+    environment: *merism-backend-env
     command:
       ["celery", "-A", "merism", "worker", "-l", "info", "--concurrency=2"]
     healthcheck:
@@ -103,19 +112,17 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    environment:
-      DJANGO_SETTINGS_MODULE: merism.settings.dev
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: merism
-      POSTGRES_USER: merism
-      POSTGRES_PASSWORD: merism
-      CELERY_BROKER_URL: redis://redis:6379/0
+    environment: *merism-backend-env
     command:
       [
         "celery", "-A", "merism", "beat", "-l", "info",
         "--scheduler", "redbeat.RedBeatScheduler",
       ]
+    # Beat has no native ping endpoint and a custom healthcheck for it
+    # is more flake than signal. Disable so docker-compose --wait doesn't
+    # block on a stale image-level CMD.
+    healthcheck:
+      disable: true
 
 volumes:
   merism_pg_data:

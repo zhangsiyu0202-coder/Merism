@@ -163,7 +163,7 @@ Scene.Studies           /                       — 同 /，filter tabs（All/Ac
 Scene.Ask               /ask                    — Ask Merism（跨 study 问答）
 Scene.Inbox             /inbox                  — 研究者通知（InboxItem 列表）
 Scene.Repository        /repository             — 知识库浏览
-Scene.Decisions         /decisions              — Decision log
+Scene.Assistant         /assistant              — AI assistant
 Scene.Settings          /settings  /settings/:section
 Scene.Study             /studies/:id/:tab       — 9 个 sub-tab（见 §3.2）
 Scene.Insights          /insights?study=...     — auto-generated 综合洞察

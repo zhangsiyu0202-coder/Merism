@@ -3,5 +3,5 @@
  * Empty string means same-origin (Vite proxy handles /i/ → Django).
  */
 export function getBackendOrigin(): string {
-    return ""
+  return "";
 }
